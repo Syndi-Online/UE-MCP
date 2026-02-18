@@ -1,0 +1,65 @@
+name: Build Plugin
+on:
+  push:
+    branches:
+      - main
+
+env:
+  REPO_NAME: UE-MCP
+  REPO_OWNER: Unreal
+  PLUGIN_NAME: MCPServer
+
+jobs:
+  Windows-Build:
+    runs-on: Unreal-Win
+    strategy:
+      matrix:
+        ue_version: ['5.7', '5.6', '5.5', '5.4']
+    steps:
+      - run: echo ${{ env.GITHUB_SHA }}
+        shell: powershell
+
+      - name: Clone repository if folder does not exist or is empty
+        shell: powershell
+        run: |
+          if (!(Test-Path "D:\${{ env.REPO_NAME }}") -or ((Get-ChildItem "D:\${{ env.REPO_NAME }}" -Force | Measure-Object).Count -eq 0)) {
+            Write-Host "Folder does not exist or is empty. Cloning..."
+            git clone ssh://git@ssh.gitea.syndi.online:222/${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}.git D:\${{ env.REPO_NAME }}
+          }
+          else {
+            Write-Host "Folder exists. Skipping clone."
+          }
+
+      - run: git -C D:\${{ env.REPO_NAME }}\ fetch
+        shell: powershell
+
+      - run: git -C D:\${{ env.REPO_NAME }}\ reset --hard ${{ env.GITHUB_SHA }}
+        shell: powershell
+
+      - run: git -C D:\${{ env.REPO_NAME }}\ lfs fetch --all
+        shell: powershell
+
+      - run: git -C D:\${{ env.REPO_NAME }}\ lfs pull
+        shell: powershell
+
+      - name: Clean previous build output
+        shell: powershell
+        run: |
+          if (Test-Path -Path "D:\${{ env.REPO_NAME }}-Build-${{ matrix.ue_version }}") {
+            Remove-Item -Path "D:\${{ env.REPO_NAME }}-Build-${{ matrix.ue_version }}" -Recurse -Force
+          }
+
+      - name: Build Plugin (UE ${{ matrix.ue_version }})
+        shell: powershell
+        run: >
+          & "D:\UE_${{ matrix.ue_version }}\Engine\Build\BatchFiles\RunUAT.bat"
+          BuildPlugin
+          -Plugin="D:\${{ env.REPO_NAME }}\${{ env.PLUGIN_NAME }}\${{ env.PLUGIN_NAME }}.uplugin"
+          -Package="D:\${{ env.REPO_NAME }}-Build-${{ matrix.ue_version }}"
+          -TargetPlatforms=Win64
+          -Rocket
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.PLUGIN_NAME }}-UE${{ matrix.ue_version }}
+          path: D:\${{ env.REPO_NAME }}-Build-${{ matrix.ue_version }}
