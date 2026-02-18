@@ -2,4 +2,6 @@
 .claude/
 
 Output/
+TestProject/
 build.log
+*.json.tmp
