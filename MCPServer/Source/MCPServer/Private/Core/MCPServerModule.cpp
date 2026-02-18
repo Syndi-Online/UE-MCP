@@ -150,6 +150,12 @@
 #include "Tools/Impl/CloseAssetEditorImplTool.h"
 #include "Tools/Impl/SyncContentBrowserImplTool.h"
 #include "Tools/Impl/GetSelectedContentBrowserImplTool.h"
+#include "Tools/Impl/BuildHlodWpImplTool.h"
+#include "Tools/Impl/DeleteHlodWpImplTool.h"
+#include "Tools/Impl/PlayInEditorImplTool.h"
+#include "Tools/Impl/StopPieImplTool.h"
+#include "Tools/Impl/SimulateInEditorImplTool.h"
+#include "Tools/Impl/IsPlayingImplTool.h"
 
 // Modules
 #include "Modules/Impl/ActorImplModule.h"
@@ -170,6 +176,8 @@
 #include "Modules/Impl/ProjectSettingsImplModule.h"
 #include "Modules/Impl/SourceControlImplModule.h"
 #include "Modules/Impl/UIImplModule.h"
+#include "Modules/Impl/WorldPartitionImplModule.h"
+#include "Modules/Impl/PIEImplModule.h"
 
 DEFINE_LOG_CATEGORY(LogMCPServer);
 
@@ -201,6 +209,8 @@ void FMCPServerModule::StartupModule()
 	ProjectSettingsModule = MakeUnique<FProjectSettingsImplModule>();
 	SCCModule = MakeUnique<FSourceControlImplModule>();
 	UIModule = MakeUnique<FUIImplModule>();
+	WorldPartitionModule = MakeUnique<FWorldPartitionImplModule>();
+	PIEModule = MakeUnique<FPIEImplModule>();
 
 	ToolRegistry = MakeUnique<FMCPToolRegistry>();
 	RegisterBuiltinTools();
@@ -225,6 +235,8 @@ void FMCPServerModule::ShutdownModule()
 	JsonRpc.Reset();
 	SessionManager.Reset();
 	ToolRegistry.Reset();
+	PIEModule.Reset();
+	WorldPartitionModule.Reset();
 	UIModule.Reset();
 	SCCModule.Reset();
 	ProjectSettingsModule.Reset();
@@ -431,6 +443,16 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FCloseAssetEditorImplTool>(*UIModule));
 	ToolRegistry->RegisterTool(MakeShared<FSyncContentBrowserImplTool>(*UIModule));
 	ToolRegistry->RegisterTool(MakeShared<FGetSelectedContentBrowserImplTool>(*UIModule));
+
+	// World Partition tools
+	ToolRegistry->RegisterTool(MakeShared<FBuildHlodWpImplTool>(*WorldPartitionModule));
+	ToolRegistry->RegisterTool(MakeShared<FDeleteHlodWpImplTool>(*WorldPartitionModule));
+
+	// PIE (Play In Editor) tools
+	ToolRegistry->RegisterTool(MakeShared<FPlayInEditorImplTool>(*PIEModule));
+	ToolRegistry->RegisterTool(MakeShared<FStopPieImplTool>(*PIEModule));
+	ToolRegistry->RegisterTool(MakeShared<FSimulateInEditorImplTool>(*PIEModule));
+	ToolRegistry->RegisterTool(MakeShared<FIsPlayingImplTool>(*PIEModule));
 }
 
 #undef LOCTEXT_NAMESPACE

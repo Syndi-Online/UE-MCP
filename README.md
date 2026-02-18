@@ -192,11 +192,11 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] get_selected_content_browser — текущее выделение в CB
 
 ### 19. World Partition
-- [ ] build_hlod_wp — сборка HLOD для World Partition
-- [ ] delete_hlod_wp — удаление HLOD
+- [x] build_hlod_wp — сборка HLOD для World Partition
+- [x] delete_hlod_wp — удаление HLOD
 
 ### 20. Play In Editor (PIE)
-- [ ] play_in_editor — запуск PIE
-- [ ] stop_pie — остановка
-- [ ] simulate_in_editor — режим Simulate
-- [ ] is_playing — проверка статуса PIE
+- [x] play_in_editor — запуск PIE
+- [x] stop_pie — остановка
+- [x] simulate_in_editor — режим Simulate
+- [x] is_playing — проверка статуса PIE

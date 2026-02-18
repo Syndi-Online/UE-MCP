@@ -46,7 +46,8 @@ public class MCPServer : ModuleRules
 			"SourceControl",
 			"Slate",
 			"ContentBrowser",
-			"EditorFramework"
+			"EditorFramework",
+			"WorldPartitionEditor"
 		});
 	}
 }

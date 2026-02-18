@@ -26,6 +26,8 @@ class IConsoleModule;
 class IProjectSettingsModule;
 class ISCCModule;
 class IUIModule;
+class IWorldPartitionModule;
+class IPIEModule;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogMCPServer, Log, All);
 
@@ -69,6 +71,8 @@ private:
 	TUniquePtr<IProjectSettingsModule> ProjectSettingsModule;
 	TUniquePtr<ISCCModule> SCCModule;
 	TUniquePtr<IUIModule> UIModule;
+	TUniquePtr<IWorldPartitionModule> WorldPartitionModule;
+	TUniquePtr<IPIEModule> PIEModule;
 
 	// Tools layer
 	TUniquePtr<FMCPToolRegistry> ToolRegistry;
