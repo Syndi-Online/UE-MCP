@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
+#include "Tools/Impl/BatchSetActorTransformsImplTool.h"
 #include "Tools/Impl/BatchSetActorFoldersImplTool.h"
 #include "Tools/Impl/BatchSetActorPropertiesImplTool.h"
 #include "Tools/Impl/BatchSetMaterialExpressionPropertiesImplTool.h"
@@ -10,6 +11,120 @@
 #include "Tests/Integration/IntegrationTestUtils.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
+
+// ===========================================================================
+// BatchSetActorTransforms
+// ===========================================================================
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBatchSetActorTransformsMetadataTest,
+	"MCPServer.Unit.Batch.BatchSetActorTransforms.Metadata",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FBatchSetActorTransformsMetadataTest::RunTest(const FString& Parameters)
+{
+	FMockActorModule Mock;
+	FBatchSetActorTransformsImplTool Tool(Mock);
+	TestEqual(TEXT("Name"), Tool.GetName(), TEXT("batch_set_actor_transforms"));
+	TestTrue(TEXT("Description not empty"), !Tool.GetDescription().IsEmpty());
+	TestTrue(TEXT("Schema valid"), Tool.GetInputSchema().IsValid());
+	TestTrue(TEXT("Schema has type"), Tool.GetInputSchema()->HasField(TEXT("type")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBatchSetActorTransformsSuccessTest,
+	"MCPServer.Unit.Batch.BatchSetActorTransforms.Success",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FBatchSetActorTransformsSuccessTest::RunTest(const FString& Parameters)
+{
+	FMockActorModule Mock;
+	Mock.SetActorTransformResult.bSuccess = true;
+	Mock.SetActorTransformResult.Location = FVector(100, 200, 0);
+	Mock.SetActorTransformResult.Rotation = FRotator(0, 45, 0);
+	Mock.SetActorTransformResult.Scale = FVector(1, 1, 1);
+	FBatchSetActorTransformsImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	TArray<TSharedPtr<FJsonValue>> Ops;
+
+	// Op with location only
+	auto Op1 = MakeShared<FJsonObject>();
+	Op1->SetStringField(TEXT("actor_identifier"), TEXT("BP_Scrab_C_1"));
+	auto Loc1 = MakeShared<FJsonObject>();
+	Loc1->SetNumberField(TEXT("x"), 2800);
+	Loc1->SetNumberField(TEXT("y"), 4800);
+	Loc1->SetNumberField(TEXT("z"), 0);
+	Op1->SetObjectField(TEXT("location"), Loc1);
+	Ops.Add(MakeShared<FJsonValueObject>(Op1));
+
+	// Op with location + rotation
+	auto Op2 = MakeShared<FJsonObject>();
+	Op2->SetStringField(TEXT("actor_identifier"), TEXT("BP_Scrab_C_3"));
+	auto Loc2 = MakeShared<FJsonObject>();
+	Loc2->SetNumberField(TEXT("x"), 3000);
+	Loc2->SetNumberField(TEXT("y"), 5000);
+	Loc2->SetNumberField(TEXT("z"), 0);
+	Op2->SetObjectField(TEXT("location"), Loc2);
+	auto Rot2 = MakeShared<FJsonObject>();
+	Rot2->SetNumberField(TEXT("pitch"), 0);
+	Rot2->SetNumberField(TEXT("yaw"), 45);
+	Rot2->SetNumberField(TEXT("roll"), 0);
+	Op2->SetObjectField(TEXT("rotation"), Rot2);
+	Ops.Add(MakeShared<FJsonValueObject>(Op2));
+
+	Args->SetArrayField(TEXT("operations"), Ops);
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("Success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Contains 2 succeeded"), MCPTestUtils::GetResultText(Result).Contains(TEXT("2 succeeded")));
+	TestTrue(TEXT("Contains 0 failed"), MCPTestUtils::GetResultText(Result).Contains(TEXT("0 failed")));
+	TestEqual(TEXT("SetActorTransform called twice"), Mock.Recorder.GetCallCount(TEXT("SetActorTransform")), 2);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBatchSetActorTransformsMissingArgsTest,
+	"MCPServer.Unit.Batch.BatchSetActorTransforms.MissingArgs",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FBatchSetActorTransformsMissingArgsTest::RunTest(const FString& Parameters)
+{
+	FMockActorModule Mock;
+	FBatchSetActorTransformsImplTool Tool(Mock);
+	auto Result = Tool.Execute(MakeShared<FJsonObject>());
+
+	TestTrue(TEXT("Error"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Mentions operations"), MCPTestUtils::GetResultText(Result).Contains(TEXT("operations")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBatchSetActorTransformsModuleFailureTest,
+	"MCPServer.Unit.Batch.BatchSetActorTransforms.ModuleFailure",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FBatchSetActorTransformsModuleFailureTest::RunTest(const FString& Parameters)
+{
+	FMockActorModule Mock;
+	Mock.SetActorTransformResult.bSuccess = false;
+	Mock.SetActorTransformResult.ErrorMessage = TEXT("Actor not found");
+	FBatchSetActorTransformsImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	TArray<TSharedPtr<FJsonValue>> Ops;
+	auto Op = MakeShared<FJsonObject>();
+	Op->SetStringField(TEXT("actor_identifier"), TEXT("Missing_0"));
+	auto Loc = MakeShared<FJsonObject>();
+	Loc->SetNumberField(TEXT("x"), 0);
+	Loc->SetNumberField(TEXT("y"), 0);
+	Loc->SetNumberField(TEXT("z"), 0);
+	Op->SetObjectField(TEXT("location"), Loc);
+	Ops.Add(MakeShared<FJsonValueObject>(Op));
+	Args->SetArrayField(TEXT("operations"), Ops);
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("isError when all fail"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Contains error"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Actor not found")));
+	return true;
+}
 
 // ===========================================================================
 // BatchSetActorFolders

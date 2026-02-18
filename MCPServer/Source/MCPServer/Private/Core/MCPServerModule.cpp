@@ -7,6 +7,7 @@
 #include "Protocol/MCPHttpServer.h"
 
 // Tools
+#include "Tools/Impl/BatchSetActorTransformsImplTool.h"
 #include "Tools/Impl/BatchSetActorFoldersImplTool.h"
 #include "Tools/Impl/BatchSetActorPropertiesImplTool.h"
 #include "Tools/Impl/BatchSetMaterialExpressionPropertiesImplTool.h"
@@ -465,6 +466,7 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FIsPlayingImplTool>(*PIEModule));
 
 	// Batch tools
+	ToolRegistry->RegisterTool(MakeShared<FBatchSetActorTransformsImplTool>(*ActorModule));
 	ToolRegistry->RegisterTool(MakeShared<FBatchSetActorFoldersImplTool>(*ActorModule));
 	ToolRegistry->RegisterTool(MakeShared<FBatchSetActorPropertiesImplTool>(*ActorModule));
 	ToolRegistry->RegisterTool(MakeShared<FBatchSetMaterialExpressionPropertiesImplTool>(*MaterialModule));
