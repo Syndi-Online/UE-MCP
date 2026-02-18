@@ -93,6 +93,16 @@
 #include "Tools/Impl/CreateAnimAssetImplTool.h"
 #include "Tools/Impl/CreateAnimBlueprintImplTool.h"
 #include "Tools/Impl/ApplyAnimCompressionImplTool.h"
+#include "Tools/Impl/SequencerPlayImplTool.h"
+#include "Tools/Impl/SequencerPauseImplTool.h"
+#include "Tools/Impl/SequencerStopImplTool.h"
+#include "Tools/Impl/SequencerSetTimeImplTool.h"
+#include "Tools/Impl/SequencerGetTimeImplTool.h"
+#include "Tools/Impl/SequencerSetPlaybackRangeImplTool.h"
+#include "Tools/Impl/SequencerAddActorImplTool.h"
+#include "Tools/Impl/SequencerAddTrackImplTool.h"
+#include "Tools/Impl/SequencerAddMarkerImplTool.h"
+#include "Tools/Impl/SequencerForceEvaluateImplTool.h"
 
 // Modules
 #include "Modules/Impl/ActorImplModule.h"
@@ -103,6 +113,7 @@
 #include "Modules/Impl/MaterialImplModule.h"
 #include "Modules/Impl/StaticMeshImplModule.h"
 #include "Modules/Impl/SkeletalMeshImplModule.h"
+#include "Modules/Impl/SequencerToolImplModule.h"
 
 DEFINE_LOG_CATEGORY(LogMCPServer);
 
@@ -124,6 +135,7 @@ void FMCPServerModule::StartupModule()
 	MaterialModule = MakeUnique<FMaterialImplModule>();
 	StaticMeshModule = MakeUnique<FStaticMeshImplModule>();
 	SkeletalMeshModule = MakeUnique<FSkeletalMeshImplModule>();
+	SequencerModule = MakeUnique<FSequencerToolImplModule>();
 
 	ToolRegistry = MakeUnique<FMCPToolRegistry>();
 	RegisterBuiltinTools();
@@ -148,6 +160,7 @@ void FMCPServerModule::ShutdownModule()
 	JsonRpc.Reset();
 	SessionManager.Reset();
 	ToolRegistry.Reset();
+	SequencerModule.Reset();
 	SkeletalMeshModule.Reset();
 	StaticMeshModule.Reset();
 	MaterialModule.Reset();
@@ -267,6 +280,18 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FCreateAnimAssetImplTool>(*SkeletalMeshModule));
 	ToolRegistry->RegisterTool(MakeShared<FCreateAnimBlueprintImplTool>(*SkeletalMeshModule));
 	ToolRegistry->RegisterTool(MakeShared<FApplyAnimCompressionImplTool>(*SkeletalMeshModule));
+
+	// Sequencer / Cinematics tools
+	ToolRegistry->RegisterTool(MakeShared<FSequencerPlayImplTool>(*SequencerModule));
+	ToolRegistry->RegisterTool(MakeShared<FSequencerPauseImplTool>(*SequencerModule));
+	ToolRegistry->RegisterTool(MakeShared<FSequencerStopImplTool>(*SequencerModule));
+	ToolRegistry->RegisterTool(MakeShared<FSequencerSetTimeImplTool>(*SequencerModule));
+	ToolRegistry->RegisterTool(MakeShared<FSequencerGetTimeImplTool>(*SequencerModule));
+	ToolRegistry->RegisterTool(MakeShared<FSequencerSetPlaybackRangeImplTool>(*SequencerModule));
+	ToolRegistry->RegisterTool(MakeShared<FSequencerAddActorImplTool>(*SequencerModule));
+	ToolRegistry->RegisterTool(MakeShared<FSequencerAddTrackImplTool>(*SequencerModule));
+	ToolRegistry->RegisterTool(MakeShared<FSequencerAddMarkerImplTool>(*SequencerModule));
+	ToolRegistry->RegisterTool(MakeShared<FSequencerForceEvaluateImplTool>(*SequencerModule));
 }
 
 #undef LOCTEXT_NAMESPACE

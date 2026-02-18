@@ -30,7 +30,12 @@ public class MCPServer : ModuleRules
 			"MaterialEditor",
 			"StaticMeshEditor",
 			"SkeletalMeshEditor",
-			"AnimationBlueprintLibrary"
+			"AnimationBlueprintLibrary",
+			"Sequencer",
+			"SequencerCore",
+			"MovieScene",
+			"MovieSceneTracks",
+			"LevelSequence"
 		});
 	}
 }

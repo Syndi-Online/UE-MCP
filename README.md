@@ -115,16 +115,16 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] apply_anim_compression — применение компрессии
 
 ### 9. Секвенсер / Кинематика
-- [ ] sequencer_play — воспроизведение
-- [ ] sequencer_pause — пауза
-- [ ] sequencer_stop — остановка
-- [ ] sequencer_set_time — установка позиции на таймлайне
-- [ ] sequencer_get_time — чтение позиции
-- [ ] sequencer_set_playback_range — диапазон воспроизведения
-- [ ] sequencer_add_actor — добавление актора
-- [ ] sequencer_add_track — добавление трека
-- [ ] sequencer_add_marker — добавление маркера
-- [ ] sequencer_force_evaluate — принудительная оценка
+- [x] sequencer_play — воспроизведение
+- [x] sequencer_pause — пауза
+- [x] sequencer_stop — остановка
+- [x] sequencer_set_time — установка позиции на таймлайне
+- [x] sequencer_get_time — чтение позиции
+- [x] sequencer_set_playback_range — диапазон воспроизведения
+- [x] sequencer_add_actor — добавление актора
+- [x] sequencer_add_track — добавление трека
+- [x] sequencer_add_marker — добавление маркера
+- [x] sequencer_force_evaluate — принудительная оценка
 
 ### 10. Ландшафт
 - [ ] get_landscape_heightmap — чтение heightmap
