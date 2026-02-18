@@ -7,6 +7,10 @@
 #include "Protocol/MCPHttpServer.h"
 
 // Tools
+#include "Tools/Impl/BatchSetActorFoldersImplTool.h"
+#include "Tools/Impl/BatchSetActorPropertiesImplTool.h"
+#include "Tools/Impl/BatchSetMaterialExpressionPropertiesImplTool.h"
+#include "Tools/Impl/BatchConnectMaterialExpressionsImplTool.h"
 #include "Tools/Impl/HelloWorldImplTool.h"
 #include "Tools/Impl/SpawnActorImplTool.h"
 #include "Tools/Impl/DeleteActorImplTool.h"
@@ -459,6 +463,12 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FStopPieImplTool>(*PIEModule));
 	ToolRegistry->RegisterTool(MakeShared<FSimulateInEditorImplTool>(*PIEModule));
 	ToolRegistry->RegisterTool(MakeShared<FIsPlayingImplTool>(*PIEModule));
+
+	// Batch tools
+	ToolRegistry->RegisterTool(MakeShared<FBatchSetActorFoldersImplTool>(*ActorModule));
+	ToolRegistry->RegisterTool(MakeShared<FBatchSetActorPropertiesImplTool>(*ActorModule));
+	ToolRegistry->RegisterTool(MakeShared<FBatchSetMaterialExpressionPropertiesImplTool>(*MaterialModule));
+	ToolRegistry->RegisterTool(MakeShared<FBatchConnectMaterialExpressionsImplTool>(*MaterialModule));
 }
 
 #undef LOCTEXT_NAMESPACE
