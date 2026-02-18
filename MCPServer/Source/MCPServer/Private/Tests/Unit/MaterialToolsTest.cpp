@@ -10,6 +10,9 @@
 #include "Tools/Impl/SetMaterialInstanceParameterImplTool.h"
 #include "Tools/Impl/SetMaterialInstanceParentImplTool.h"
 #include "Tools/Impl/GetMaterialStatisticsImplTool.h"
+#include "Tools/Impl/GetMaterialExpressionsImplTool.h"
+#include "Tools/Impl/GetMaterialExpressionPropertyImplTool.h"
+#include "Tools/Impl/SetMaterialExpressionPropertyImplTool.h"
 #include "Tests/Mocks/MockMaterialModule.h"
 #include "Tests/Integration/IntegrationTestUtils.h"
 
@@ -699,6 +702,247 @@ bool FGetMaterialStatisticsModuleFailureTest::RunTest(const FString& Parameters)
 
 	TestTrue(TEXT("Error"), MCPTestUtils::IsError(Result));
 	TestTrue(TEXT("Error message"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Material not compiled")));
+	return true;
+}
+
+// ---------------------------------------------------------------------------
+// GetMaterialExpressions
+// ---------------------------------------------------------------------------
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetMaterialExpressionsMetadataTest,
+	"MCPServer.Unit.Material.GetMaterialExpressions.Metadata",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetMaterialExpressionsMetadataTest::RunTest(const FString& Parameters)
+{
+	FMockMaterialModule Mock;
+	FGetMaterialExpressionsImplTool Tool(Mock);
+	TestEqual(TEXT("Name"), Tool.GetName(), TEXT("get_material_expressions"));
+	TestTrue(TEXT("Description not empty"), !Tool.GetDescription().IsEmpty());
+	TestTrue(TEXT("Schema valid"), Tool.GetInputSchema().IsValid());
+	TestTrue(TEXT("Schema has type"), Tool.GetInputSchema()->HasField(TEXT("type")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetMaterialExpressionsSuccessTest,
+	"MCPServer.Unit.Material.GetMaterialExpressions.Success",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetMaterialExpressionsSuccessTest::RunTest(const FString& Parameters)
+{
+	FMockMaterialModule Mock;
+	Mock.GetMaterialExpressionsResult.bSuccess = true;
+	FMCPMaterialExpressionInfo Info;
+	Info.Index = 0;
+	Info.Name = TEXT("Constant_0");
+	Info.Class = TEXT("MaterialExpressionConstant");
+	Info.PosX = -200;
+	Info.PosY = 100;
+	Mock.GetMaterialExpressionsResult.Expressions.Add(Info);
+	FGetMaterialExpressionsImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("material_path"), TEXT("/Game/M_Test"));
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("Success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Contains expression name"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Constant_0")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetMaterialExpressionsMissingArgsTest,
+	"MCPServer.Unit.Material.GetMaterialExpressions.MissingArgs",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetMaterialExpressionsMissingArgsTest::RunTest(const FString& Parameters)
+{
+	FMockMaterialModule Mock;
+	FGetMaterialExpressionsImplTool Tool(Mock);
+	auto Result = Tool.Execute(MakeShared<FJsonObject>());
+
+	TestTrue(TEXT("Error"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Error message mentions material_path"),
+		MCPTestUtils::GetResultText(Result).Contains(TEXT("material_path")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetMaterialExpressionsModuleFailureTest,
+	"MCPServer.Unit.Material.GetMaterialExpressions.ModuleFailure",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetMaterialExpressionsModuleFailureTest::RunTest(const FString& Parameters)
+{
+	FMockMaterialModule Mock;
+	Mock.GetMaterialExpressionsResult.bSuccess = false;
+	Mock.GetMaterialExpressionsResult.ErrorMessage = TEXT("Material not found");
+	FGetMaterialExpressionsImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("material_path"), TEXT("/Game/M_Missing"));
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("Error"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Error message"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Material not found")));
+	return true;
+}
+
+// ---------------------------------------------------------------------------
+// GetMaterialExpressionProperty
+// ---------------------------------------------------------------------------
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetMaterialExpressionPropertyMetadataTest,
+	"MCPServer.Unit.Material.GetMaterialExpressionProperty.Metadata",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetMaterialExpressionPropertyMetadataTest::RunTest(const FString& Parameters)
+{
+	FMockMaterialModule Mock;
+	FGetMaterialExpressionPropertyImplTool Tool(Mock);
+	TestEqual(TEXT("Name"), Tool.GetName(), TEXT("get_material_expression_property"));
+	TestTrue(TEXT("Description not empty"), !Tool.GetDescription().IsEmpty());
+	TestTrue(TEXT("Schema valid"), Tool.GetInputSchema().IsValid());
+	TestTrue(TEXT("Schema has type"), Tool.GetInputSchema()->HasField(TEXT("type")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetMaterialExpressionPropertySuccessTest,
+	"MCPServer.Unit.Material.GetMaterialExpressionProperty.Success",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetMaterialExpressionPropertySuccessTest::RunTest(const FString& Parameters)
+{
+	FMockMaterialModule Mock;
+	Mock.GetMaterialExpressionPropertyResult.bSuccess = true;
+	Mock.GetMaterialExpressionPropertyResult.PropertyValue = TEXT("1.000000");
+	FGetMaterialExpressionPropertyImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("material_path"), TEXT("/Game/M_Test"));
+	Args->SetNumberField(TEXT("expression_index"), 0);
+	Args->SetStringField(TEXT("property_name"), TEXT("R"));
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("Success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Contains property value"), MCPTestUtils::GetResultText(Result).Contains(TEXT("1.000000")));
+	TestTrue(TEXT("Contains property name"), MCPTestUtils::GetResultText(Result).Contains(TEXT("R")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetMaterialExpressionPropertyMissingArgsTest,
+	"MCPServer.Unit.Material.GetMaterialExpressionProperty.MissingArgs",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetMaterialExpressionPropertyMissingArgsTest::RunTest(const FString& Parameters)
+{
+	FMockMaterialModule Mock;
+	FGetMaterialExpressionPropertyImplTool Tool(Mock);
+	auto Result = Tool.Execute(MakeShared<FJsonObject>());
+
+	TestTrue(TEXT("Error"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Error message mentions material_path"),
+		MCPTestUtils::GetResultText(Result).Contains(TEXT("material_path")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetMaterialExpressionPropertyModuleFailureTest,
+	"MCPServer.Unit.Material.GetMaterialExpressionProperty.ModuleFailure",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetMaterialExpressionPropertyModuleFailureTest::RunTest(const FString& Parameters)
+{
+	FMockMaterialModule Mock;
+	Mock.GetMaterialExpressionPropertyResult.bSuccess = false;
+	Mock.GetMaterialExpressionPropertyResult.ErrorMessage = TEXT("Property not found");
+	FGetMaterialExpressionPropertyImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("material_path"), TEXT("/Game/M_Test"));
+	Args->SetNumberField(TEXT("expression_index"), 0);
+	Args->SetStringField(TEXT("property_name"), TEXT("InvalidProp"));
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("Error"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Error message"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Property not found")));
+	return true;
+}
+
+// ---------------------------------------------------------------------------
+// SetMaterialExpressionProperty
+// ---------------------------------------------------------------------------
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSetMaterialExpressionPropertyMetadataTest,
+	"MCPServer.Unit.Material.SetMaterialExpressionProperty.Metadata",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FSetMaterialExpressionPropertyMetadataTest::RunTest(const FString& Parameters)
+{
+	FMockMaterialModule Mock;
+	FSetMaterialExpressionPropertyImplTool Tool(Mock);
+	TestEqual(TEXT("Name"), Tool.GetName(), TEXT("set_material_expression_property"));
+	TestTrue(TEXT("Description not empty"), !Tool.GetDescription().IsEmpty());
+	TestTrue(TEXT("Schema valid"), Tool.GetInputSchema().IsValid());
+	TestTrue(TEXT("Schema has type"), Tool.GetInputSchema()->HasField(TEXT("type")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSetMaterialExpressionPropertySuccessTest,
+	"MCPServer.Unit.Material.SetMaterialExpressionProperty.Success",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FSetMaterialExpressionPropertySuccessTest::RunTest(const FString& Parameters)
+{
+	FMockMaterialModule Mock;
+	Mock.SetMaterialExpressionPropertyResult.bSuccess = true;
+	FSetMaterialExpressionPropertyImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("material_path"), TEXT("/Game/M_Test"));
+	Args->SetNumberField(TEXT("expression_index"), 0);
+	Args->SetStringField(TEXT("property_name"), TEXT("R"));
+	Args->SetStringField(TEXT("property_value"), TEXT("0.5"));
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("Success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Contains success text"), MCPTestUtils::GetResultText(Result).Contains(TEXT("set successfully")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSetMaterialExpressionPropertyMissingArgsTest,
+	"MCPServer.Unit.Material.SetMaterialExpressionProperty.MissingArgs",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FSetMaterialExpressionPropertyMissingArgsTest::RunTest(const FString& Parameters)
+{
+	FMockMaterialModule Mock;
+	FSetMaterialExpressionPropertyImplTool Tool(Mock);
+	auto Result = Tool.Execute(MakeShared<FJsonObject>());
+
+	TestTrue(TEXT("Error"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Error message mentions material_path"),
+		MCPTestUtils::GetResultText(Result).Contains(TEXT("material_path")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSetMaterialExpressionPropertyModuleFailureTest,
+	"MCPServer.Unit.Material.SetMaterialExpressionProperty.ModuleFailure",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FSetMaterialExpressionPropertyModuleFailureTest::RunTest(const FString& Parameters)
+{
+	FMockMaterialModule Mock;
+	Mock.SetMaterialExpressionPropertyResult.bSuccess = false;
+	Mock.SetMaterialExpressionPropertyResult.ErrorMessage = TEXT("Property not found on expression");
+	FSetMaterialExpressionPropertyImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("material_path"), TEXT("/Game/M_Test"));
+	Args->SetNumberField(TEXT("expression_index"), 0);
+	Args->SetStringField(TEXT("property_name"), TEXT("InvalidProp"));
+	Args->SetStringField(TEXT("property_value"), TEXT("0.5"));
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("Error"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Error message"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Property not found on expression")));
 	return true;
 }
 

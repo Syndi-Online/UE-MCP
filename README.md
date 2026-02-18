@@ -92,9 +92,9 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] set_material_instance_parameter — установка параметра MI
 - [x] set_material_instance_parent — смена родителя MI
 - [x] get_material_statistics — статистика шейдера
-- [ ] get_material_expressions — список всех expression-нод в материале
-- [ ] get_material_expression_property — чтение свойства ноды материала
-- [ ] set_material_expression_property — установка свойства ноды материала (цвета, параметры, слои)
+- [x] get_material_expressions — список всех expression-нод в материале
+- [x] get_material_expression_property — чтение свойства ноды материала
+- [x] set_material_expression_property — установка свойства ноды материала (цвета, параметры, слои)
 
 ### 7. Static Mesh
 - [x] set_static_mesh_lod — настройка LOD

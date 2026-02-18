@@ -459,3 +459,109 @@ FMaterialStatisticsResult FMaterialImplModule::GetMaterialStatistics(const FStri
 	Result.NumInterpolatorScalars = Stats.NumInterpolatorScalars;
 	return Result;
 }
+
+FGetMaterialExpressionsResult FMaterialImplModule::GetMaterialExpressions(const FString& MaterialPath)
+{
+	FGetMaterialExpressionsResult Result;
+
+	UMaterial* Material = LoadObject<UMaterial>(nullptr, *MaterialPath);
+	if (!Material)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Material not found: %s"), *MaterialPath);
+		return Result;
+	}
+
+	TArrayView<const TObjectPtr<UMaterialExpression>> Expressions = Material->GetExpressions();
+	for (int32 i = 0; i < Expressions.Num(); ++i)
+	{
+		FMCPMaterialExpressionInfo Info;
+		Info.Index = i;
+		Info.Name = Expressions[i]->GetName();
+		Info.Class = Expressions[i]->GetClass()->GetName();
+		Info.PosX = Expressions[i]->MaterialExpressionEditorX;
+		Info.PosY = Expressions[i]->MaterialExpressionEditorY;
+		Result.Expressions.Add(Info);
+	}
+	Result.bSuccess = true;
+	return Result;
+}
+
+FGetMaterialExpressionPropertyResult FMaterialImplModule::GetMaterialExpressionProperty(const FString& MaterialPath, int32 ExpressionIndex, const FString& PropertyName)
+{
+	FGetMaterialExpressionPropertyResult Result;
+
+	UMaterial* Material = LoadObject<UMaterial>(nullptr, *MaterialPath);
+	if (!Material)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Material not found: %s"), *MaterialPath);
+		return Result;
+	}
+
+	TArrayView<const TObjectPtr<UMaterialExpression>> Expressions = Material->GetExpressions();
+	if (!Expressions.IsValidIndex(ExpressionIndex))
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Invalid expression index: %d (material has %d expressions)"), ExpressionIndex, Expressions.Num());
+		return Result;
+	}
+
+	UMaterialExpression* Expression = Expressions[ExpressionIndex];
+	FProperty* Prop = Expression->GetClass()->FindPropertyByName(FName(*PropertyName));
+	if (!Prop)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Property '%s' not found on expression %s"), *PropertyName, *Expression->GetClass()->GetName());
+		return Result;
+	}
+
+	FString ValueStr;
+	const void* ValuePtr = Prop->ContainerPtrToValuePtr<void>(Expression);
+	Prop->ExportTextItem_Direct(ValueStr, ValuePtr, nullptr, Expression, PPF_None);
+
+	Result.bSuccess = true;
+	Result.PropertyValue = ValueStr;
+	return Result;
+}
+
+FSetMaterialExpressionPropertyResult FMaterialImplModule::SetMaterialExpressionProperty(const FString& MaterialPath, int32 ExpressionIndex, const FString& PropertyName, const FString& PropertyValue)
+{
+	FSetMaterialExpressionPropertyResult Result;
+
+	UMaterial* Material = LoadObject<UMaterial>(nullptr, *MaterialPath);
+	if (!Material)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Material not found: %s"), *MaterialPath);
+		return Result;
+	}
+
+	TArrayView<const TObjectPtr<UMaterialExpression>> Expressions = Material->GetExpressions();
+	if (!Expressions.IsValidIndex(ExpressionIndex))
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Invalid expression index: %d (material has %d expressions)"), ExpressionIndex, Expressions.Num());
+		return Result;
+	}
+
+	UMaterialExpression* Expression = Expressions[ExpressionIndex];
+	FProperty* Prop = Expression->GetClass()->FindPropertyByName(FName(*PropertyName));
+	if (!Prop)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Property '%s' not found on expression %s"), *PropertyName, *Expression->GetClass()->GetName());
+		return Result;
+	}
+
+	void* ValuePtr = Prop->ContainerPtrToValuePtr<void>(Expression);
+	const TCHAR* Buffer = *PropertyValue;
+	Prop->ImportText_Direct(Buffer, ValuePtr, Expression, PPF_None);
+
+	Expression->Modify();
+	Material->PreEditChange(nullptr);
+	Material->PostEditChange();
+
+	Result.bSuccess = true;
+	return Result;
+}

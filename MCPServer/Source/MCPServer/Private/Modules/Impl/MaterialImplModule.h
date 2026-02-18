@@ -15,4 +15,7 @@ public:
 	virtual FSetMaterialInstanceParamResult SetMaterialInstanceParameter(const FString& InstancePath, const FString& ParameterName, const FString& Value, const FString& ParameterType) override;
 	virtual FSetMaterialInstanceParentResult SetMaterialInstanceParent(const FString& InstancePath, const FString& ParentPath) override;
 	virtual FMaterialStatisticsResult GetMaterialStatistics(const FString& MaterialPath) override;
+	virtual FGetMaterialExpressionsResult GetMaterialExpressions(const FString& MaterialPath) override;
+	virtual FGetMaterialExpressionPropertyResult GetMaterialExpressionProperty(const FString& MaterialPath, int32 ExpressionIndex, const FString& PropertyName) override;
+	virtual FSetMaterialExpressionPropertyResult SetMaterialExpressionProperty(const FString& MaterialPath, int32 ExpressionIndex, const FString& PropertyName, const FString& PropertyValue) override;
 };

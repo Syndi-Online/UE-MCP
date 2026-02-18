@@ -76,6 +76,9 @@
 #include "Tools/Impl/SetMaterialInstanceParameterImplTool.h"
 #include "Tools/Impl/SetMaterialInstanceParentImplTool.h"
 #include "Tools/Impl/GetMaterialStatisticsImplTool.h"
+#include "Tools/Impl/GetMaterialExpressionsImplTool.h"
+#include "Tools/Impl/GetMaterialExpressionPropertyImplTool.h"
+#include "Tools/Impl/SetMaterialExpressionPropertyImplTool.h"
 #include "Tools/Impl/SetStaticMeshLodImplTool.h"
 #include "Tools/Impl/ImportLodImplTool.h"
 #include "Tools/Impl/GetLodSettingsImplTool.h"
@@ -345,6 +348,9 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FSetMaterialInstanceParameterImplTool>(*MaterialModule));
 	ToolRegistry->RegisterTool(MakeShared<FSetMaterialInstanceParentImplTool>(*MaterialModule));
 	ToolRegistry->RegisterTool(MakeShared<FGetMaterialStatisticsImplTool>(*MaterialModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetMaterialExpressionsImplTool>(*MaterialModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetMaterialExpressionPropertyImplTool>(*MaterialModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetMaterialExpressionPropertyImplTool>(*MaterialModule));
 
 	// Static mesh tools
 	ToolRegistry->RegisterTool(MakeShared<FSetStaticMeshLodImplTool>(*StaticMeshModule));

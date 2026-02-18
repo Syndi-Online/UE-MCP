@@ -18,6 +18,9 @@ public:
 	FSetMaterialInstanceParamResult SetMaterialInstanceParameterResult;
 	FSetMaterialInstanceParentResult SetMaterialInstanceParentResult;
 	FMaterialStatisticsResult GetMaterialStatisticsResult;
+	FGetMaterialExpressionsResult GetMaterialExpressionsResult;
+	FGetMaterialExpressionPropertyResult GetMaterialExpressionPropertyResult;
+	FSetMaterialExpressionPropertyResult SetMaterialExpressionPropertyResult;
 
 	virtual FCreateMaterialExpressionResult CreateMaterialExpression(const FString& MaterialPath, const FString& ExpressionClass, int32 NodePosX, int32 NodePosY) override { Recorder.RecordCall(TEXT("CreateMaterialExpression")); return CreateMaterialExpressionResult; }
 	virtual FDeleteMaterialExpressionResult DeleteMaterialExpression(const FString& MaterialPath, int32 ExpressionIndex) override { Recorder.RecordCall(TEXT("DeleteMaterialExpression")); return DeleteMaterialExpressionResult; }
@@ -28,4 +31,7 @@ public:
 	virtual FSetMaterialInstanceParamResult SetMaterialInstanceParameter(const FString& InstancePath, const FString& ParameterName, const FString& Value, const FString& ParameterType) override { Recorder.RecordCall(TEXT("SetMaterialInstanceParameter")); return SetMaterialInstanceParameterResult; }
 	virtual FSetMaterialInstanceParentResult SetMaterialInstanceParent(const FString& InstancePath, const FString& ParentPath) override { Recorder.RecordCall(TEXT("SetMaterialInstanceParent")); return SetMaterialInstanceParentResult; }
 	virtual FMaterialStatisticsResult GetMaterialStatistics(const FString& MaterialPath) override { Recorder.RecordCall(TEXT("GetMaterialStatistics")); return GetMaterialStatisticsResult; }
+	virtual FGetMaterialExpressionsResult GetMaterialExpressions(const FString& MaterialPath) override { Recorder.RecordCall(TEXT("GetMaterialExpressions")); return GetMaterialExpressionsResult; }
+	virtual FGetMaterialExpressionPropertyResult GetMaterialExpressionProperty(const FString& MaterialPath, int32 ExpressionIndex, const FString& PropertyName) override { Recorder.RecordCall(TEXT("GetMaterialExpressionProperty")); return GetMaterialExpressionPropertyResult; }
+	virtual FSetMaterialExpressionPropertyResult SetMaterialExpressionProperty(const FString& MaterialPath, int32 ExpressionIndex, const FString& PropertyName, const FString& PropertyValue) override { Recorder.RecordCall(TEXT("SetMaterialExpressionProperty")); return SetMaterialExpressionPropertyResult; }
 };

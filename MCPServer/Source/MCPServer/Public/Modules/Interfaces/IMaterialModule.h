@@ -76,6 +76,35 @@ struct FMaterialStatisticsResult
 	FString ErrorMessage;
 };
 
+struct FMCPMaterialExpressionInfo
+{
+	int32 Index = 0;
+	FString Name;
+	FString Class;
+	int32 PosX = 0;
+	int32 PosY = 0;
+};
+
+struct FGetMaterialExpressionsResult
+{
+	bool bSuccess = false;
+	TArray<FMCPMaterialExpressionInfo> Expressions;
+	FString ErrorMessage;
+};
+
+struct FGetMaterialExpressionPropertyResult
+{
+	bool bSuccess = false;
+	FString PropertyValue;
+	FString ErrorMessage;
+};
+
+struct FSetMaterialExpressionPropertyResult
+{
+	bool bSuccess = false;
+	FString ErrorMessage;
+};
+
 /**
  * Module interface for Material operations.
  */
@@ -93,4 +122,7 @@ public:
 	virtual FSetMaterialInstanceParamResult SetMaterialInstanceParameter(const FString& InstancePath, const FString& ParameterName, const FString& Value, const FString& ParameterType) = 0;
 	virtual FSetMaterialInstanceParentResult SetMaterialInstanceParent(const FString& InstancePath, const FString& ParentPath) = 0;
 	virtual FMaterialStatisticsResult GetMaterialStatistics(const FString& MaterialPath) = 0;
+	virtual FGetMaterialExpressionsResult GetMaterialExpressions(const FString& MaterialPath) = 0;
+	virtual FGetMaterialExpressionPropertyResult GetMaterialExpressionProperty(const FString& MaterialPath, int32 ExpressionIndex, const FString& PropertyName) = 0;
+	virtual FSetMaterialExpressionPropertyResult SetMaterialExpressionProperty(const FString& MaterialPath, int32 ExpressionIndex, const FString& PropertyName, const FString& PropertyValue) = 0;
 };
