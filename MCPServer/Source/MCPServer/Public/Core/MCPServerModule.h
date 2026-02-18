@@ -10,6 +10,7 @@ class FMCPJsonRpc;
 class FMCPHttpServer;
 class IActorModule;
 class ILevelModule;
+class IAssetModule;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogMCPServer, Log, All);
 
@@ -37,6 +38,7 @@ private:
 	// Modules layer
 	TUniquePtr<IActorModule> ActorModule;
 	TUniquePtr<ILevelModule> LevelModule;
+	TUniquePtr<IAssetModule> AssetModule;
 
 	// Tools layer
 	TUniquePtr<FMCPToolRegistry> ToolRegistry;

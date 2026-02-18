@@ -41,20 +41,20 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] set_level_visibility — управление видимостью уровня
 
 ### 3. Работа с ассетами
-- [ ] load_asset — загрузка ассета по пути
-- [ ] create_asset — создание нового ассета
-- [ ] duplicate_asset — дублирование
-- [ ] rename_asset — переименование
-- [ ] delete_asset — удаление
-- [ ] save_asset — сохранение
-- [ ] find_assets — поиск по пути, классу, тегам
-- [ ] list_assets — список ассетов в директории
-- [ ] import_asset — импорт файлов (FBX, текстуры, аудио)
-- [ ] export_asset — экспорт
-- [ ] get_asset_dependencies — зависимости ассета
-- [ ] get_asset_referencers — кто ссылается на ассет
-- [ ] get_asset_metadata — чтение метаданных
-- [ ] set_asset_metadata — установка метаданных
+- [x] load_asset — загрузка ассета по пути
+- [x] create_asset — создание нового ассета
+- [x] duplicate_asset — дублирование
+- [x] rename_asset — переименование
+- [x] delete_asset — удаление
+- [x] save_asset — сохранение
+- [x] find_assets — поиск по пути, классу, тегам
+- [x] list_assets — список ассетов в директории
+- [x] import_asset — импорт файлов (FBX, текстуры, аудио)
+- [x] export_asset — экспорт
+- [x] get_asset_dependencies — зависимости ассета
+- [x] get_asset_referencers — кто ссылается на ассет
+- [x] get_asset_metadata — чтение метаданных
+- [x] set_asset_metadata — установка метаданных
 
 ### 4. Вьюпорт и камера
 - [ ] get_viewport_camera — чтение позиции/ротации камеры

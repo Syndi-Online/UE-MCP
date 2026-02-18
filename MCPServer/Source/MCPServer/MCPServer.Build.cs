@@ -21,7 +21,9 @@ public class MCPServer : ModuleRules
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{
 			"UnrealEd",
-			"LevelEditor"
+			"LevelEditor",
+			"AssetTools",
+			"AssetRegistry"
 		});
 	}
 }

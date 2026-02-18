@@ -31,10 +31,25 @@
 #include "Tools/Impl/RemoveSublevelImplTool.h"
 #include "Tools/Impl/SetCurrentLevelImplTool.h"
 #include "Tools/Impl/SetLevelVisibilityImplTool.h"
+#include "Tools/Impl/LoadAssetImplTool.h"
+#include "Tools/Impl/CreateAssetImplTool.h"
+#include "Tools/Impl/DuplicateAssetImplTool.h"
+#include "Tools/Impl/RenameAssetImplTool.h"
+#include "Tools/Impl/DeleteAssetImplTool.h"
+#include "Tools/Impl/SaveAssetImplTool.h"
+#include "Tools/Impl/FindAssetsImplTool.h"
+#include "Tools/Impl/ListAssetsImplTool.h"
+#include "Tools/Impl/ImportAssetImplTool.h"
+#include "Tools/Impl/ExportAssetImplTool.h"
+#include "Tools/Impl/GetAssetDependenciesImplTool.h"
+#include "Tools/Impl/GetAssetReferencersImplTool.h"
+#include "Tools/Impl/GetAssetMetadataImplTool.h"
+#include "Tools/Impl/SetAssetMetadataImplTool.h"
 
 // Modules
 #include "Modules/Impl/ActorImplModule.h"
 #include "Modules/Impl/LevelImplModule.h"
+#include "Modules/Impl/AssetImplModule.h"
 
 DEFINE_LOG_CATEGORY(LogMCPServer);
 
@@ -50,6 +65,7 @@ void FMCPServerModule::StartupModule()
 	// Create layers bottom-up: Modules -> Tools -> Protocol -> HTTP
 	ActorModule = MakeUnique<FActorImplModule>();
 	LevelModule = MakeUnique<FLevelImplModule>();
+	AssetModule = MakeUnique<FAssetImplModule>();
 
 	ToolRegistry = MakeUnique<FMCPToolRegistry>();
 	RegisterBuiltinTools();
@@ -74,6 +90,7 @@ void FMCPServerModule::ShutdownModule()
 	JsonRpc.Reset();
 	SessionManager.Reset();
 	ToolRegistry.Reset();
+	AssetModule.Reset();
 	LevelModule.Reset();
 	ActorModule.Reset();
 
@@ -113,6 +130,22 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FRemoveSublevelImplTool>(*LevelModule));
 	ToolRegistry->RegisterTool(MakeShared<FSetCurrentLevelImplTool>(*LevelModule));
 	ToolRegistry->RegisterTool(MakeShared<FSetLevelVisibilityImplTool>(*LevelModule));
+
+	// Asset management tools
+	ToolRegistry->RegisterTool(MakeShared<FLoadAssetImplTool>(*AssetModule));
+	ToolRegistry->RegisterTool(MakeShared<FCreateAssetImplTool>(*AssetModule));
+	ToolRegistry->RegisterTool(MakeShared<FDuplicateAssetImplTool>(*AssetModule));
+	ToolRegistry->RegisterTool(MakeShared<FRenameAssetImplTool>(*AssetModule));
+	ToolRegistry->RegisterTool(MakeShared<FDeleteAssetImplTool>(*AssetModule));
+	ToolRegistry->RegisterTool(MakeShared<FSaveAssetImplTool>(*AssetModule));
+	ToolRegistry->RegisterTool(MakeShared<FFindAssetsImplTool>(*AssetModule));
+	ToolRegistry->RegisterTool(MakeShared<FListAssetsImplTool>(*AssetModule));
+	ToolRegistry->RegisterTool(MakeShared<FImportAssetImplTool>(*AssetModule));
+	ToolRegistry->RegisterTool(MakeShared<FExportAssetImplTool>(*AssetModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetAssetDependenciesImplTool>(*AssetModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetAssetReferencersImplTool>(*AssetModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetAssetMetadataImplTool>(*AssetModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetAssetMetadataImplTool>(*AssetModule));
 }
 
 #undef LOCTEXT_NAMESPACE
