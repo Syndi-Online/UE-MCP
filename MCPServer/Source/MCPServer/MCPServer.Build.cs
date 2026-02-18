@@ -23,7 +23,10 @@ public class MCPServer : ModuleRules
 			"UnrealEd",
 			"LevelEditor",
 			"AssetTools",
-			"AssetRegistry"
+			"AssetRegistry",
+			"Kismet",
+			"KismetCompiler",
+			"BlueprintGraph"
 		});
 	}
 }

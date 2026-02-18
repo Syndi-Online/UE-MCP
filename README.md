@@ -71,16 +71,16 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] jump_to_bookmark — переход к закладке
 
 ### 5. Blueprints
-- [ ] create_blueprint — создание Blueprint из класса
-- [ ] create_blueprint_from_actor — создание из актора
-- [ ] compile_blueprint — компиляция
-- [ ] add_blueprint_variable — добавление переменной
-- [ ] remove_blueprint_variable — удаление переменной
-- [ ] add_blueprint_function — добавление функции
-- [ ] add_blueprint_interface — добавление интерфейса
-- [ ] get_blueprint_graphs — список графов
-- [ ] reparent_blueprint — смена родительского класса
-- [ ] open_blueprint_editor — открытие в редакторе
+- [x] create_blueprint — создание Blueprint из класса
+- [x] create_blueprint_from_actor — создание из актора
+- [x] compile_blueprint — компиляция
+- [x] add_blueprint_variable — добавление переменной
+- [x] remove_blueprint_variable — удаление переменной
+- [x] add_blueprint_function — добавление функции
+- [x] add_blueprint_interface — добавление интерфейса
+- [x] get_blueprint_graphs — список графов
+- [x] reparent_blueprint — смена родительского класса
+- [x] open_blueprint_editor — открытие в редакторе
 
 ### 6. Материалы
 - [ ] create_material_expression — создание ноды

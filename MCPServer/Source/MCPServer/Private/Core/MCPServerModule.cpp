@@ -57,12 +57,23 @@
 #include "Tools/Impl/EjectPilotImplTool.h"
 #include "Tools/Impl/SetBookmarkImplTool.h"
 #include "Tools/Impl/JumpToBookmarkImplTool.h"
+#include "Tools/Impl/CreateBlueprintImplTool.h"
+#include "Tools/Impl/CreateBlueprintFromActorImplTool.h"
+#include "Tools/Impl/CompileBlueprintImplTool.h"
+#include "Tools/Impl/AddBlueprintVariableImplTool.h"
+#include "Tools/Impl/RemoveBlueprintVariableImplTool.h"
+#include "Tools/Impl/AddBlueprintFunctionImplTool.h"
+#include "Tools/Impl/AddBlueprintInterfaceImplTool.h"
+#include "Tools/Impl/GetBlueprintGraphsImplTool.h"
+#include "Tools/Impl/ReparentBlueprintImplTool.h"
+#include "Tools/Impl/OpenBlueprintEditorImplTool.h"
 
 // Modules
 #include "Modules/Impl/ActorImplModule.h"
 #include "Modules/Impl/LevelImplModule.h"
 #include "Modules/Impl/AssetImplModule.h"
 #include "Modules/Impl/ViewportImplModule.h"
+#include "Modules/Impl/BlueprintImplModule.h"
 
 DEFINE_LOG_CATEGORY(LogMCPServer);
 
@@ -80,6 +91,7 @@ void FMCPServerModule::StartupModule()
 	LevelModule = MakeUnique<FLevelImplModule>();
 	AssetModule = MakeUnique<FAssetImplModule>();
 	ViewportModule = MakeUnique<FViewportImplModule>(*ActorModule);
+	BlueprintModule = MakeUnique<FBlueprintImplModule>(*ActorModule);
 
 	ToolRegistry = MakeUnique<FMCPToolRegistry>();
 	RegisterBuiltinTools();
@@ -104,6 +116,7 @@ void FMCPServerModule::ShutdownModule()
 	JsonRpc.Reset();
 	SessionManager.Reset();
 	ToolRegistry.Reset();
+	BlueprintModule.Reset();
 	ViewportModule.Reset();
 	AssetModule.Reset();
 	LevelModule.Reset();
@@ -175,6 +188,18 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FEjectPilotImplTool>(*ViewportModule));
 	ToolRegistry->RegisterTool(MakeShared<FSetBookmarkImplTool>(*ViewportModule));
 	ToolRegistry->RegisterTool(MakeShared<FJumpToBookmarkImplTool>(*ViewportModule));
+
+	// Blueprint tools
+	ToolRegistry->RegisterTool(MakeShared<FCreateBlueprintImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FCreateBlueprintFromActorImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FCompileBlueprintImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FAddBlueprintVariableImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FRemoveBlueprintVariableImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FAddBlueprintFunctionImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FAddBlueprintInterfaceImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetBlueprintGraphsImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FReparentBlueprintImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FOpenBlueprintEditorImplTool>(*BlueprintModule));
 }
 
 #undef LOCTEXT_NAMESPACE
