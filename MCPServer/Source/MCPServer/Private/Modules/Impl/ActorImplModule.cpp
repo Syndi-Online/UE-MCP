@@ -99,6 +99,45 @@ FActorDeleteResult FActorImplModule::DeleteActor(const FString& ActorIdentifier)
 	return Result;
 }
 
+FActorDuplicateResult FActorImplModule::DuplicateActor(
+	const FString& ActorIdentifier,
+	const FVector& Offset)
+{
+	FActorDuplicateResult Result;
+
+	AActor* SourceActor = FindActorByIdentifier(ActorIdentifier);
+	if (!SourceActor)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Actor not found: %s"), *ActorIdentifier);
+		return Result;
+	}
+
+	UEditorActorSubsystem* EditorActorSubsystem = GEditor->GetEditorSubsystem<UEditorActorSubsystem>();
+	if (!EditorActorSubsystem)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = TEXT("UEditorActorSubsystem is not available");
+		return Result;
+	}
+
+	AActor* DuplicatedActor = EditorActorSubsystem->DuplicateActor(SourceActor, nullptr, Offset);
+	if (!DuplicatedActor)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Failed to duplicate actor: %s"), *ActorIdentifier);
+		return Result;
+	}
+
+	Result.bSuccess = true;
+	Result.ActorName = DuplicatedActor->GetName();
+	Result.ActorLabel = DuplicatedActor->GetActorLabel();
+	Result.ActorClass = DuplicatedActor->GetClass()->GetPathName();
+	Result.Location = DuplicatedActor->GetActorLocation();
+
+	return Result;
+}
+
 AActor* FActorImplModule::FindActorByIdentifier(const FString& ActorIdentifier)
 {
 	UEditorActorSubsystem* EditorActorSubsystem = GEditor->GetEditorSubsystem<UEditorActorSubsystem>();

@@ -16,6 +16,10 @@ public:
 
 	virtual FActorDeleteResult DeleteActor(const FString& ActorIdentifier) override;
 
+	virtual FActorDuplicateResult DuplicateActor(
+		const FString& ActorIdentifier,
+		const FVector& Offset) override;
+
 private:
 	/** Find actor by name, label, or path */
 	AActor* FindActorByIdentifier(const FString& ActorIdentifier);

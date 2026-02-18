@@ -28,6 +28,19 @@ struct FActorDeleteResult
 };
 
 /**
+ * Result of an actor duplicate operation.
+ */
+struct FActorDuplicateResult
+{
+	bool bSuccess = false;
+	FString ActorName;
+	FString ActorLabel;
+	FString ActorClass;
+	FVector Location = FVector::ZeroVector;
+	FString ErrorMessage;
+};
+
+/**
  * Module interface for actor operations in the editor world.
  * Wraps UE5 editor actor subsystem behind a testable interface.
  */
@@ -54,4 +67,14 @@ public:
 	 * @return                 Delete result with success status or error
 	 */
 	virtual FActorDeleteResult DeleteActor(const FString& ActorIdentifier) = 0;
+
+	/**
+	 * Duplicate an actor in the editor world.
+	 * @param ActorIdentifier  Actor name, label, or path to duplicate
+	 * @param Offset           Translation offset for the duplicate
+	 * @return                 Duplicate result with new actor info or error
+	 */
+	virtual FActorDuplicateResult DuplicateActor(
+		const FString& ActorIdentifier,
+		const FVector& Offset) = 0;
 };

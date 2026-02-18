@@ -10,6 +10,7 @@
 #include "Tools/Impl/HelloWorldImplTool.h"
 #include "Tools/Impl/SpawnActorImplTool.h"
 #include "Tools/Impl/DeleteActorImplTool.h"
+#include "Tools/Impl/DuplicateActorImplTool.h"
 
 // Modules
 #include "Modules/Impl/ActorImplModule.h"
@@ -66,6 +67,7 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FHelloWorldImplTool>());
 	ToolRegistry->RegisterTool(MakeShared<FSpawnActorImplTool>(*ActorModule));
 	ToolRegistry->RegisterTool(MakeShared<FDeleteActorImplTool>(*ActorModule));
+	ToolRegistry->RegisterTool(MakeShared<FDuplicateActorImplTool>(*ActorModule));
 }
 
 #undef LOCTEXT_NAMESPACE
