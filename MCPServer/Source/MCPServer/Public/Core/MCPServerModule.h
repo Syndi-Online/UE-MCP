@@ -15,6 +15,7 @@ class IViewportModule;
 class IBlueprintModule;
 class IMaterialModule;
 class IStaticMeshModule;
+class ISkeletalMeshModule;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogMCPServer, Log, All);
 
@@ -47,6 +48,7 @@ private:
 	TUniquePtr<IBlueprintModule> BlueprintModule;
 	TUniquePtr<IMaterialModule> MaterialModule;
 	TUniquePtr<IStaticMeshModule> StaticMeshModule;
+	TUniquePtr<ISkeletalMeshModule> SkeletalMeshModule;
 
 	// Tools layer
 	TUniquePtr<FMCPToolRegistry> ToolRegistry;

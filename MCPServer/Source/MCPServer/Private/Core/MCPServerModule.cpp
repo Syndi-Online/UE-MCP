@@ -85,6 +85,14 @@
 #include "Tools/Impl/GenerateUVChannelImplTool.h"
 #include "Tools/Impl/SetMeshMaterialImplTool.h"
 #include "Tools/Impl/GetMeshBoundsImplTool.h"
+#include "Tools/Impl/RegenerateSkeletalLodImplTool.h"
+#include "Tools/Impl/GetSkeletonInfoImplTool.h"
+#include "Tools/Impl/GetPhysicsAssetImplTool.h"
+#include "Tools/Impl/SetPhysicsAssetImplTool.h"
+#include "Tools/Impl/ReimportSkeletalMeshImplTool.h"
+#include "Tools/Impl/CreateAnimAssetImplTool.h"
+#include "Tools/Impl/CreateAnimBlueprintImplTool.h"
+#include "Tools/Impl/ApplyAnimCompressionImplTool.h"
 
 // Modules
 #include "Modules/Impl/ActorImplModule.h"
@@ -94,6 +102,7 @@
 #include "Modules/Impl/BlueprintImplModule.h"
 #include "Modules/Impl/MaterialImplModule.h"
 #include "Modules/Impl/StaticMeshImplModule.h"
+#include "Modules/Impl/SkeletalMeshImplModule.h"
 
 DEFINE_LOG_CATEGORY(LogMCPServer);
 
@@ -114,6 +123,7 @@ void FMCPServerModule::StartupModule()
 	BlueprintModule = MakeUnique<FBlueprintImplModule>(*ActorModule);
 	MaterialModule = MakeUnique<FMaterialImplModule>();
 	StaticMeshModule = MakeUnique<FStaticMeshImplModule>();
+	SkeletalMeshModule = MakeUnique<FSkeletalMeshImplModule>();
 
 	ToolRegistry = MakeUnique<FMCPToolRegistry>();
 	RegisterBuiltinTools();
@@ -138,6 +148,7 @@ void FMCPServerModule::ShutdownModule()
 	JsonRpc.Reset();
 	SessionManager.Reset();
 	ToolRegistry.Reset();
+	SkeletalMeshModule.Reset();
 	StaticMeshModule.Reset();
 	MaterialModule.Reset();
 	BlueprintModule.Reset();
@@ -246,6 +257,16 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FGenerateUVChannelImplTool>(*StaticMeshModule));
 	ToolRegistry->RegisterTool(MakeShared<FSetMeshMaterialImplTool>(*StaticMeshModule));
 	ToolRegistry->RegisterTool(MakeShared<FGetMeshBoundsImplTool>(*StaticMeshModule));
+
+	// Skeletal mesh and animation tools
+	ToolRegistry->RegisterTool(MakeShared<FRegenerateSkeletalLodImplTool>(*SkeletalMeshModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetSkeletonInfoImplTool>(*SkeletalMeshModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetPhysicsAssetImplTool>(*SkeletalMeshModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetPhysicsAssetImplTool>(*SkeletalMeshModule));
+	ToolRegistry->RegisterTool(MakeShared<FReimportSkeletalMeshImplTool>(*SkeletalMeshModule));
+	ToolRegistry->RegisterTool(MakeShared<FCreateAnimAssetImplTool>(*SkeletalMeshModule));
+	ToolRegistry->RegisterTool(MakeShared<FCreateAnimBlueprintImplTool>(*SkeletalMeshModule));
+	ToolRegistry->RegisterTool(MakeShared<FApplyAnimCompressionImplTool>(*SkeletalMeshModule));
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -105,14 +105,14 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] get_mesh_bounds — bounding box
 
 ### 8. Skeletal Mesh и анимация
-- [ ] regenerate_skeletal_lod — регенерация LOD
-- [ ] get_skeleton_info — bone count, vertex count
-- [ ] get_physics_asset — чтение Physics Asset
-- [ ] set_physics_asset — установка Physics Asset
-- [ ] reimport_skeletal_mesh — реимпорт
-- [ ] create_anim_asset — создание AnimSequence/BlendSpace/Montage
-- [ ] create_anim_blueprint — создание Anim Blueprint
-- [ ] apply_anim_compression — применение компрессии
+- [x] regenerate_skeletal_lod — регенерация LOD
+- [x] get_skeleton_info — bone count, vertex count
+- [x] get_physics_asset — чтение Physics Asset
+- [x] set_physics_asset — установка Physics Asset
+- [x] reimport_skeletal_mesh — реимпорт
+- [x] create_anim_asset — создание AnimSequence/BlendSpace/Montage
+- [x] create_anim_blueprint — создание Anim Blueprint
+- [x] apply_anim_compression — применение компрессии
 
 ### 9. Секвенсер / Кинематика
 - [ ] sequencer_play — воспроизведение
