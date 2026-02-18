@@ -209,3 +209,4 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] batch_set_actor_properties — массовая установка свойств акторов (до 100 за вызов)
 - [x] batch_set_material_expression_properties — массовая установка свойств нод материала (до 100 за вызов)
 - [x] batch_connect_material_expressions — массовое соединение нод материала (до 100 за вызов)
+- [ ] batch_set_actor_transforms — массовая установка трансформов акторов (до 100 за вызов)
