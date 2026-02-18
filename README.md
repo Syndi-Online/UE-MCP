@@ -83,15 +83,15 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] open_blueprint_editor — открытие в редакторе
 
 ### 6. Материалы
-- [ ] create_material_expression — создание ноды
-- [ ] delete_material_expression — удаление ноды
-- [ ] connect_material_expressions — соединение нод
-- [ ] connect_material_property — подключение к выходу
-- [ ] recompile_material — рекомпиляция
-- [ ] get_material_parameter — чтение параметра (scalar/vector/texture)
-- [ ] set_material_instance_parameter — установка параметра MI
-- [ ] set_material_instance_parent — смена родителя MI
-- [ ] get_material_statistics — статистика шейдера
+- [x] create_material_expression — создание ноды
+- [x] delete_material_expression — удаление ноды
+- [x] connect_material_expressions — соединение нод
+- [x] connect_material_property — подключение к выходу
+- [x] recompile_material — рекомпиляция
+- [x] get_material_parameter — чтение параметра (scalar/vector/texture)
+- [x] set_material_instance_parameter — установка параметра MI
+- [x] set_material_instance_parent — смена родителя MI
+- [x] get_material_statistics — статистика шейдера
 
 ### 7. Static Mesh
 - [ ] set_static_mesh_lod — настройка LOD

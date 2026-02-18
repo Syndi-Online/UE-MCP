@@ -67,6 +67,15 @@
 #include "Tools/Impl/GetBlueprintGraphsImplTool.h"
 #include "Tools/Impl/ReparentBlueprintImplTool.h"
 #include "Tools/Impl/OpenBlueprintEditorImplTool.h"
+#include "Tools/Impl/CreateMaterialExpressionImplTool.h"
+#include "Tools/Impl/DeleteMaterialExpressionImplTool.h"
+#include "Tools/Impl/ConnectMaterialExpressionsImplTool.h"
+#include "Tools/Impl/ConnectMaterialPropertyImplTool.h"
+#include "Tools/Impl/RecompileMaterialImplTool.h"
+#include "Tools/Impl/GetMaterialParameterImplTool.h"
+#include "Tools/Impl/SetMaterialInstanceParameterImplTool.h"
+#include "Tools/Impl/SetMaterialInstanceParentImplTool.h"
+#include "Tools/Impl/GetMaterialStatisticsImplTool.h"
 
 // Modules
 #include "Modules/Impl/ActorImplModule.h"
@@ -74,6 +83,7 @@
 #include "Modules/Impl/AssetImplModule.h"
 #include "Modules/Impl/ViewportImplModule.h"
 #include "Modules/Impl/BlueprintImplModule.h"
+#include "Modules/Impl/MaterialImplModule.h"
 
 DEFINE_LOG_CATEGORY(LogMCPServer);
 
@@ -92,6 +102,7 @@ void FMCPServerModule::StartupModule()
 	AssetModule = MakeUnique<FAssetImplModule>();
 	ViewportModule = MakeUnique<FViewportImplModule>(*ActorModule);
 	BlueprintModule = MakeUnique<FBlueprintImplModule>(*ActorModule);
+	MaterialModule = MakeUnique<FMaterialImplModule>();
 
 	ToolRegistry = MakeUnique<FMCPToolRegistry>();
 	RegisterBuiltinTools();
@@ -116,6 +127,7 @@ void FMCPServerModule::ShutdownModule()
 	JsonRpc.Reset();
 	SessionManager.Reset();
 	ToolRegistry.Reset();
+	MaterialModule.Reset();
 	BlueprintModule.Reset();
 	ViewportModule.Reset();
 	AssetModule.Reset();
@@ -200,6 +212,17 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FGetBlueprintGraphsImplTool>(*BlueprintModule));
 	ToolRegistry->RegisterTool(MakeShared<FReparentBlueprintImplTool>(*BlueprintModule));
 	ToolRegistry->RegisterTool(MakeShared<FOpenBlueprintEditorImplTool>(*BlueprintModule));
+
+	// Material tools
+	ToolRegistry->RegisterTool(MakeShared<FCreateMaterialExpressionImplTool>(*MaterialModule));
+	ToolRegistry->RegisterTool(MakeShared<FDeleteMaterialExpressionImplTool>(*MaterialModule));
+	ToolRegistry->RegisterTool(MakeShared<FConnectMaterialExpressionsImplTool>(*MaterialModule));
+	ToolRegistry->RegisterTool(MakeShared<FConnectMaterialPropertyImplTool>(*MaterialModule));
+	ToolRegistry->RegisterTool(MakeShared<FRecompileMaterialImplTool>(*MaterialModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetMaterialParameterImplTool>(*MaterialModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetMaterialInstanceParameterImplTool>(*MaterialModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetMaterialInstanceParentImplTool>(*MaterialModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetMaterialStatisticsImplTool>(*MaterialModule));
 }
 
 #undef LOCTEXT_NAMESPACE

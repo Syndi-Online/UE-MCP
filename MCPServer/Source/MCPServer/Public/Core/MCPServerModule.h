@@ -13,6 +13,7 @@ class ILevelModule;
 class IAssetModule;
 class IViewportModule;
 class IBlueprintModule;
+class IMaterialModule;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogMCPServer, Log, All);
 
@@ -43,6 +44,7 @@ private:
 	TUniquePtr<IAssetModule> AssetModule;
 	TUniquePtr<IViewportModule> ViewportModule;
 	TUniquePtr<IBlueprintModule> BlueprintModule;
+	TUniquePtr<IMaterialModule> MaterialModule;
 
 	// Tools layer
 	TUniquePtr<FMCPToolRegistry> ToolRegistry;

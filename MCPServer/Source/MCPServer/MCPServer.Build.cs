@@ -26,7 +26,8 @@ public class MCPServer : ModuleRules
 			"AssetRegistry",
 			"Kismet",
 			"KismetCompiler",
-			"BlueprintGraph"
+			"BlueprintGraph",
+			"MaterialEditor"
 		});
 	}
 }
