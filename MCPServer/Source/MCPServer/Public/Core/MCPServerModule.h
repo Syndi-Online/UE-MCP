@@ -20,6 +20,7 @@ class ISequencerToolModule;
 class ILandscapeToolModule;
 class IFoliageModule;
 class INavigationModule;
+class IPhysicsModule;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogMCPServer, Log, All);
 
@@ -57,6 +58,7 @@ private:
 	TUniquePtr<ILandscapeToolModule> LandscapeModule;
 	TUniquePtr<IFoliageModule> FoliageModule;
 	TUniquePtr<INavigationModule> NavigationModule;
+	TUniquePtr<IPhysicsModule> PhysicsModule;
 
 	// Tools layer
 	TUniquePtr<FMCPToolRegistry> ToolRegistry;

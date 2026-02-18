@@ -119,6 +119,10 @@
 #include "Tools/Impl/FindPathImplTool.h"
 #include "Tools/Impl/ProjectPointToNavImplTool.h"
 #include "Tools/Impl/GetRandomReachablePointImplTool.h"
+#include "Tools/Impl/CreatePhysicsCollisionImplTool.h"
+#include "Tools/Impl/SetPhysicalMaterialImplTool.h"
+#include "Tools/Impl/SetPhysicsVelocityImplTool.h"
+#include "Tools/Impl/ManageConstraintsImplTool.h"
 
 // Modules
 #include "Modules/Impl/ActorImplModule.h"
@@ -133,6 +137,7 @@
 #include "Modules/Impl/LandscapeToolImplModule.h"
 #include "Modules/Impl/FoliageImplModule.h"
 #include "Modules/Impl/NavigationImplModule.h"
+#include "Modules/Impl/PhysicsImplModule.h"
 
 DEFINE_LOG_CATEGORY(LogMCPServer);
 
@@ -158,6 +163,7 @@ void FMCPServerModule::StartupModule()
 	LandscapeModule = MakeUnique<FLandscapeToolImplModule>();
 	FoliageModule = MakeUnique<FFoliageImplModule>();
 	NavigationModule = MakeUnique<FNavigationImplModule>();
+	PhysicsModule = MakeUnique<FPhysicsImplModule>(*ActorModule);
 
 	ToolRegistry = MakeUnique<FMCPToolRegistry>();
 	RegisterBuiltinTools();
@@ -182,6 +188,7 @@ void FMCPServerModule::ShutdownModule()
 	JsonRpc.Reset();
 	SessionManager.Reset();
 	ToolRegistry.Reset();
+	PhysicsModule.Reset();
 	NavigationModule.Reset();
 	FoliageModule.Reset();
 	LandscapeModule.Reset();
@@ -339,6 +346,12 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FFindPathImplTool>(*NavigationModule));
 	ToolRegistry->RegisterTool(MakeShared<FProjectPointToNavImplTool>(*NavigationModule));
 	ToolRegistry->RegisterTool(MakeShared<FGetRandomReachablePointImplTool>(*NavigationModule));
+
+	// Physics tools
+	ToolRegistry->RegisterTool(MakeShared<FCreatePhysicsCollisionImplTool>(*PhysicsModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetPhysicalMaterialImplTool>(*PhysicsModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetPhysicsVelocityImplTool>(*PhysicsModule));
+	ToolRegistry->RegisterTool(MakeShared<FManageConstraintsImplTool>(*PhysicsModule));
 }
 
 #undef LOCTEXT_NAMESPACE

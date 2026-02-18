@@ -149,10 +149,10 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] get_random_reachable_point — случайная достижимая позиция
 
 ### 13. Физика
-- [ ] create_physics_collision — настройка коллизий BodySetup
-- [ ] set_physical_material — настройка физического материала
-- [ ] set_physics_velocity — установка скорости (linear/angular)
-- [ ] manage_constraints — управление constraint'ами
+- [x] create_physics_collision — настройка коллизий BodySetup
+- [x] set_physical_material — настройка физического материала
+- [x] set_physics_velocity — установка скорости (linear/angular)
+- [x] manage_constraints — управление constraint'ами
 
 ### 14. Сборка (Build)
 - [ ] build_geometry — сборка геометрии
