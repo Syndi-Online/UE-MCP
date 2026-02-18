@@ -103,6 +103,13 @@
 #include "Tools/Impl/SequencerAddTrackImplTool.h"
 #include "Tools/Impl/SequencerAddMarkerImplTool.h"
 #include "Tools/Impl/SequencerForceEvaluateImplTool.h"
+#include "Tools/Impl/GetLandscapeHeightmapImplTool.h"
+#include "Tools/Impl/SetLandscapeHeightmapImplTool.h"
+#include "Tools/Impl/GetLandscapeWeightmapImplTool.h"
+#include "Tools/Impl/SetLandscapeWeightmapImplTool.h"
+#include "Tools/Impl/ImportLandscapeImplTool.h"
+#include "Tools/Impl/ExportLandscapeImplTool.h"
+#include "Tools/Impl/RebuildLandscapeImplTool.h"
 
 // Modules
 #include "Modules/Impl/ActorImplModule.h"
@@ -114,6 +121,7 @@
 #include "Modules/Impl/StaticMeshImplModule.h"
 #include "Modules/Impl/SkeletalMeshImplModule.h"
 #include "Modules/Impl/SequencerToolImplModule.h"
+#include "Modules/Impl/LandscapeToolImplModule.h"
 
 DEFINE_LOG_CATEGORY(LogMCPServer);
 
@@ -136,6 +144,7 @@ void FMCPServerModule::StartupModule()
 	StaticMeshModule = MakeUnique<FStaticMeshImplModule>();
 	SkeletalMeshModule = MakeUnique<FSkeletalMeshImplModule>();
 	SequencerModule = MakeUnique<FSequencerToolImplModule>();
+	LandscapeModule = MakeUnique<FLandscapeToolImplModule>();
 
 	ToolRegistry = MakeUnique<FMCPToolRegistry>();
 	RegisterBuiltinTools();
@@ -160,6 +169,7 @@ void FMCPServerModule::ShutdownModule()
 	JsonRpc.Reset();
 	SessionManager.Reset();
 	ToolRegistry.Reset();
+	LandscapeModule.Reset();
 	SequencerModule.Reset();
 	SkeletalMeshModule.Reset();
 	StaticMeshModule.Reset();
@@ -292,6 +302,15 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FSequencerAddTrackImplTool>(*SequencerModule));
 	ToolRegistry->RegisterTool(MakeShared<FSequencerAddMarkerImplTool>(*SequencerModule));
 	ToolRegistry->RegisterTool(MakeShared<FSequencerForceEvaluateImplTool>(*SequencerModule));
+
+	// Landscape tools
+	ToolRegistry->RegisterTool(MakeShared<FGetLandscapeHeightmapImplTool>(*LandscapeModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetLandscapeHeightmapImplTool>(*LandscapeModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetLandscapeWeightmapImplTool>(*LandscapeModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetLandscapeWeightmapImplTool>(*LandscapeModule));
+	ToolRegistry->RegisterTool(MakeShared<FImportLandscapeImplTool>(*LandscapeModule));
+	ToolRegistry->RegisterTool(MakeShared<FExportLandscapeImplTool>(*LandscapeModule));
+	ToolRegistry->RegisterTool(MakeShared<FRebuildLandscapeImplTool>(*LandscapeModule));
 }
 
 #undef LOCTEXT_NAMESPACE

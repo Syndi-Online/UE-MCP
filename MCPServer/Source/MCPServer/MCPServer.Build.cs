@@ -35,7 +35,10 @@ public class MCPServer : ModuleRules
 			"SequencerCore",
 			"MovieScene",
 			"MovieSceneTracks",
-			"LevelSequence"
+			"LevelSequence",
+			"Landscape",
+			"LandscapeEditor",
+			"Foliage"
 		});
 	}
 }

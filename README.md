@@ -127,13 +127,13 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] sequencer_force_evaluate — принудительная оценка
 
 ### 10. Ландшафт
-- [ ] get_landscape_heightmap — чтение heightmap
-- [ ] set_landscape_heightmap — запись heightmap
-- [ ] get_landscape_weightmap — чтение weight map
-- [ ] set_landscape_weightmap — запись weight map
-- [ ] import_landscape — импорт
-- [ ] export_landscape — экспорт
-- [ ] rebuild_landscape — перестройка данных
+- [x] get_landscape_heightmap — чтение heightmap
+- [x] set_landscape_heightmap — запись heightmap
+- [x] get_landscape_weightmap — чтение weight map
+- [x] set_landscape_weightmap — запись weight map
+- [x] import_landscape — импорт
+- [x] export_landscape — экспорт
+- [x] rebuild_landscape — перестройка данных
 
 ### 11. Фолиаж
 - [ ] add_foliage_instances — добавление инстансов
