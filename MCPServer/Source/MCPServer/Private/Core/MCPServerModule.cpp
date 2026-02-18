@@ -133,6 +133,10 @@
 #include "Tools/Impl/ExecuteConsoleCommandImplTool.h"
 #include "Tools/Impl/GetCvarImplTool.h"
 #include "Tools/Impl/SetCvarImplTool.h"
+#include "Tools/Impl/GetProjectInfoImplTool.h"
+#include "Tools/Impl/GetConfigValueImplTool.h"
+#include "Tools/Impl/SetConfigValueImplTool.h"
+#include "Tools/Impl/GetProjectPathsImplTool.h"
 
 // Modules
 #include "Modules/Impl/ActorImplModule.h"
@@ -150,6 +154,7 @@
 #include "Modules/Impl/PhysicsImplModule.h"
 #include "Modules/Impl/BuildImplModule.h"
 #include "Modules/Impl/ConsoleImplModule.h"
+#include "Modules/Impl/ProjectSettingsImplModule.h"
 
 DEFINE_LOG_CATEGORY(LogMCPServer);
 
@@ -178,6 +183,7 @@ void FMCPServerModule::StartupModule()
 	PhysicsModule = MakeUnique<FPhysicsImplModule>(*ActorModule);
 	BuildModule = MakeUnique<FBuildImplModule>();
 	ConsoleModule = MakeUnique<FConsoleImplModule>();
+	ProjectSettingsModule = MakeUnique<FProjectSettingsImplModule>();
 
 	ToolRegistry = MakeUnique<FMCPToolRegistry>();
 	RegisterBuiltinTools();
@@ -202,6 +208,7 @@ void FMCPServerModule::ShutdownModule()
 	JsonRpc.Reset();
 	SessionManager.Reset();
 	ToolRegistry.Reset();
+	ProjectSettingsModule.Reset();
 	ConsoleModule.Reset();
 	BuildModule.Reset();
 	PhysicsModule.Reset();
@@ -382,6 +389,12 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FExecuteConsoleCommandImplTool>(*ConsoleModule));
 	ToolRegistry->RegisterTool(MakeShared<FGetCvarImplTool>(*ConsoleModule));
 	ToolRegistry->RegisterTool(MakeShared<FSetCvarImplTool>(*ConsoleModule));
+
+	// Project settings tools
+	ToolRegistry->RegisterTool(MakeShared<FGetProjectInfoImplTool>(*ProjectSettingsModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetConfigValueImplTool>(*ProjectSettingsModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetConfigValueImplTool>(*ProjectSettingsModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetProjectPathsImplTool>(*ProjectSettingsModule));
 }
 
 #undef LOCTEXT_NAMESPACE

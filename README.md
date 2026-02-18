@@ -169,10 +169,10 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] set_cvar — установка console variable
 
 ### 16. Настройки проекта
-- [ ] get_project_info — информация о проекте
-- [ ] get_config_value — чтение из config
-- [ ] set_config_value — запись в config
-- [ ] get_project_paths — пути проекта (Content, Config, Plugins)
+- [x] get_project_info — информация о проекте
+- [x] get_config_value — чтение из config
+- [x] set_config_value — запись в config
+- [x] get_project_paths — пути проекта (Content, Config, Plugins)
 
 ### 17. Source Control
 - [ ] scc_checkout — checkout файлов

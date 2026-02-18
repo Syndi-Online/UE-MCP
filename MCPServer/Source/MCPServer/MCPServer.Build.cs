@@ -40,7 +40,9 @@ public class MCPServer : ModuleRules
 			"LandscapeEditor",
 			"Foliage",
 			"NavigationSystem",
-			"PhysicsCore"
+			"PhysicsCore",
+			"EngineSettings",
+			"Projects"
 		});
 	}
 }
