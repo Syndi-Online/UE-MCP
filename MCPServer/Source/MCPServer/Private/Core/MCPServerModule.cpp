@@ -22,9 +22,19 @@
 #include "Tools/Impl/MoveActorsToLevelImplTool.h"
 #include "Tools/Impl/GroupActorsImplTool.h"
 #include "Tools/Impl/SetActorFolderImplTool.h"
+#include "Tools/Impl/NewLevelImplTool.h"
+#include "Tools/Impl/NewLevelFromTemplateImplTool.h"
+#include "Tools/Impl/LoadLevelImplTool.h"
+#include "Tools/Impl/SaveLevelImplTool.h"
+#include "Tools/Impl/SaveAllDirtyLevelsImplTool.h"
+#include "Tools/Impl/AddSublevelImplTool.h"
+#include "Tools/Impl/RemoveSublevelImplTool.h"
+#include "Tools/Impl/SetCurrentLevelImplTool.h"
+#include "Tools/Impl/SetLevelVisibilityImplTool.h"
 
 // Modules
 #include "Modules/Impl/ActorImplModule.h"
+#include "Modules/Impl/LevelImplModule.h"
 
 DEFINE_LOG_CATEGORY(LogMCPServer);
 
@@ -39,6 +49,7 @@ void FMCPServerModule::StartupModule()
 {
 	// Create layers bottom-up: Modules -> Tools -> Protocol -> HTTP
 	ActorModule = MakeUnique<FActorImplModule>();
+	LevelModule = MakeUnique<FLevelImplModule>();
 
 	ToolRegistry = MakeUnique<FMCPToolRegistry>();
 	RegisterBuiltinTools();
@@ -63,6 +74,7 @@ void FMCPServerModule::ShutdownModule()
 	JsonRpc.Reset();
 	SessionManager.Reset();
 	ToolRegistry.Reset();
+	LevelModule.Reset();
 	ActorModule.Reset();
 
 	UE_LOG(LogMCPServer, Log, TEXT("MCP Server plugin shut down"));
@@ -90,6 +102,17 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FMoveActorsToLevelImplTool>(*ActorModule));
 	ToolRegistry->RegisterTool(MakeShared<FGroupActorsImplTool>(*ActorModule));
 	ToolRegistry->RegisterTool(MakeShared<FSetActorFolderImplTool>(*ActorModule));
+
+	// Level management tools
+	ToolRegistry->RegisterTool(MakeShared<FNewLevelImplTool>(*LevelModule));
+	ToolRegistry->RegisterTool(MakeShared<FNewLevelFromTemplateImplTool>(*LevelModule));
+	ToolRegistry->RegisterTool(MakeShared<FLoadLevelImplTool>(*LevelModule));
+	ToolRegistry->RegisterTool(MakeShared<FSaveLevelImplTool>(*LevelModule));
+	ToolRegistry->RegisterTool(MakeShared<FSaveAllDirtyLevelsImplTool>(*LevelModule));
+	ToolRegistry->RegisterTool(MakeShared<FAddSublevelImplTool>(*LevelModule));
+	ToolRegistry->RegisterTool(MakeShared<FRemoveSublevelImplTool>(*LevelModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetCurrentLevelImplTool>(*LevelModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetLevelVisibilityImplTool>(*LevelModule));
 }
 
 #undef LOCTEXT_NAMESPACE

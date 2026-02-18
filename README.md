@@ -30,15 +30,15 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] set_actor_folder — управление папками в Outliner
 
 ### 2. Управление уровнями
-- [ ] new_level — создание нового уровня
-- [ ] new_level_from_template — создание из шаблона
-- [ ] load_level — загрузка уровня
-- [ ] save_level — сохранение текущего уровня
-- [ ] save_all_dirty_levels — сохранение всех изменённых
-- [ ] add_sublevel — добавление сабуровня (streaming)
-- [ ] remove_sublevel — удаление сабуровня
-- [ ] set_current_level — переключение текущего уровня
-- [ ] set_level_visibility — управление видимостью уровня
+- [x] new_level — создание нового уровня
+- [x] new_level_from_template — создание из шаблона
+- [x] load_level — загрузка уровня
+- [x] save_level — сохранение текущего уровня
+- [x] save_all_dirty_levels — сохранение всех изменённых
+- [x] add_sublevel — добавление сабуровня (streaming)
+- [x] remove_sublevel — удаление сабуровня
+- [x] set_current_level — переключение текущего уровня
+- [x] set_level_visibility — управление видимостью уровня
 
 ### 3. Работа с ассетами
 - [ ] load_asset — загрузка ассета по пути

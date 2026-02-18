@@ -20,7 +20,8 @@ public class MCPServer : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{
-			"UnrealEd"
+			"UnrealEd",
+			"LevelEditor"
 		});
 	}
 }
