@@ -45,11 +45,24 @@
 #include "Tools/Impl/GetAssetReferencersImplTool.h"
 #include "Tools/Impl/GetAssetMetadataImplTool.h"
 #include "Tools/Impl/SetAssetMetadataImplTool.h"
+#include "Tools/Impl/GetViewportCameraImplTool.h"
+#include "Tools/Impl/SetViewportCameraImplTool.h"
+#include "Tools/Impl/SetGameViewImplTool.h"
+#include "Tools/Impl/SetViewportRealtimeImplTool.h"
+#include "Tools/Impl/SetViewModeImplTool.h"
+#include "Tools/Impl/SetCameraFovImplTool.h"
+#include "Tools/Impl/FocusOnActorsImplTool.h"
+#include "Tools/Impl/TakeScreenshotImplTool.h"
+#include "Tools/Impl/PilotActorImplTool.h"
+#include "Tools/Impl/EjectPilotImplTool.h"
+#include "Tools/Impl/SetBookmarkImplTool.h"
+#include "Tools/Impl/JumpToBookmarkImplTool.h"
 
 // Modules
 #include "Modules/Impl/ActorImplModule.h"
 #include "Modules/Impl/LevelImplModule.h"
 #include "Modules/Impl/AssetImplModule.h"
+#include "Modules/Impl/ViewportImplModule.h"
 
 DEFINE_LOG_CATEGORY(LogMCPServer);
 
@@ -66,6 +79,7 @@ void FMCPServerModule::StartupModule()
 	ActorModule = MakeUnique<FActorImplModule>();
 	LevelModule = MakeUnique<FLevelImplModule>();
 	AssetModule = MakeUnique<FAssetImplModule>();
+	ViewportModule = MakeUnique<FViewportImplModule>(*ActorModule);
 
 	ToolRegistry = MakeUnique<FMCPToolRegistry>();
 	RegisterBuiltinTools();
@@ -90,6 +104,7 @@ void FMCPServerModule::ShutdownModule()
 	JsonRpc.Reset();
 	SessionManager.Reset();
 	ToolRegistry.Reset();
+	ViewportModule.Reset();
 	AssetModule.Reset();
 	LevelModule.Reset();
 	ActorModule.Reset();
@@ -146,6 +161,20 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FGetAssetReferencersImplTool>(*AssetModule));
 	ToolRegistry->RegisterTool(MakeShared<FGetAssetMetadataImplTool>(*AssetModule));
 	ToolRegistry->RegisterTool(MakeShared<FSetAssetMetadataImplTool>(*AssetModule));
+
+	// Viewport and camera tools
+	ToolRegistry->RegisterTool(MakeShared<FGetViewportCameraImplTool>(*ViewportModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetViewportCameraImplTool>(*ViewportModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetGameViewImplTool>(*ViewportModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetViewportRealtimeImplTool>(*ViewportModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetViewModeImplTool>(*ViewportModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetCameraFovImplTool>(*ViewportModule));
+	ToolRegistry->RegisterTool(MakeShared<FFocusOnActorsImplTool>(*ViewportModule));
+	ToolRegistry->RegisterTool(MakeShared<FTakeScreenshotImplTool>(*ViewportModule));
+	ToolRegistry->RegisterTool(MakeShared<FPilotActorImplTool>(*ViewportModule));
+	ToolRegistry->RegisterTool(MakeShared<FEjectPilotImplTool>(*ViewportModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetBookmarkImplTool>(*ViewportModule));
+	ToolRegistry->RegisterTool(MakeShared<FJumpToBookmarkImplTool>(*ViewportModule));
 }
 
 #undef LOCTEXT_NAMESPACE

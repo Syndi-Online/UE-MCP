@@ -11,6 +11,7 @@ class FMCPHttpServer;
 class IActorModule;
 class ILevelModule;
 class IAssetModule;
+class IViewportModule;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogMCPServer, Log, All);
 
@@ -39,6 +40,7 @@ private:
 	TUniquePtr<IActorModule> ActorModule;
 	TUniquePtr<ILevelModule> LevelModule;
 	TUniquePtr<IAssetModule> AssetModule;
+	TUniquePtr<IViewportModule> ViewportModule;
 
 	// Tools layer
 	TUniquePtr<FMCPToolRegistry> ToolRegistry;

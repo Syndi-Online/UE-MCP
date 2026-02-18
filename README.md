@@ -57,18 +57,18 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] set_asset_metadata — установка метаданных
 
 ### 4. Вьюпорт и камера
-- [ ] get_viewport_camera — чтение позиции/ротации камеры
-- [ ] set_viewport_camera — установка позиции/ротации
-- [ ] set_game_view — переключение Game View
-- [ ] set_viewport_realtime — переключение Realtime
-- [ ] set_view_mode — режим (Lit/Wireframe/Unlit)
-- [ ] set_camera_fov — изменение FOV
-- [ ] focus_on_actors — фокус на акторах
-- [ ] take_screenshot — скриншот вьюпорта
-- [ ] pilot_actor — привязка камеры к актору
-- [ ] eject_pilot — отвязка камеры
-- [ ] set_bookmark — сохранение закладки камеры
-- [ ] jump_to_bookmark — переход к закладке
+- [x] get_viewport_camera — чтение позиции/ротации камеры
+- [x] set_viewport_camera — установка позиции/ротации
+- [x] set_game_view — переключение Game View
+- [x] set_viewport_realtime — переключение Realtime
+- [x] set_view_mode — режим (Lit/Wireframe/Unlit)
+- [x] set_camera_fov — изменение FOV
+- [x] focus_on_actors — фокус на акторах
+- [x] take_screenshot — скриншот вьюпорта
+- [x] pilot_actor — привязка камеры к актору
+- [x] eject_pilot — отвязка камеры
+- [x] set_bookmark — сохранение закладки камеры
+- [x] jump_to_bookmark — переход к закладке
 
 ### 5. Blueprints
 - [ ] create_blueprint — создание Blueprint из класса
