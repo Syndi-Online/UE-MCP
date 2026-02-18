@@ -136,10 +136,10 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] rebuild_landscape — перестройка данных
 
 ### 11. Фолиаж
-- [ ] add_foliage_instances — добавление инстансов
-- [ ] remove_foliage_instances — удаление инстансов
-- [ ] register_foliage_mesh — регистрация меша
-- [ ] resimulate_procedural_foliage — процедурная генерация
+- [x] add_foliage_instances — добавление инстансов
+- [x] remove_foliage_instances — удаление инстансов
+- [x] register_foliage_mesh — регистрация меша
+- [x] resimulate_procedural_foliage — процедурная генерация
 
 ### 12. Навигация / AI
 - [ ] build_navigation — построение NavMesh

@@ -110,6 +110,10 @@
 #include "Tools/Impl/ImportLandscapeImplTool.h"
 #include "Tools/Impl/ExportLandscapeImplTool.h"
 #include "Tools/Impl/RebuildLandscapeImplTool.h"
+#include "Tools/Impl/AddFoliageInstancesImplTool.h"
+#include "Tools/Impl/RemoveFoliageInstancesImplTool.h"
+#include "Tools/Impl/RegisterFoliageMeshImplTool.h"
+#include "Tools/Impl/ResimulateProceduralFoliageImplTool.h"
 
 // Modules
 #include "Modules/Impl/ActorImplModule.h"
@@ -122,6 +126,7 @@
 #include "Modules/Impl/SkeletalMeshImplModule.h"
 #include "Modules/Impl/SequencerToolImplModule.h"
 #include "Modules/Impl/LandscapeToolImplModule.h"
+#include "Modules/Impl/FoliageImplModule.h"
 
 DEFINE_LOG_CATEGORY(LogMCPServer);
 
@@ -145,6 +150,7 @@ void FMCPServerModule::StartupModule()
 	SkeletalMeshModule = MakeUnique<FSkeletalMeshImplModule>();
 	SequencerModule = MakeUnique<FSequencerToolImplModule>();
 	LandscapeModule = MakeUnique<FLandscapeToolImplModule>();
+	FoliageModule = MakeUnique<FFoliageImplModule>();
 
 	ToolRegistry = MakeUnique<FMCPToolRegistry>();
 	RegisterBuiltinTools();
@@ -169,6 +175,7 @@ void FMCPServerModule::ShutdownModule()
 	JsonRpc.Reset();
 	SessionManager.Reset();
 	ToolRegistry.Reset();
+	FoliageModule.Reset();
 	LandscapeModule.Reset();
 	SequencerModule.Reset();
 	SkeletalMeshModule.Reset();
@@ -311,6 +318,12 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FImportLandscapeImplTool>(*LandscapeModule));
 	ToolRegistry->RegisterTool(MakeShared<FExportLandscapeImplTool>(*LandscapeModule));
 	ToolRegistry->RegisterTool(MakeShared<FRebuildLandscapeImplTool>(*LandscapeModule));
+
+	// Foliage tools
+	ToolRegistry->RegisterTool(MakeShared<FAddFoliageInstancesImplTool>(*FoliageModule));
+	ToolRegistry->RegisterTool(MakeShared<FRemoveFoliageInstancesImplTool>(*FoliageModule));
+	ToolRegistry->RegisterTool(MakeShared<FRegisterFoliageMeshImplTool>(*FoliageModule));
+	ToolRegistry->RegisterTool(MakeShared<FResimulateProceduralFoliageImplTool>(*FoliageModule));
 }
 
 #undef LOCTEXT_NAMESPACE
