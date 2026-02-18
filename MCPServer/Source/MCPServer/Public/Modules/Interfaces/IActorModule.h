@@ -41,6 +41,126 @@ struct FActorDuplicateResult
 };
 
 /**
+ * Info about a single actor, returned by listing operations.
+ */
+struct FActorInfo
+{
+	FString ActorName;
+	FString ActorLabel;
+	FString ActorClass;
+	FVector Location = FVector::ZeroVector;
+	FRotator Rotation = FRotator::ZeroRotator;
+	FString FolderPath;
+};
+
+/**
+ * Result of getting all actors in a level.
+ */
+struct FGetActorsResult
+{
+	bool bSuccess = false;
+	TArray<FActorInfo> Actors;
+	FString ErrorMessage;
+};
+
+/**
+ * Result of a selection operation.
+ */
+struct FActorSelectionResult
+{
+	bool bSuccess = false;
+	int32 AffectedCount = 0;
+	FString ErrorMessage;
+};
+
+/**
+ * Result of getting an actor's transform.
+ */
+struct FActorTransformResult
+{
+	bool bSuccess = false;
+	FVector Location = FVector::ZeroVector;
+	FRotator Rotation = FRotator::ZeroRotator;
+	FVector Scale = FVector::OneVector;
+	FString ErrorMessage;
+};
+
+/**
+ * Result of setting an actor's transform.
+ */
+struct FActorSetTransformResult
+{
+	bool bSuccess = false;
+	FVector Location = FVector::ZeroVector;
+	FRotator Rotation = FRotator::ZeroRotator;
+	FVector Scale = FVector::OneVector;
+	FString ErrorMessage;
+};
+
+/**
+ * Result of getting an actor property.
+ */
+struct FActorPropertyResult
+{
+	bool bSuccess = false;
+	FString PropertyName;
+	FString PropertyValue;
+	FString PropertyType;
+	FString ErrorMessage;
+};
+
+/**
+ * Result of setting an actor property.
+ */
+struct FActorSetPropertyResult
+{
+	bool bSuccess = false;
+	FString ErrorMessage;
+};
+
+/**
+ * Result of converting an actor type.
+ */
+struct FActorConvertResult
+{
+	bool bSuccess = false;
+	FString NewActorName;
+	FString NewActorLabel;
+	FString NewActorClass;
+	FString ErrorMessage;
+};
+
+/**
+ * Result of moving actors to a level.
+ */
+struct FMoveActorsToLevelResult
+{
+	bool bSuccess = false;
+	int32 MovedCount = 0;
+	FString ErrorMessage;
+};
+
+/**
+ * Result of grouping actors.
+ */
+struct FGroupActorsResult
+{
+	bool bSuccess = false;
+	FString GroupName;
+	int32 ActorCount = 0;
+	FString ErrorMessage;
+};
+
+/**
+ * Result of setting actor folder.
+ */
+struct FSetActorFolderResult
+{
+	bool bSuccess = false;
+	FString ErrorMessage;
+};
+
+/**
  * Module interface for actor operations in the editor world.
  * Wraps UE5 editor actor subsystem behind a testable interface.
  */
@@ -77,4 +197,41 @@ public:
 	virtual FActorDuplicateResult DuplicateActor(
 		const FString& ActorIdentifier,
 		const FVector& Offset) = 0;
+
+	/** Get all actors in the current level. Optional class filter. */
+	virtual FGetActorsResult GetActorsInLevel(const FString& ClassFilter = TEXT("")) = 0;
+
+	/** Select actors by identifiers (additive or replace). */
+	virtual FActorSelectionResult SelectActors(const TArray<FString>& ActorIdentifiers, bool bAddToSelection = false) = 0;
+
+	/** Deselect all actors. */
+	virtual FActorSelectionResult DeselectAll() = 0;
+
+	/** Get an actor's transform. */
+	virtual FActorTransformResult GetActorTransform(const FString& ActorIdentifier) = 0;
+
+	/** Set an actor's transform. */
+	virtual FActorSetTransformResult SetActorTransform(
+		const FString& ActorIdentifier,
+		const FVector* Location = nullptr,
+		const FRotator* Rotation = nullptr,
+		const FVector* Scale = nullptr) = 0;
+
+	/** Get a property value from an actor. */
+	virtual FActorPropertyResult GetActorProperty(const FString& ActorIdentifier, const FString& PropertyName) = 0;
+
+	/** Set a property value on an actor. */
+	virtual FActorSetPropertyResult SetActorProperty(const FString& ActorIdentifier, const FString& PropertyName, const FString& PropertyValue) = 0;
+
+	/** Convert an actor to a different type. */
+	virtual FActorConvertResult ConvertActor(const FString& ActorIdentifier, const FString& NewClassPath) = 0;
+
+	/** Move actors to a different level. */
+	virtual FMoveActorsToLevelResult MoveActorsToLevel(const TArray<FString>& ActorIdentifiers, const FString& LevelName) = 0;
+
+	/** Group actors together. */
+	virtual FGroupActorsResult GroupActors(const TArray<FString>& ActorIdentifiers, const FString& GroupName = TEXT("")) = 0;
+
+	/** Set the folder path for an actor in the World Outliner. */
+	virtual FSetActorFolderResult SetActorFolder(const FString& ActorIdentifier, const FString& FolderPath) = 0;
 };

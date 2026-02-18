@@ -17,17 +17,17 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] spawn_actor — спавн из класса или ассета
 - [x] delete_actor — удаление акторов
 - [x] duplicate_actor — дублирование
-- [ ] get_actors_in_level — список всех акторов на уровне
-- [ ] select_actor — выделение акторов
-- [ ] deselect_all — снятие выделения
-- [ ] get_actor_transform — чтение трансформа
-- [ ] set_actor_transform — установка трансформа
-- [ ] get_actor_property — чтение свойств актора
-- [ ] set_actor_property — установка свойств актора
-- [ ] convert_actor — конвертация типа актора
-- [ ] move_actors_to_level — перемещение между уровнями
-- [ ] group_actors — группировка акторов
-- [ ] set_actor_folder — управление папками в Outliner
+- [x] get_actors_in_level — список всех акторов на уровне
+- [x] select_actor — выделение акторов
+- [x] deselect_all — снятие выделения
+- [x] get_actor_transform — чтение трансформа
+- [x] set_actor_transform — установка трансформа
+- [x] get_actor_property — чтение свойств актора
+- [x] set_actor_property — установка свойств актора
+- [x] convert_actor — конвертация типа актора
+- [x] move_actors_to_level — перемещение между уровнями
+- [x] group_actors — группировка акторов
+- [x] set_actor_folder — управление папками в Outliner
 
 ### 2. Управление уровнями
 - [ ] new_level — создание нового уровня
