@@ -59,7 +59,12 @@ void FMCPHttpServer::Stop()
 
 bool FMCPHttpServer::HandlePostRequest(const FHttpServerRequest& Request, const FHttpResultCallback& OnComplete)
 {
-	FString RequestBody = FString(UTF8_TO_TCHAR(reinterpret_cast<const char*>(Request.Body.GetData())));
+	FString RequestBody;
+	if (Request.Body.Num() > 0)
+	{
+		FUTF8ToTCHAR Converter(reinterpret_cast<const ANSICHAR*>(Request.Body.GetData()), Request.Body.Num());
+		RequestBody = FString(Converter.Length(), Converter.Get());
+	}
 	if (RequestBody.IsEmpty())
 	{
 		auto Response = FHttpServerResponse::Error(
