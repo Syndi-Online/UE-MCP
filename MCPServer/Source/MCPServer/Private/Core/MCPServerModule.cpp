@@ -123,6 +123,13 @@
 #include "Tools/Impl/SetPhysicalMaterialImplTool.h"
 #include "Tools/Impl/SetPhysicsVelocityImplTool.h"
 #include "Tools/Impl/ManageConstraintsImplTool.h"
+#include "Tools/Impl/BuildGeometryImplTool.h"
+#include "Tools/Impl/BuildLightingImplTool.h"
+#include "Tools/Impl/BuildNavigationDataImplTool.h"
+#include "Tools/Impl/BuildHlodImplTool.h"
+#include "Tools/Impl/BuildTextureStreamingImplTool.h"
+#include "Tools/Impl/BuildAllImplTool.h"
+#include "Tools/Impl/GetBuildStatusImplTool.h"
 
 // Modules
 #include "Modules/Impl/ActorImplModule.h"
@@ -138,6 +145,7 @@
 #include "Modules/Impl/FoliageImplModule.h"
 #include "Modules/Impl/NavigationImplModule.h"
 #include "Modules/Impl/PhysicsImplModule.h"
+#include "Modules/Impl/BuildImplModule.h"
 
 DEFINE_LOG_CATEGORY(LogMCPServer);
 
@@ -164,6 +172,7 @@ void FMCPServerModule::StartupModule()
 	FoliageModule = MakeUnique<FFoliageImplModule>();
 	NavigationModule = MakeUnique<FNavigationImplModule>();
 	PhysicsModule = MakeUnique<FPhysicsImplModule>(*ActorModule);
+	BuildModule = MakeUnique<FBuildImplModule>();
 
 	ToolRegistry = MakeUnique<FMCPToolRegistry>();
 	RegisterBuiltinTools();
@@ -188,6 +197,7 @@ void FMCPServerModule::ShutdownModule()
 	JsonRpc.Reset();
 	SessionManager.Reset();
 	ToolRegistry.Reset();
+	BuildModule.Reset();
 	PhysicsModule.Reset();
 	NavigationModule.Reset();
 	FoliageModule.Reset();
@@ -352,6 +362,15 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FSetPhysicalMaterialImplTool>(*PhysicsModule));
 	ToolRegistry->RegisterTool(MakeShared<FSetPhysicsVelocityImplTool>(*PhysicsModule));
 	ToolRegistry->RegisterTool(MakeShared<FManageConstraintsImplTool>(*PhysicsModule));
+
+	// Build tools
+	ToolRegistry->RegisterTool(MakeShared<FBuildGeometryImplTool>(*BuildModule));
+	ToolRegistry->RegisterTool(MakeShared<FBuildLightingImplTool>(*BuildModule));
+	ToolRegistry->RegisterTool(MakeShared<FBuildNavigationDataImplTool>(*BuildModule));
+	ToolRegistry->RegisterTool(MakeShared<FBuildHlodImplTool>(*BuildModule));
+	ToolRegistry->RegisterTool(MakeShared<FBuildTextureStreamingImplTool>(*BuildModule));
+	ToolRegistry->RegisterTool(MakeShared<FBuildAllImplTool>(*BuildModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetBuildStatusImplTool>(*BuildModule));
 }
 
 #undef LOCTEXT_NAMESPACE

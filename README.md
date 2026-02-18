@@ -155,13 +155,13 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] manage_constraints — управление constraint'ами
 
 ### 14. Сборка (Build)
-- [ ] build_geometry — сборка геометрии
-- [ ] build_lighting — сборка освещения
-- [ ] build_navigation_data — сборка AI Paths
-- [ ] build_hlod — сборка HLOD
-- [ ] build_texture_streaming — сборка Texture Streaming
-- [ ] build_all — полная сборка
-- [ ] get_build_status — статус текущей сборки
+- [x] build_geometry — сборка геометрии
+- [x] build_lighting — сборка освещения
+- [x] build_navigation_data — сборка AI Paths
+- [x] build_hlod — сборка HLOD
+- [x] build_texture_streaming — сборка Texture Streaming
+- [x] build_all — полная сборка
+- [x] get_build_status — статус текущей сборки
 
 ### 15. Консольные команды
 - [ ] execute_console_command — выполнение консольной команды
