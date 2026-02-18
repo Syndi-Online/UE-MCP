@@ -17,5 +17,10 @@ public class MCPServer : ModuleRules
 			"Json",
 			"JsonUtilities"
 		});
+
+		PrivateDependencyModuleNames.AddRange(new string[]
+		{
+			"UnrealEd"
+		});
 	}
 }

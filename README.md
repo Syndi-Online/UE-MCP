@@ -14,8 +14,8 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 ## Tools Checklist
 
 ### 1. Управление акторами
-- [ ] spawn_actor — спавн из класса или ассета
-- [ ] delete_actor — удаление акторов
+- [x] spawn_actor — спавн из класса или ассета
+- [x] delete_actor — удаление акторов
 - [ ] duplicate_actor — дублирование
 - [ ] get_actors_in_level — список всех акторов на уровне
 - [ ] select_actor — выделение акторов

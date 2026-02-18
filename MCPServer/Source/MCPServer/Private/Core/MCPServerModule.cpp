@@ -8,6 +8,11 @@
 
 // Tools
 #include "Tools/Impl/HelloWorldImplTool.h"
+#include "Tools/Impl/SpawnActorImplTool.h"
+#include "Tools/Impl/DeleteActorImplTool.h"
+
+// Modules
+#include "Modules/Impl/ActorImplModule.h"
 
 DEFINE_LOG_CATEGORY(LogMCPServer);
 
@@ -20,7 +25,9 @@ FMCPServerModule& FMCPServerModule::Get()
 
 void FMCPServerModule::StartupModule()
 {
-	// Create layers bottom-up: Tools -> Protocol -> HTTP
+	// Create layers bottom-up: Modules -> Tools -> Protocol -> HTTP
+	ActorModule = MakeUnique<FActorImplModule>();
+
 	ToolRegistry = MakeUnique<FMCPToolRegistry>();
 	RegisterBuiltinTools();
 
@@ -44,6 +51,7 @@ void FMCPServerModule::ShutdownModule()
 	JsonRpc.Reset();
 	SessionManager.Reset();
 	ToolRegistry.Reset();
+	ActorModule.Reset();
 
 	UE_LOG(LogMCPServer, Log, TEXT("MCP Server plugin shut down"));
 }
@@ -56,6 +64,8 @@ FMCPToolRegistry& FMCPServerModule::GetToolRegistry()
 void FMCPServerModule::RegisterBuiltinTools()
 {
 	ToolRegistry->RegisterTool(MakeShared<FHelloWorldImplTool>());
+	ToolRegistry->RegisterTool(MakeShared<FSpawnActorImplTool>(*ActorModule));
+	ToolRegistry->RegisterTool(MakeShared<FDeleteActorImplTool>(*ActorModule));
 }
 
 #undef LOCTEXT_NAMESPACE

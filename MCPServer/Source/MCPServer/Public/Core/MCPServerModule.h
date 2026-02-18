@@ -8,6 +8,7 @@ class FMCPToolRegistry;
 class FMCPSessionManager;
 class FMCPJsonRpc;
 class FMCPHttpServer;
+class IActorModule;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogMCPServer, Log, All);
 
@@ -32,7 +33,13 @@ private:
 
 	uint32 ServerPort = 8080;
 
+	// Modules layer
+	TUniquePtr<IActorModule> ActorModule;
+
+	// Tools layer
 	TUniquePtr<FMCPToolRegistry> ToolRegistry;
+
+	// Protocol layer
 	TUniquePtr<FMCPSessionManager> SessionManager;
 	TUniquePtr<FMCPJsonRpc> JsonRpc;
 	TUniquePtr<FMCPHttpServer> HttpServer;
