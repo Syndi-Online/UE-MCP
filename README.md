@@ -164,9 +164,9 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] get_build_status — статус текущей сборки
 
 ### 15. Консольные команды
-- [ ] execute_console_command — выполнение консольной команды
-- [ ] get_cvar — чтение console variable
-- [ ] set_cvar — установка console variable
+- [x] execute_console_command — выполнение консольной команды
+- [x] get_cvar — чтение console variable
+- [x] set_cvar — установка console variable
 
 ### 16. Настройки проекта
 - [ ] get_project_info — информация о проекте

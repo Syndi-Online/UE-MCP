@@ -130,6 +130,9 @@
 #include "Tools/Impl/BuildTextureStreamingImplTool.h"
 #include "Tools/Impl/BuildAllImplTool.h"
 #include "Tools/Impl/GetBuildStatusImplTool.h"
+#include "Tools/Impl/ExecuteConsoleCommandImplTool.h"
+#include "Tools/Impl/GetCvarImplTool.h"
+#include "Tools/Impl/SetCvarImplTool.h"
 
 // Modules
 #include "Modules/Impl/ActorImplModule.h"
@@ -146,6 +149,7 @@
 #include "Modules/Impl/NavigationImplModule.h"
 #include "Modules/Impl/PhysicsImplModule.h"
 #include "Modules/Impl/BuildImplModule.h"
+#include "Modules/Impl/ConsoleImplModule.h"
 
 DEFINE_LOG_CATEGORY(LogMCPServer);
 
@@ -173,6 +177,7 @@ void FMCPServerModule::StartupModule()
 	NavigationModule = MakeUnique<FNavigationImplModule>();
 	PhysicsModule = MakeUnique<FPhysicsImplModule>(*ActorModule);
 	BuildModule = MakeUnique<FBuildImplModule>();
+	ConsoleModule = MakeUnique<FConsoleImplModule>();
 
 	ToolRegistry = MakeUnique<FMCPToolRegistry>();
 	RegisterBuiltinTools();
@@ -197,6 +202,7 @@ void FMCPServerModule::ShutdownModule()
 	JsonRpc.Reset();
 	SessionManager.Reset();
 	ToolRegistry.Reset();
+	ConsoleModule.Reset();
 	BuildModule.Reset();
 	PhysicsModule.Reset();
 	NavigationModule.Reset();
@@ -371,6 +377,11 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FBuildTextureStreamingImplTool>(*BuildModule));
 	ToolRegistry->RegisterTool(MakeShared<FBuildAllImplTool>(*BuildModule));
 	ToolRegistry->RegisterTool(MakeShared<FGetBuildStatusImplTool>(*BuildModule));
+
+	// Console command tools
+	ToolRegistry->RegisterTool(MakeShared<FExecuteConsoleCommandImplTool>(*ConsoleModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetCvarImplTool>(*ConsoleModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetCvarImplTool>(*ConsoleModule));
 }
 
 #undef LOCTEXT_NAMESPACE

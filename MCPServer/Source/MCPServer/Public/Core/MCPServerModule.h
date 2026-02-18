@@ -22,6 +22,7 @@ class IFoliageModule;
 class INavigationModule;
 class IPhysicsModule;
 class IBuildModule;
+class IConsoleModule;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogMCPServer, Log, All);
 
@@ -61,6 +62,7 @@ private:
 	TUniquePtr<INavigationModule> NavigationModule;
 	TUniquePtr<IPhysicsModule> PhysicsModule;
 	TUniquePtr<IBuildModule> BuildModule;
+	TUniquePtr<IConsoleModule> ConsoleModule;
 
 	// Tools layer
 	TUniquePtr<FMCPToolRegistry> ToolRegistry;
