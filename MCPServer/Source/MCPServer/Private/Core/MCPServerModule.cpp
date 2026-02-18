@@ -137,6 +137,13 @@
 #include "Tools/Impl/GetConfigValueImplTool.h"
 #include "Tools/Impl/SetConfigValueImplTool.h"
 #include "Tools/Impl/GetProjectPathsImplTool.h"
+#include "Tools/Impl/SccCheckoutImplTool.h"
+#include "Tools/Impl/SccAddImplTool.h"
+#include "Tools/Impl/SccDeleteImplTool.h"
+#include "Tools/Impl/SccRevertImplTool.h"
+#include "Tools/Impl/SccStatusImplTool.h"
+#include "Tools/Impl/SccSubmitImplTool.h"
+#include "Tools/Impl/SccSyncImplTool.h"
 
 // Modules
 #include "Modules/Impl/ActorImplModule.h"
@@ -155,6 +162,7 @@
 #include "Modules/Impl/BuildImplModule.h"
 #include "Modules/Impl/ConsoleImplModule.h"
 #include "Modules/Impl/ProjectSettingsImplModule.h"
+#include "Modules/Impl/SourceControlImplModule.h"
 
 DEFINE_LOG_CATEGORY(LogMCPServer);
 
@@ -184,6 +192,7 @@ void FMCPServerModule::StartupModule()
 	BuildModule = MakeUnique<FBuildImplModule>();
 	ConsoleModule = MakeUnique<FConsoleImplModule>();
 	ProjectSettingsModule = MakeUnique<FProjectSettingsImplModule>();
+	SCCModule = MakeUnique<FSourceControlImplModule>();
 
 	ToolRegistry = MakeUnique<FMCPToolRegistry>();
 	RegisterBuiltinTools();
@@ -208,6 +217,7 @@ void FMCPServerModule::ShutdownModule()
 	JsonRpc.Reset();
 	SessionManager.Reset();
 	ToolRegistry.Reset();
+	SCCModule.Reset();
 	ProjectSettingsModule.Reset();
 	ConsoleModule.Reset();
 	BuildModule.Reset();
@@ -395,6 +405,15 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FGetConfigValueImplTool>(*ProjectSettingsModule));
 	ToolRegistry->RegisterTool(MakeShared<FSetConfigValueImplTool>(*ProjectSettingsModule));
 	ToolRegistry->RegisterTool(MakeShared<FGetProjectPathsImplTool>(*ProjectSettingsModule));
+
+	// Source control tools
+	ToolRegistry->RegisterTool(MakeShared<FSccCheckoutImplTool>(*SCCModule));
+	ToolRegistry->RegisterTool(MakeShared<FSccAddImplTool>(*SCCModule));
+	ToolRegistry->RegisterTool(MakeShared<FSccDeleteImplTool>(*SCCModule));
+	ToolRegistry->RegisterTool(MakeShared<FSccRevertImplTool>(*SCCModule));
+	ToolRegistry->RegisterTool(MakeShared<FSccStatusImplTool>(*SCCModule));
+	ToolRegistry->RegisterTool(MakeShared<FSccSubmitImplTool>(*SCCModule));
+	ToolRegistry->RegisterTool(MakeShared<FSccSyncImplTool>(*SCCModule));
 }
 
 #undef LOCTEXT_NAMESPACE

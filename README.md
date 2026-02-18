@@ -175,13 +175,13 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] get_project_paths — пути проекта (Content, Config, Plugins)
 
 ### 17. Source Control
-- [ ] scc_checkout — checkout файлов
-- [ ] scc_add — добавление файлов
-- [ ] scc_delete — удаление
-- [ ] scc_revert — откат
-- [ ] scc_status — статус файлов
-- [ ] scc_submit — коммит изменений
-- [ ] scc_sync — синхронизация
+- [x] scc_checkout — checkout файлов
+- [x] scc_add — добавление файлов
+- [x] scc_delete — удаление
+- [x] scc_revert — откат
+- [x] scc_status — статус файлов
+- [x] scc_submit — коммит изменений
+- [x] scc_sync — синхронизация
 
 ### 18. UI и нотификации
 - [ ] show_notification — toast-уведомление в редакторе

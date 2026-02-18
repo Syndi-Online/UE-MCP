@@ -42,7 +42,8 @@ public class MCPServer : ModuleRules
 			"NavigationSystem",
 			"PhysicsCore",
 			"EngineSettings",
-			"Projects"
+			"Projects",
+			"SourceControl"
 		});
 	}
 }
