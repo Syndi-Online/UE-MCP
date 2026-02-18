@@ -184,12 +184,12 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] scc_sync — синхронизация
 
 ### 18. UI и нотификации
-- [ ] show_notification — toast-уведомление в редакторе
-- [ ] show_dialog — модальный диалог
-- [ ] open_asset_editor — открытие редактора ассета
-- [ ] close_asset_editor — закрытие
-- [ ] sync_content_browser — навигация в Content Browser
-- [ ] get_selected_content_browser — текущее выделение в CB
+- [x] show_notification — toast-уведомление в редакторе
+- [x] show_dialog — модальный диалог
+- [x] open_asset_editor — открытие редактора ассета
+- [x] close_asset_editor — закрытие
+- [x] sync_content_browser — навигация в Content Browser
+- [x] get_selected_content_browser — текущее выделение в CB
 
 ### 19. World Partition
 - [ ] build_hlod_wp — сборка HLOD для World Partition

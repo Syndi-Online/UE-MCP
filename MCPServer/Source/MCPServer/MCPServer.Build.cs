@@ -43,7 +43,10 @@ public class MCPServer : ModuleRules
 			"PhysicsCore",
 			"EngineSettings",
 			"Projects",
-			"SourceControl"
+			"SourceControl",
+			"Slate",
+			"ContentBrowser",
+			"EditorFramework"
 		});
 	}
 }

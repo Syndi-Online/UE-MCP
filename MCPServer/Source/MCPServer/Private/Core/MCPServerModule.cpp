@@ -144,6 +144,12 @@
 #include "Tools/Impl/SccStatusImplTool.h"
 #include "Tools/Impl/SccSubmitImplTool.h"
 #include "Tools/Impl/SccSyncImplTool.h"
+#include "Tools/Impl/ShowNotificationImplTool.h"
+#include "Tools/Impl/ShowDialogImplTool.h"
+#include "Tools/Impl/OpenAssetEditorImplTool.h"
+#include "Tools/Impl/CloseAssetEditorImplTool.h"
+#include "Tools/Impl/SyncContentBrowserImplTool.h"
+#include "Tools/Impl/GetSelectedContentBrowserImplTool.h"
 
 // Modules
 #include "Modules/Impl/ActorImplModule.h"
@@ -163,6 +169,7 @@
 #include "Modules/Impl/ConsoleImplModule.h"
 #include "Modules/Impl/ProjectSettingsImplModule.h"
 #include "Modules/Impl/SourceControlImplModule.h"
+#include "Modules/Impl/UIImplModule.h"
 
 DEFINE_LOG_CATEGORY(LogMCPServer);
 
@@ -193,6 +200,7 @@ void FMCPServerModule::StartupModule()
 	ConsoleModule = MakeUnique<FConsoleImplModule>();
 	ProjectSettingsModule = MakeUnique<FProjectSettingsImplModule>();
 	SCCModule = MakeUnique<FSourceControlImplModule>();
+	UIModule = MakeUnique<FUIImplModule>();
 
 	ToolRegistry = MakeUnique<FMCPToolRegistry>();
 	RegisterBuiltinTools();
@@ -217,6 +225,7 @@ void FMCPServerModule::ShutdownModule()
 	JsonRpc.Reset();
 	SessionManager.Reset();
 	ToolRegistry.Reset();
+	UIModule.Reset();
 	SCCModule.Reset();
 	ProjectSettingsModule.Reset();
 	ConsoleModule.Reset();
@@ -414,6 +423,14 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FSccStatusImplTool>(*SCCModule));
 	ToolRegistry->RegisterTool(MakeShared<FSccSubmitImplTool>(*SCCModule));
 	ToolRegistry->RegisterTool(MakeShared<FSccSyncImplTool>(*SCCModule));
+
+	// UI and notification tools
+	ToolRegistry->RegisterTool(MakeShared<FShowNotificationImplTool>(*UIModule));
+	ToolRegistry->RegisterTool(MakeShared<FShowDialogImplTool>(*UIModule));
+	ToolRegistry->RegisterTool(MakeShared<FOpenAssetEditorImplTool>(*UIModule));
+	ToolRegistry->RegisterTool(MakeShared<FCloseAssetEditorImplTool>(*UIModule));
+	ToolRegistry->RegisterTool(MakeShared<FSyncContentBrowserImplTool>(*UIModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetSelectedContentBrowserImplTool>(*UIModule));
 }
 
 #undef LOCTEXT_NAMESPACE
