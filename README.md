@@ -203,3 +203,9 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] stop_pie — остановка
 - [x] simulate_in_editor — режим Simulate
 - [x] is_playing — проверка статуса PIE
+
+### 21. Batch-операции
+- [ ] batch_set_actor_folders — массовая установка папок акторов в Outliner (до 100 за вызов)
+- [ ] batch_set_actor_properties — массовая установка свойств акторов (до 100 за вызов)
+- [ ] batch_set_material_expression_properties — массовая установка свойств нод материала (до 100 за вызов)
+- [ ] batch_connect_material_expressions — массовое соединение нод материала (до 100 за вызов)
