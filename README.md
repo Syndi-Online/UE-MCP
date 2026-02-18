@@ -142,11 +142,11 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] resimulate_procedural_foliage — процедурная генерация
 
 ### 12. Навигация / AI
-- [ ] build_navigation — построение NavMesh
-- [ ] rebuild_navigation — перестройка
-- [ ] find_path — поиск пути между точками
-- [ ] project_point_to_nav — проецирование на NavMesh
-- [ ] get_random_reachable_point — случайная достижимая позиция
+- [x] build_navigation — построение NavMesh
+- [x] rebuild_navigation — перестройка
+- [x] find_path — поиск пути между точками
+- [x] project_point_to_nav — проецирование на NavMesh
+- [x] get_random_reachable_point — случайная достижимая позиция
 
 ### 13. Физика
 - [ ] create_physics_collision — настройка коллизий BodySetup

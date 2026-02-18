@@ -38,7 +38,8 @@ public class MCPServer : ModuleRules
 			"LevelSequence",
 			"Landscape",
 			"LandscapeEditor",
-			"Foliage"
+			"Foliage",
+			"NavigationSystem"
 		});
 	}
 }

@@ -114,6 +114,11 @@
 #include "Tools/Impl/RemoveFoliageInstancesImplTool.h"
 #include "Tools/Impl/RegisterFoliageMeshImplTool.h"
 #include "Tools/Impl/ResimulateProceduralFoliageImplTool.h"
+#include "Tools/Impl/BuildNavigationImplTool.h"
+#include "Tools/Impl/RebuildNavigationImplTool.h"
+#include "Tools/Impl/FindPathImplTool.h"
+#include "Tools/Impl/ProjectPointToNavImplTool.h"
+#include "Tools/Impl/GetRandomReachablePointImplTool.h"
 
 // Modules
 #include "Modules/Impl/ActorImplModule.h"
@@ -127,6 +132,7 @@
 #include "Modules/Impl/SequencerToolImplModule.h"
 #include "Modules/Impl/LandscapeToolImplModule.h"
 #include "Modules/Impl/FoliageImplModule.h"
+#include "Modules/Impl/NavigationImplModule.h"
 
 DEFINE_LOG_CATEGORY(LogMCPServer);
 
@@ -151,6 +157,7 @@ void FMCPServerModule::StartupModule()
 	SequencerModule = MakeUnique<FSequencerToolImplModule>();
 	LandscapeModule = MakeUnique<FLandscapeToolImplModule>();
 	FoliageModule = MakeUnique<FFoliageImplModule>();
+	NavigationModule = MakeUnique<FNavigationImplModule>();
 
 	ToolRegistry = MakeUnique<FMCPToolRegistry>();
 	RegisterBuiltinTools();
@@ -175,6 +182,7 @@ void FMCPServerModule::ShutdownModule()
 	JsonRpc.Reset();
 	SessionManager.Reset();
 	ToolRegistry.Reset();
+	NavigationModule.Reset();
 	FoliageModule.Reset();
 	LandscapeModule.Reset();
 	SequencerModule.Reset();
@@ -324,6 +332,13 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FRemoveFoliageInstancesImplTool>(*FoliageModule));
 	ToolRegistry->RegisterTool(MakeShared<FRegisterFoliageMeshImplTool>(*FoliageModule));
 	ToolRegistry->RegisterTool(MakeShared<FResimulateProceduralFoliageImplTool>(*FoliageModule));
+
+	// Navigation / AI tools
+	ToolRegistry->RegisterTool(MakeShared<FBuildNavigationImplTool>(*NavigationModule));
+	ToolRegistry->RegisterTool(MakeShared<FRebuildNavigationImplTool>(*NavigationModule));
+	ToolRegistry->RegisterTool(MakeShared<FFindPathImplTool>(*NavigationModule));
+	ToolRegistry->RegisterTool(MakeShared<FProjectPointToNavImplTool>(*NavigationModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetRandomReachablePointImplTool>(*NavigationModule));
 }
 
 #undef LOCTEXT_NAMESPACE

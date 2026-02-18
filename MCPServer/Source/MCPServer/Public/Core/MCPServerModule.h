@@ -19,6 +19,7 @@ class ISkeletalMeshModule;
 class ISequencerToolModule;
 class ILandscapeToolModule;
 class IFoliageModule;
+class INavigationModule;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogMCPServer, Log, All);
 
@@ -55,6 +56,7 @@ private:
 	TUniquePtr<ISequencerToolModule> SequencerModule;
 	TUniquePtr<ILandscapeToolModule> LandscapeModule;
 	TUniquePtr<IFoliageModule> FoliageModule;
+	TUniquePtr<INavigationModule> NavigationModule;
 
 	// Tools layer
 	TUniquePtr<FMCPToolRegistry> ToolRegistry;
