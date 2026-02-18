@@ -27,7 +27,8 @@ public class MCPServer : ModuleRules
 			"Kismet",
 			"KismetCompiler",
 			"BlueprintGraph",
-			"MaterialEditor"
+			"MaterialEditor",
+			"StaticMeshEditor"
 		});
 	}
 }

@@ -76,6 +76,15 @@
 #include "Tools/Impl/SetMaterialInstanceParameterImplTool.h"
 #include "Tools/Impl/SetMaterialInstanceParentImplTool.h"
 #include "Tools/Impl/GetMaterialStatisticsImplTool.h"
+#include "Tools/Impl/SetStaticMeshLodImplTool.h"
+#include "Tools/Impl/ImportLodImplTool.h"
+#include "Tools/Impl/GetLodSettingsImplTool.h"
+#include "Tools/Impl/SetCollisionImplTool.h"
+#include "Tools/Impl/AddUVChannelImplTool.h"
+#include "Tools/Impl/RemoveUVChannelImplTool.h"
+#include "Tools/Impl/GenerateUVChannelImplTool.h"
+#include "Tools/Impl/SetMeshMaterialImplTool.h"
+#include "Tools/Impl/GetMeshBoundsImplTool.h"
 
 // Modules
 #include "Modules/Impl/ActorImplModule.h"
@@ -84,6 +93,7 @@
 #include "Modules/Impl/ViewportImplModule.h"
 #include "Modules/Impl/BlueprintImplModule.h"
 #include "Modules/Impl/MaterialImplModule.h"
+#include "Modules/Impl/StaticMeshImplModule.h"
 
 DEFINE_LOG_CATEGORY(LogMCPServer);
 
@@ -103,6 +113,7 @@ void FMCPServerModule::StartupModule()
 	ViewportModule = MakeUnique<FViewportImplModule>(*ActorModule);
 	BlueprintModule = MakeUnique<FBlueprintImplModule>(*ActorModule);
 	MaterialModule = MakeUnique<FMaterialImplModule>();
+	StaticMeshModule = MakeUnique<FStaticMeshImplModule>();
 
 	ToolRegistry = MakeUnique<FMCPToolRegistry>();
 	RegisterBuiltinTools();
@@ -127,6 +138,7 @@ void FMCPServerModule::ShutdownModule()
 	JsonRpc.Reset();
 	SessionManager.Reset();
 	ToolRegistry.Reset();
+	StaticMeshModule.Reset();
 	MaterialModule.Reset();
 	BlueprintModule.Reset();
 	ViewportModule.Reset();
@@ -223,6 +235,17 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FSetMaterialInstanceParameterImplTool>(*MaterialModule));
 	ToolRegistry->RegisterTool(MakeShared<FSetMaterialInstanceParentImplTool>(*MaterialModule));
 	ToolRegistry->RegisterTool(MakeShared<FGetMaterialStatisticsImplTool>(*MaterialModule));
+
+	// Static mesh tools
+	ToolRegistry->RegisterTool(MakeShared<FSetStaticMeshLodImplTool>(*StaticMeshModule));
+	ToolRegistry->RegisterTool(MakeShared<FImportLodImplTool>(*StaticMeshModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetLodSettingsImplTool>(*StaticMeshModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetCollisionImplTool>(*StaticMeshModule));
+	ToolRegistry->RegisterTool(MakeShared<FAddUVChannelImplTool>(*StaticMeshModule));
+	ToolRegistry->RegisterTool(MakeShared<FRemoveUVChannelImplTool>(*StaticMeshModule));
+	ToolRegistry->RegisterTool(MakeShared<FGenerateUVChannelImplTool>(*StaticMeshModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetMeshMaterialImplTool>(*StaticMeshModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetMeshBoundsImplTool>(*StaticMeshModule));
 }
 
 #undef LOCTEXT_NAMESPACE

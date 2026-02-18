@@ -94,15 +94,15 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] get_material_statistics — статистика шейдера
 
 ### 7. Static Mesh
-- [ ] set_static_mesh_lod — настройка LOD
-- [ ] import_lod — импорт LOD из FBX
-- [ ] get_lod_settings — чтение настроек LOD
-- [ ] set_collision — настройка коллизий
-- [ ] add_uv_channel — добавление UV канала
-- [ ] remove_uv_channel — удаление UV канала
-- [ ] generate_uv_channel — генерация UV (planar/cylindrical/box)
-- [ ] set_mesh_material — назначение материала по слоту
-- [ ] get_mesh_bounds — bounding box
+- [x] set_static_mesh_lod — настройка LOD
+- [x] import_lod — импорт LOD из FBX
+- [x] get_lod_settings — чтение настроек LOD
+- [x] set_collision — настройка коллизий
+- [x] add_uv_channel — добавление UV канала
+- [x] remove_uv_channel — удаление UV канала
+- [x] generate_uv_channel — генерация UV (planar/cylindrical/box)
+- [x] set_mesh_material — назначение материала по слоту
+- [x] get_mesh_bounds — bounding box
 
 ### 8. Skeletal Mesh и анимация
 - [ ] regenerate_skeletal_lod — регенерация LOD
