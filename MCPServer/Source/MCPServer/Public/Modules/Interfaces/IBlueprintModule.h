@@ -78,6 +78,60 @@ struct FBlueprintOpenEditorResult
 	FString ErrorMessage;
 };
 
+struct FGraphNodePinInfo
+{
+	FString PinId;
+	FString PinName;
+	FString PinType;
+	FString Direction; // "Input" or "Output"
+	TArray<FString> ConnectedPinIds;
+};
+
+struct FGraphNodeInfo
+{
+	FString NodeId;
+	FString NodeClass;
+	FString NodeTitle;
+	int32 PosX = 0;
+	int32 PosY = 0;
+	int32 Width = 0;
+	int32 Height = 0;
+	FString Comment;
+	TArray<FGraphNodePinInfo> Pins;
+};
+
+struct FGetGraphNodesResult
+{
+	bool bSuccess = false;
+	TArray<FGraphNodeInfo> Nodes;
+	FString ErrorMessage;
+};
+
+struct FSetNodePositionResult
+{
+	bool bSuccess = false;
+	FString ErrorMessage;
+};
+
+struct FAddCommentBoxResult
+{
+	bool bSuccess = false;
+	FString NodeId;
+	FString ErrorMessage;
+};
+
+struct FDeleteCommentBoxResult
+{
+	bool bSuccess = false;
+	FString ErrorMessage;
+};
+
+struct FSetCommentBoxPropertiesResult
+{
+	bool bSuccess = false;
+	FString ErrorMessage;
+};
+
 /**
  * Module interface for Blueprint operations.
  */
@@ -96,4 +150,10 @@ public:
 	virtual FBlueprintGraphsResult GetBlueprintGraphs(const FString& BlueprintPath) = 0;
 	virtual FBlueprintReparentResult ReparentBlueprint(const FString& BlueprintPath, const FString& NewParentClassPath) = 0;
 	virtual FBlueprintOpenEditorResult OpenBlueprintEditor(const FString& BlueprintPath) = 0;
+
+	virtual FGetGraphNodesResult GetGraphNodes(const FString& BlueprintPath, const FString& GraphName) = 0;
+	virtual FSetNodePositionResult SetNodePosition(const FString& BlueprintPath, const FString& GraphName, const FString& NodeId, int32 PosX, int32 PosY) = 0;
+	virtual FAddCommentBoxResult AddCommentBox(const FString& BlueprintPath, const FString& GraphName, const FString& CommentText, int32 PosX, int32 PosY, int32 Width, int32 Height, const FLinearColor* Color, const TArray<FString>* NodeIds) = 0;
+	virtual FDeleteCommentBoxResult DeleteCommentBox(const FString& BlueprintPath, const FString& GraphName, const FString& NodeId) = 0;
+	virtual FSetCommentBoxPropertiesResult SetCommentBoxProperties(const FString& BlueprintPath, const FString& GraphName, const FString& NodeId, const FString* CommentText, const FLinearColor* Color, const int32* PosX, const int32* PosY, const int32* Width, const int32* Height) = 0;
 };

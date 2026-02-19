@@ -10,6 +10,8 @@
 #include "Subsystems/AssetEditorSubsystem.h"
 #include "Subsystems/EditorActorSubsystem.h"
 #include "EdGraph/EdGraph.h"
+#include "EdGraph/EdGraphNode.h"
+#include "EdGraphNode_Comment.h"
 #include "EdGraphSchema_K2.h"
 #include "Editor.h"
 #include "GameFramework/Actor.h"
@@ -493,5 +495,331 @@ FBlueprintOpenEditorResult FBlueprintImplModule::OpenBlueprintEditor(const FStri
 
 	Result.bSuccess = true;
 	Result.BlueprintName = Blueprint->GetName();
+	return Result;
+}
+
+UEdGraph* FBlueprintImplModule::FindGraph(UBlueprint* Blueprint, const FString& GraphName)
+{
+	TArray<UEdGraph*> AllGraphs;
+	Blueprint->GetAllGraphs(AllGraphs);
+	for (UEdGraph* Graph : AllGraphs)
+	{
+		if (Graph && Graph->GetName() == GraphName)
+		{
+			return Graph;
+		}
+	}
+	return nullptr;
+}
+
+UEdGraphNode* FBlueprintImplModule::FindNodeById(UEdGraph* Graph, const FString& NodeId)
+{
+	for (UEdGraphNode* Node : Graph->Nodes)
+	{
+		if (Node && Node->NodeGuid.ToString() == NodeId)
+		{
+			return Node;
+		}
+	}
+	return nullptr;
+}
+
+FGetGraphNodesResult FBlueprintImplModule::GetGraphNodes(const FString& BlueprintPath, const FString& GraphName)
+{
+	FGetGraphNodesResult Result;
+
+	UBlueprint* Blueprint = LoadObject<UBlueprint>(nullptr, *BlueprintPath);
+	if (!Blueprint)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Blueprint not found: %s"), *BlueprintPath);
+		return Result;
+	}
+
+	UEdGraph* Graph = FindGraph(Blueprint, GraphName);
+	if (!Graph)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Graph not found: %s"), *GraphName);
+		return Result;
+	}
+
+	for (UEdGraphNode* Node : Graph->Nodes)
+	{
+		if (!Node) continue;
+
+		FGraphNodeInfo Info;
+		Info.NodeId = Node->NodeGuid.ToString();
+		Info.NodeClass = Node->GetClass()->GetName();
+		Info.NodeTitle = Node->GetNodeTitle(ENodeTitleType::FullTitle).ToString();
+		Info.PosX = Node->NodePosX;
+		Info.PosY = Node->NodePosY;
+		Info.Width = Node->NodeWidth;
+		Info.Height = Node->NodeHeight;
+
+		UEdGraphNode_Comment* CommentNode = Cast<UEdGraphNode_Comment>(Node);
+		if (CommentNode)
+		{
+			Info.Comment = CommentNode->NodeComment;
+		}
+
+		for (UEdGraphPin* Pin : Node->Pins)
+		{
+			if (!Pin) continue;
+
+			FGraphNodePinInfo PinInfo;
+			PinInfo.PinId = Pin->PinId.ToString();
+			PinInfo.PinName = Pin->PinName.ToString();
+			PinInfo.PinType = Pin->PinType.PinCategory.ToString();
+			PinInfo.Direction = (Pin->Direction == EGPD_Input) ? TEXT("Input") : TEXT("Output");
+
+			for (UEdGraphPin* LinkedPin : Pin->LinkedTo)
+			{
+				if (LinkedPin)
+				{
+					PinInfo.ConnectedPinIds.Add(LinkedPin->PinId.ToString());
+				}
+			}
+
+			Info.Pins.Add(PinInfo);
+		}
+
+		Result.Nodes.Add(Info);
+	}
+
+	Result.bSuccess = true;
+	return Result;
+}
+
+FSetNodePositionResult FBlueprintImplModule::SetNodePosition(const FString& BlueprintPath, const FString& GraphName, const FString& NodeId, int32 PosX, int32 PosY)
+{
+	FSetNodePositionResult Result;
+
+	UBlueprint* Blueprint = LoadObject<UBlueprint>(nullptr, *BlueprintPath);
+	if (!Blueprint)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Blueprint not found: %s"), *BlueprintPath);
+		return Result;
+	}
+
+	UEdGraph* Graph = FindGraph(Blueprint, GraphName);
+	if (!Graph)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Graph not found: %s"), *GraphName);
+		return Result;
+	}
+
+	UEdGraphNode* Node = FindNodeById(Graph, NodeId);
+	if (!Node)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Node not found: %s"), *NodeId);
+		return Result;
+	}
+
+	Node->NodePosX = PosX;
+	Node->NodePosY = PosY;
+	FBlueprintEditorUtils::MarkBlueprintAsModified(Blueprint);
+
+	Result.bSuccess = true;
+	return Result;
+}
+
+FAddCommentBoxResult FBlueprintImplModule::AddCommentBox(const FString& BlueprintPath, const FString& GraphName, const FString& CommentText, int32 PosX, int32 PosY, int32 Width, int32 Height, const FLinearColor* Color, const TArray<FString>* NodeIds)
+{
+	FAddCommentBoxResult Result;
+
+	UBlueprint* Blueprint = LoadObject<UBlueprint>(nullptr, *BlueprintPath);
+	if (!Blueprint)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Blueprint not found: %s"), *BlueprintPath);
+		return Result;
+	}
+
+	UEdGraph* Graph = FindGraph(Blueprint, GraphName);
+	if (!Graph)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Graph not found: %s"), *GraphName);
+		return Result;
+	}
+
+	// If node_ids provided, calculate bounding box to wrap them
+	int32 FinalPosX = PosX;
+	int32 FinalPosY = PosY;
+	int32 FinalWidth = Width;
+	int32 FinalHeight = Height;
+
+	if (NodeIds && NodeIds->Num() > 0)
+	{
+		int32 MinX = TNumericLimits<int32>::Max();
+		int32 MinY = TNumericLimits<int32>::Max();
+		int32 MaxX = TNumericLimits<int32>::Min();
+		int32 MaxY = TNumericLimits<int32>::Min();
+		int32 FoundCount = 0;
+
+		for (const FString& NId : *NodeIds)
+		{
+			UEdGraphNode* N = FindNodeById(Graph, NId);
+			if (N)
+			{
+				MinX = FMath::Min(MinX, N->NodePosX);
+				MinY = FMath::Min(MinY, N->NodePosY);
+				MaxX = FMath::Max(MaxX, N->NodePosX + FMath::Max(N->NodeWidth, 200));
+				MaxY = FMath::Max(MaxY, N->NodePosY + FMath::Max(N->NodeHeight, 100));
+				FoundCount++;
+			}
+		}
+
+		if (FoundCount > 0)
+		{
+			const int32 Padding = 50;
+			FinalPosX = MinX - Padding;
+			FinalPosY = MinY - Padding - 30; // extra space for comment title
+			FinalWidth = (MaxX - MinX) + Padding * 2;
+			FinalHeight = (MaxY - MinY) + Padding * 2 + 30;
+		}
+	}
+
+	UEdGraphNode_Comment* CommentNode = NewObject<UEdGraphNode_Comment>(Graph);
+	if (!CommentNode)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = TEXT("Failed to create comment box");
+		return Result;
+	}
+
+	CommentNode->NodeComment = CommentText;
+	CommentNode->NodePosX = FinalPosX;
+	CommentNode->NodePosY = FinalPosY;
+	CommentNode->NodeWidth = FinalWidth;
+	CommentNode->NodeHeight = FinalHeight;
+
+	if (Color)
+	{
+		CommentNode->CommentColor = *Color;
+	}
+
+	CommentNode->CreateNewGuid();
+	CommentNode->PostPlacedNewNode();
+	Graph->AddNode(CommentNode, false, false);
+
+	FBlueprintEditorUtils::MarkBlueprintAsModified(Blueprint);
+
+	Result.bSuccess = true;
+	Result.NodeId = CommentNode->NodeGuid.ToString();
+	return Result;
+}
+
+FDeleteCommentBoxResult FBlueprintImplModule::DeleteCommentBox(const FString& BlueprintPath, const FString& GraphName, const FString& NodeId)
+{
+	FDeleteCommentBoxResult Result;
+
+	UBlueprint* Blueprint = LoadObject<UBlueprint>(nullptr, *BlueprintPath);
+	if (!Blueprint)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Blueprint not found: %s"), *BlueprintPath);
+		return Result;
+	}
+
+	UEdGraph* Graph = FindGraph(Blueprint, GraphName);
+	if (!Graph)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Graph not found: %s"), *GraphName);
+		return Result;
+	}
+
+	UEdGraphNode* Node = FindNodeById(Graph, NodeId);
+	if (!Node)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Node not found: %s"), *NodeId);
+		return Result;
+	}
+
+	UEdGraphNode_Comment* CommentNode = Cast<UEdGraphNode_Comment>(Node);
+	if (!CommentNode)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Node %s is not a Comment Box"), *NodeId);
+		return Result;
+	}
+
+	Graph->RemoveNode(CommentNode);
+	FBlueprintEditorUtils::MarkBlueprintAsModified(Blueprint);
+
+	Result.bSuccess = true;
+	return Result;
+}
+
+FSetCommentBoxPropertiesResult FBlueprintImplModule::SetCommentBoxProperties(const FString& BlueprintPath, const FString& GraphName, const FString& NodeId, const FString* CommentText, const FLinearColor* Color, const int32* PosX, const int32* PosY, const int32* Width, const int32* Height)
+{
+	FSetCommentBoxPropertiesResult Result;
+
+	UBlueprint* Blueprint = LoadObject<UBlueprint>(nullptr, *BlueprintPath);
+	if (!Blueprint)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Blueprint not found: %s"), *BlueprintPath);
+		return Result;
+	}
+
+	UEdGraph* Graph = FindGraph(Blueprint, GraphName);
+	if (!Graph)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Graph not found: %s"), *GraphName);
+		return Result;
+	}
+
+	UEdGraphNode* Node = FindNodeById(Graph, NodeId);
+	if (!Node)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Node not found: %s"), *NodeId);
+		return Result;
+	}
+
+	UEdGraphNode_Comment* CommentNode = Cast<UEdGraphNode_Comment>(Node);
+	if (!CommentNode)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Node %s is not a Comment Box"), *NodeId);
+		return Result;
+	}
+
+	if (CommentText)
+	{
+		CommentNode->NodeComment = *CommentText;
+	}
+	if (Color)
+	{
+		CommentNode->CommentColor = *Color;
+	}
+	if (PosX)
+	{
+		CommentNode->NodePosX = *PosX;
+	}
+	if (PosY)
+	{
+		CommentNode->NodePosY = *PosY;
+	}
+	if (Width)
+	{
+		CommentNode->NodeWidth = *Width;
+	}
+	if (Height)
+	{
+		CommentNode->NodeHeight = *Height;
+	}
+
+	FBlueprintEditorUtils::MarkBlueprintAsModified(Blueprint);
+
+	Result.bSuccess = true;
 	return Result;
 }

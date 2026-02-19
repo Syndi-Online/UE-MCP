@@ -30,4 +30,16 @@ public:
 	virtual FBlueprintGraphsResult GetBlueprintGraphs(const FString& BlueprintPath) override { Recorder.RecordCall(TEXT("GetBlueprintGraphs")); return GetBlueprintGraphsResult; }
 	virtual FBlueprintReparentResult ReparentBlueprint(const FString& BlueprintPath, const FString& NewParentClassPath) override { Recorder.RecordCall(TEXT("ReparentBlueprint")); return ReparentBlueprintResult; }
 	virtual FBlueprintOpenEditorResult OpenBlueprintEditor(const FString& BlueprintPath) override { Recorder.RecordCall(TEXT("OpenBlueprintEditor")); return OpenBlueprintEditorResult; }
+
+	FGetGraphNodesResult GetGraphNodesResult;
+	FSetNodePositionResult SetNodePositionResult;
+	FAddCommentBoxResult AddCommentBoxResult;
+	FDeleteCommentBoxResult DeleteCommentBoxResult;
+	FSetCommentBoxPropertiesResult SetCommentBoxPropertiesResult;
+
+	virtual FGetGraphNodesResult GetGraphNodes(const FString& BlueprintPath, const FString& GraphName) override { Recorder.RecordCall(TEXT("GetGraphNodes")); return GetGraphNodesResult; }
+	virtual FSetNodePositionResult SetNodePosition(const FString& BlueprintPath, const FString& GraphName, const FString& NodeId, int32 PosX, int32 PosY) override { Recorder.RecordCall(TEXT("SetNodePosition")); return SetNodePositionResult; }
+	virtual FAddCommentBoxResult AddCommentBox(const FString& BlueprintPath, const FString& GraphName, const FString& CommentText, int32 PosX, int32 PosY, int32 Width, int32 Height, const FLinearColor* Color, const TArray<FString>* NodeIds) override { Recorder.RecordCall(TEXT("AddCommentBox")); return AddCommentBoxResult; }
+	virtual FDeleteCommentBoxResult DeleteCommentBox(const FString& BlueprintPath, const FString& GraphName, const FString& NodeId) override { Recorder.RecordCall(TEXT("DeleteCommentBox")); return DeleteCommentBoxResult; }
+	virtual FSetCommentBoxPropertiesResult SetCommentBoxProperties(const FString& BlueprintPath, const FString& GraphName, const FString& NodeId, const FString* CommentText, const FLinearColor* Color, const int32* PosX, const int32* PosY, const int32* Width, const int32* Height) override { Recorder.RecordCall(TEXT("SetCommentBoxProperties")); return SetCommentBoxPropertiesResult; }
 };

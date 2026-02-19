@@ -72,6 +72,12 @@
 #include "Tools/Impl/GetBlueprintGraphsImplTool.h"
 #include "Tools/Impl/ReparentBlueprintImplTool.h"
 #include "Tools/Impl/OpenBlueprintEditorImplTool.h"
+#include "Tools/Impl/GetGraphNodesImplTool.h"
+#include "Tools/Impl/SetNodePositionImplTool.h"
+#include "Tools/Impl/BatchSetNodePositionsImplTool.h"
+#include "Tools/Impl/AddCommentBoxImplTool.h"
+#include "Tools/Impl/DeleteCommentBoxImplTool.h"
+#include "Tools/Impl/SetCommentBoxPropertiesImplTool.h"
 #include "Tools/Impl/CreateMaterialExpressionImplTool.h"
 #include "Tools/Impl/DeleteMaterialExpressionImplTool.h"
 #include "Tools/Impl/ConnectMaterialExpressionsImplTool.h"
@@ -342,6 +348,14 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FGetBlueprintGraphsImplTool>(*BlueprintModule));
 	ToolRegistry->RegisterTool(MakeShared<FReparentBlueprintImplTool>(*BlueprintModule));
 	ToolRegistry->RegisterTool(MakeShared<FOpenBlueprintEditorImplTool>(*BlueprintModule));
+
+	// Blueprint graph node tools
+	ToolRegistry->RegisterTool(MakeShared<FGetGraphNodesImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetNodePositionImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FBatchSetNodePositionsImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FAddCommentBoxImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FDeleteCommentBoxImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetCommentBoxPropertiesImplTool>(*BlueprintModule));
 
 	// Material tools
 	ToolRegistry->RegisterTool(MakeShared<FCreateMaterialExpressionImplTool>(*MaterialModule));

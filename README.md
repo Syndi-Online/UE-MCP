@@ -205,12 +205,12 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] is_playing — проверка статуса PIE
 
 ### 22. Blueprint Graph Nodes
-- [ ] get_graph_nodes — чтение всех нод в графе (node_id, class, title, position, size, pins, comment)
-- [ ] set_node_position — перемещение ноды на графе
-- [ ] batch_set_node_positions — массовое перемещение нод (до 100 за вызов)
-- [ ] add_comment_box — добавление Comment Box (EdGraphNode_Comment)
-- [ ] delete_comment_box — удаление Comment Box
-- [ ] set_comment_box_properties — изменение свойств Comment Box (текст, цвет, позиция, размер)
+- [x] get_graph_nodes — чтение всех нод в графе (node_id, class, title, position, size, pins, comment)
+- [x] set_node_position — перемещение ноды на графе
+- [x] batch_set_node_positions — массовое перемещение нод (до 100 за вызов)
+- [x] add_comment_box — добавление Comment Box (EdGraphNode_Comment)
+- [x] delete_comment_box — удаление Comment Box
+- [x] set_comment_box_properties — изменение свойств Comment Box (текст, цвет, позиция, размер)
 
 ### 21. Batch-операции
 - [x] batch_set_actor_folders — массовая установка папок акторов в Outliner (до 100 за вызов)
