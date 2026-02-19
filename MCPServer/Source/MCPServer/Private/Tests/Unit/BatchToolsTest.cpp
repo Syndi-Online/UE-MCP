@@ -629,9 +629,40 @@ bool FBatchIntegrationTest::RunTest(const FString& Parameters)
 	TestTrue(TEXT("BatchConnectMatExprs success"), MCPTestUtils::IsSuccess(Result));
 	TestTrue(TEXT("2 succeeded"), MCPTestUtils::GetResultText(Result).Contains(TEXT("2 succeeded")));
 
+	// Step 5: Batch set actor transforms
+	ActorMock.SetActorTransformResult.bSuccess = true;
+	ActorMock.SetActorTransformResult.Location = FVector(100, 200, 0);
+	ActorMock.SetActorTransformResult.Rotation = FRotator(0, 45, 0);
+	ActorMock.SetActorTransformResult.Scale = FVector(1, 1, 1);
+
+	FBatchSetActorTransformsImplTool TransformTool(ActorMock);
+	Args = MakeShared<FJsonObject>();
+	TArray<TSharedPtr<FJsonValue>> TransformOps;
+	for (int32 i = 0; i < 4; ++i)
+	{
+		auto Op = MakeShared<FJsonObject>();
+		Op->SetStringField(TEXT("actor_identifier"), FString::Printf(TEXT("Actor_%d"), i));
+		auto Loc = MakeShared<FJsonObject>();
+		Loc->SetNumberField(TEXT("x"), i * 100.0);
+		Loc->SetNumberField(TEXT("y"), i * 200.0);
+		Loc->SetNumberField(TEXT("z"), 0);
+		Op->SetObjectField(TEXT("location"), Loc);
+		auto Rot = MakeShared<FJsonObject>();
+		Rot->SetNumberField(TEXT("pitch"), 0);
+		Rot->SetNumberField(TEXT("yaw"), i * 45.0);
+		Rot->SetNumberField(TEXT("roll"), 0);
+		Op->SetObjectField(TEXT("rotation"), Rot);
+		TransformOps.Add(MakeShared<FJsonValueObject>(Op));
+	}
+	Args->SetArrayField(TEXT("operations"), TransformOps);
+	Result = TransformTool.Execute(Args);
+	TestTrue(TEXT("BatchSetActorTransforms success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("4 succeeded"), MCPTestUtils::GetResultText(Result).Contains(TEXT("4 succeeded")));
+
 	// Verify total calls
 	TestEqual(TEXT("SetActorFolder total"), ActorMock.Recorder.GetCallCount(TEXT("SetActorFolder")), 5);
 	TestEqual(TEXT("SetActorProperty total"), ActorMock.Recorder.GetCallCount(TEXT("SetActorProperty")), 3);
+	TestEqual(TEXT("SetActorTransform total"), ActorMock.Recorder.GetCallCount(TEXT("SetActorTransform")), 4);
 	TestEqual(TEXT("SetMaterialExpressionProperty total"), MatMock.Recorder.GetCallCount(TEXT("SetMaterialExpressionProperty")), 2);
 	TestEqual(TEXT("ConnectMaterialExpressions total"), MatMock.Recorder.GetCallCount(TEXT("ConnectMaterialExpressions")), 2);
 
