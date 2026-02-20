@@ -44,6 +44,18 @@ TSharedPtr<FJsonObject> FFindAssetsImplTool::GetInputSchema() const
 		TEXT("Whether to search recursively (default: true)"));
 	Properties->SetObjectField(TEXT("recursive"), RecursiveProp);
 
+	TSharedPtr<FJsonObject> NameFilterProp = MakeShared<FJsonObject>();
+	NameFilterProp->SetStringField(TEXT("type"), TEXT("string"));
+	NameFilterProp->SetStringField(TEXT("description"),
+		TEXT("Wildcard filter for asset name (e.g. '*Repair*', 'BP_Old_Bus_*')"));
+	Properties->SetObjectField(TEXT("name_filter"), NameFilterProp);
+
+	TSharedPtr<FJsonObject> LimitProp = MakeShared<FJsonObject>();
+	LimitProp->SetStringField(TEXT("type"), TEXT("integer"));
+	LimitProp->SetStringField(TEXT("description"),
+		TEXT("Maximum number of results (default: 0 = no limit)"));
+	Properties->SetObjectField(TEXT("limit"), LimitProp);
+
 	Schema->SetObjectField(TEXT("properties"), Properties);
 
 	return Schema;
@@ -57,15 +69,23 @@ TSharedPtr<FJsonObject> FFindAssetsImplTool::Execute(const TSharedPtr<FJsonObjec
 	FString PackagePath;
 	FString ClassName;
 	bool bRecursive = true;
+	FString NameFilter;
+	int32 Limit = 0;
 
 	if (Arguments.IsValid())
 	{
 		Arguments->TryGetStringField(TEXT("package_path"), PackagePath);
 		Arguments->TryGetStringField(TEXT("class_name"), ClassName);
 		Arguments->TryGetBoolField(TEXT("recursive"), bRecursive);
+		Arguments->TryGetStringField(TEXT("name_filter"), NameFilter);
+		double LimitD = 0;
+		if (Arguments->TryGetNumberField(TEXT("limit"), LimitD))
+		{
+			Limit = static_cast<int32>(LimitD);
+		}
 	}
 
-	FAssetFindResult FindResult = AssetModule.FindAssets(PackagePath, ClassName, bRecursive);
+	FAssetFindResult FindResult = AssetModule.FindAssets(PackagePath, ClassName, bRecursive, NameFilter, Limit);
 
 	TSharedPtr<FJsonObject> TextContent = MakeShared<FJsonObject>();
 	TextContent->SetStringField(TEXT("type"), TEXT("text"));

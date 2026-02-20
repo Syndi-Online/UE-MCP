@@ -111,6 +111,26 @@ struct FAssetSetMetadataResult
 	FString ErrorMessage;
 };
 
+struct FAssetSetPropertyResult
+{
+	bool bSuccess = false;
+	FString ErrorMessage;
+};
+
+struct FAssetGetPropertyResult
+{
+	bool bSuccess = false;
+	FString PropertyValue;
+	FString ErrorMessage;
+};
+
+struct FAssetFindReferencersOfClassResult
+{
+	bool bSuccess = false;
+	TArray<FAssetInfo> Assets;
+	FString ErrorMessage;
+};
+
 /**
  * Module interface for asset management operations.
  */
@@ -125,7 +145,7 @@ public:
 	virtual FAssetRenameResult RenameAsset(const FString& SourcePath, const FString& DestinationPath) = 0;
 	virtual FAssetDeleteResult DeleteAsset(const FString& AssetPath) = 0;
 	virtual FAssetSaveResult SaveAsset(const FString& AssetPath) = 0;
-	virtual FAssetFindResult FindAssets(const FString& PackagePath, const FString& ClassName, bool bRecursive) = 0;
+	virtual FAssetFindResult FindAssets(const FString& PackagePath, const FString& ClassName, bool bRecursive, const FString& NameFilter = TEXT(""), int32 Limit = 0) = 0;
 	virtual FAssetListResult ListAssets(const FString& DirectoryPath, bool bRecursive) = 0;
 	virtual FAssetImportResult ImportAsset(const FString& FilePath, const FString& DestinationPath) = 0;
 	virtual FAssetExportResult ExportAsset(const FString& AssetPath, const FString& ExportPath) = 0;
@@ -133,4 +153,8 @@ public:
 	virtual FAssetReferencersResult GetAssetReferencers(const FString& AssetPath) = 0;
 	virtual FAssetMetadataResult GetAssetMetadata(const FString& AssetPath) = 0;
 	virtual FAssetSetMetadataResult SetAssetMetadata(const FString& AssetPath, const FString& TagName, const FString& TagValue) = 0;
+
+	virtual FAssetSetPropertyResult SetAssetProperty(const FString& AssetPath, const FString& PropertyName, const FString& PropertyValue) = 0;
+	virtual FAssetGetPropertyResult GetAssetProperty(const FString& AssetPath, const FString& PropertyName) = 0;
+	virtual FAssetFindReferencersOfClassResult FindReferencersOfClass(const FString& ClassPath, const FString& PackagePath, bool bRecursive) = 0;
 };

@@ -60,7 +60,7 @@ public:
 		return SaveAssetResult;
 	}
 
-	virtual FAssetFindResult FindAssets(const FString& PackagePath, const FString& ClassName, bool bRecursive) override
+	virtual FAssetFindResult FindAssets(const FString& PackagePath, const FString& ClassName, bool bRecursive, const FString& NameFilter = TEXT(""), int32 Limit = 0) override
 	{
 		Recorder.RecordCall(TEXT("FindAssets"));
 		return FindAssetsResult;
@@ -106,5 +106,27 @@ public:
 	{
 		Recorder.RecordCall(TEXT("SetAssetMetadata"));
 		return SetAssetMetadataResult;
+	}
+
+	FAssetSetPropertyResult SetAssetPropertyResult;
+	FAssetGetPropertyResult GetAssetPropertyResult;
+	FAssetFindReferencersOfClassResult FindReferencersOfClassResult;
+
+	virtual FAssetSetPropertyResult SetAssetProperty(const FString& AssetPath, const FString& PropertyName, const FString& PropertyValue) override
+	{
+		Recorder.RecordCall(TEXT("SetAssetProperty"));
+		return SetAssetPropertyResult;
+	}
+
+	virtual FAssetGetPropertyResult GetAssetProperty(const FString& AssetPath, const FString& PropertyName) override
+	{
+		Recorder.RecordCall(TEXT("GetAssetProperty"));
+		return GetAssetPropertyResult;
+	}
+
+	virtual FAssetFindReferencersOfClassResult FindReferencersOfClass(const FString& ClassPath, const FString& PackagePath, bool bRecursive) override
+	{
+		Recorder.RecordCall(TEXT("FindReferencersOfClass"));
+		return FindReferencersOfClassResult;
 	}
 };

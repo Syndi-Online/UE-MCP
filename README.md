@@ -55,9 +55,9 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] get_asset_referencers — кто ссылается на ассет
 - [x] get_asset_metadata — чтение метаданных
 - [x] set_asset_metadata — установка метаданных
-- [ ] set_asset_property — установка UPROPERTY на любом ассете (SoundWave, Material, DataAsset и т.д.)
-- [ ] get_asset_property — чтение UPROPERTY ассета
-- [ ] find_referencers_of_class — поиск ассетов, ссылающихся на указанный класс
+- [x] set_asset_property — установка UPROPERTY на любом ассете (SoundWave, Material, DataAsset и т.д.)
+- [x] get_asset_property — чтение UPROPERTY ассета
+- [x] find_referencers_of_class — поиск ассетов, ссылающихся на указанный класс
 
 ### 4. Вьюпорт и камера
 - [x] get_viewport_camera — чтение позиции/ротации камеры
@@ -85,7 +85,7 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] reparent_blueprint — смена родительского класса
 - [x] open_blueprint_editor — открытие в редакторе
 - [x] add_event_dispatcher — создание Event Dispatcher с опциональными параметрами
-- [ ] get_blueprint_parent_class — получение родительского класса и BP
+- [x] get_blueprint_parent_class — получение родительского класса и BP
 
 ### 6. Материалы
 - [x] create_material_expression — создание ноды
@@ -225,6 +225,7 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] set_comment_box_properties — изменение свойств Comment Box (текст, цвет, позиция, размер)
 - [x] get_graph_nodes_summary — облегчённый список нод графа (id, class, title, connected_node_ids) с опциональным class_filter
 - [x] get_graph_nodes (node_ids filter) — опциональная фильтрация по списку node_ids для получения полных данных только нужных нод
+- [x] get_graph_nodes_in_area — пространственный запрос нод в прямоугольной области (collision detection для размещения)
 
 ### 23. Blueprint Components
 - [x] add_blueprint_component — добавление компонента в блупринт (класс, имя, parent)
@@ -238,4 +239,4 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] connect_graph_pins — соединение пинов между нодами
 - [x] set_pin_default_value — установка значения по умолчанию на пине
 - [x] delete_graph_node — удаление ноды из графа
-- [ ] add_graph_nodes_batch — массовое создание нод + соединений за один вызов
+- [x] add_graph_nodes_batch — массовое создание нод + соединений за один вызов

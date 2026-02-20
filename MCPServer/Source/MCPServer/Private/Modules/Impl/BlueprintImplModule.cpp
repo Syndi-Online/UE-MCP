@@ -911,7 +911,9 @@ FAddBlueprintComponentResult FBlueprintImplModule::AddBlueprintComponent(const F
 		SCS->AddNode(NewNode);
 	}
 
-	FBlueprintEditorUtils::MarkBlueprintAsModified(Blueprint);
+	// Use MarkBlueprintAsStructurallyModified to trigger skeleton class regeneration
+	// so that new component variables are immediately available for VariableGet nodes
+	FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(Blueprint);
 
 	Result.bSuccess = true;
 	Result.ComponentName = NewNode->GetVariableName().ToString();
@@ -1080,33 +1082,47 @@ FGetBlueprintComponentPropertyResult FBlueprintImplModule::GetBlueprintComponent
 		return Result;
 	}
 
+	// Search in this BP's SCS first
+	UActorComponent* ComponentTemplate = nullptr;
 	USimpleConstructionScript* SCS = Blueprint->SimpleConstructionScript;
-	if (!SCS)
+	if (SCS)
 	{
-		Result.ErrorMessage = TEXT("Blueprint has no SimpleConstructionScript");
-		return Result;
-	}
-
-	USCS_Node* TargetNode = nullptr;
-	for (USCS_Node* Node : SCS->GetAllNodes())
-	{
-		if (Node && Node->GetVariableName().ToString() == ComponentName)
+		for (USCS_Node* Node : SCS->GetAllNodes())
 		{
-			TargetNode = Node;
-			break;
+			if (Node && Node->GetVariableName().ToString() == ComponentName)
+			{
+				ComponentTemplate = Node->ComponentTemplate;
+				break;
+			}
 		}
 	}
 
-	if (!TargetNode)
-	{
-		Result.ErrorMessage = FString::Printf(TEXT("Component not found: %s"), *ComponentName);
-		return Result;
-	}
-
-	UActorComponent* ComponentTemplate = TargetNode->ComponentTemplate;
+	// If not found, search up the inheritance hierarchy via CDO
 	if (!ComponentTemplate)
 	{
-		Result.ErrorMessage = FString::Printf(TEXT("Component template not found for: %s"), *ComponentName);
+		UClass* GenClass = Blueprint->GeneratedClass;
+		if (GenClass)
+		{
+			AActor* CDO = Cast<AActor>(GenClass->GetDefaultObject());
+			if (CDO)
+			{
+				TInlineComponentArray<UActorComponent*> Components;
+				CDO->GetComponents(Components);
+				for (UActorComponent* Comp : Components)
+				{
+					if (Comp && Comp->GetName() == ComponentName)
+					{
+						ComponentTemplate = Comp;
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	if (!ComponentTemplate)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Component not found: %s"), *ComponentName);
 		return Result;
 	}
 
@@ -1674,5 +1690,150 @@ FAddEventDispatcherResult FBlueprintImplModule::AddEventDispatcher(const FString
 	Result.bSuccess = true;
 	Result.DispatcherName = DispatcherName;
 	Result.GraphName = NewGraph->GetName();
+	return Result;
+}
+
+// ============================================================
+// Blueprint Parent Class
+// ============================================================
+
+FGetBlueprintParentClassResult FBlueprintImplModule::GetBlueprintParentClass(const FString& BlueprintPath)
+{
+	FGetBlueprintParentClassResult Result;
+
+	UBlueprint* Blueprint = LoadObject<UBlueprint>(nullptr, *BlueprintPath);
+	if (!Blueprint)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Blueprint not found: %s"), *BlueprintPath);
+		return Result;
+	}
+
+	UClass* ParentClass = Blueprint->ParentClass;
+	if (!ParentClass)
+	{
+		Result.ErrorMessage = TEXT("No parent class");
+		return Result;
+	}
+
+	Result.bSuccess = true;
+	Result.ParentClass = ParentClass->GetPathName();
+
+	// Check if parent is a Blueprint-generated class
+	UBlueprint* ParentBP = Cast<UBlueprint>(ParentClass->ClassGeneratedBy);
+	if (ParentBP)
+	{
+		Result.ParentBlueprint = ParentBP->GetPathName();
+	}
+	// else ParentBlueprint stays empty (it's a C++ class)
+
+	return Result;
+}
+
+// ============================================================
+// Batch Graph Node Creation
+// ============================================================
+
+FAddGraphNodesBatchResult FBlueprintImplModule::AddGraphNodesBatch(const FString& BlueprintPath, const FString& GraphName, const TArray<FAddGraphNodesBatchNodeInfo>& Nodes, const TArray<FAddGraphNodesBatchConnection>* Connections)
+{
+	FAddGraphNodesBatchResult Result;
+
+	// Create each node using AddGraphNode
+	TMap<FString, FString> LocalIdToNodeId; // local_id -> actual node GUID
+
+	for (const FAddGraphNodesBatchNodeInfo& NodeInfo : Nodes)
+	{
+		const FString* MemberNamePtr = NodeInfo.MemberName.IsEmpty() ? nullptr : &NodeInfo.MemberName;
+		const FString* TargetPtr = NodeInfo.Target.IsEmpty() ? nullptr : &NodeInfo.Target;
+		int32 PosX = NodeInfo.PosX;
+		int32 PosY = NodeInfo.PosY;
+
+		FAddGraphNodeResult NodeResult = AddGraphNode(BlueprintPath, GraphName, NodeInfo.NodeType, MemberNamePtr, TargetPtr, &PosX, &PosY);
+		if (!NodeResult.bSuccess)
+		{
+			Result.ErrorMessage = FString::Printf(TEXT("Failed to create node '%s': %s"), *NodeInfo.LocalId, *NodeResult.ErrorMessage);
+			return Result;
+		}
+
+		LocalIdToNodeId.Add(NodeInfo.LocalId, NodeResult.NodeId);
+
+		FAddGraphNodesBatchResultNode ResNode;
+		ResNode.LocalId = NodeInfo.LocalId;
+		ResNode.NodeId = NodeResult.NodeId;
+		ResNode.Pins = NodeResult.Pins;
+		Result.Nodes.Add(ResNode);
+	}
+
+	// Connect pins if provided
+	if (Connections)
+	{
+		for (const FAddGraphNodesBatchConnection& Conn : *Connections)
+		{
+			FString* SourceNodeId = LocalIdToNodeId.Find(Conn.SourceLocalId);
+			FString* TargetNodeId = LocalIdToNodeId.Find(Conn.TargetLocalId);
+
+			if (!SourceNodeId) { Result.ErrorMessage = FString::Printf(TEXT("Source local_id not found: %s"), *Conn.SourceLocalId); return Result; }
+			if (!TargetNodeId) { Result.ErrorMessage = FString::Printf(TEXT("Target local_id not found: %s"), *Conn.TargetLocalId); return Result; }
+
+			FConnectGraphPinsResult ConnResult = ConnectGraphPins(BlueprintPath, GraphName, *SourceNodeId, Conn.SourcePinName, *TargetNodeId, Conn.TargetPinName);
+			if (!ConnResult.bSuccess)
+			{
+				Result.ErrorMessage = FString::Printf(TEXT("Failed to connect %s.%s -> %s.%s: %s"), *Conn.SourceLocalId, *Conn.SourcePinName, *Conn.TargetLocalId, *Conn.TargetPinName, *ConnResult.ErrorMessage);
+				return Result;
+			}
+			Result.ConnectionsMade++;
+		}
+	}
+
+	Result.bSuccess = true;
+	return Result;
+}
+
+// ============================================================
+// Spatial Queries
+// ============================================================
+
+FGetGraphNodesInAreaResult FBlueprintImplModule::GetGraphNodesInArea(const FString& BlueprintPath, const FString& GraphName, int32 MinX, int32 MinY, int32 MaxX, int32 MaxY)
+{
+	FGetGraphNodesInAreaResult Result;
+
+	UBlueprint* Blueprint = LoadObject<UBlueprint>(nullptr, *BlueprintPath);
+	if (!Blueprint)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Blueprint not found: %s"), *BlueprintPath);
+		return Result;
+	}
+
+	UEdGraph* Graph = FindGraph(Blueprint, GraphName);
+	if (!Graph)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Graph not found: %s"), *GraphName);
+		return Result;
+	}
+
+	for (UEdGraphNode* Node : Graph->Nodes)
+	{
+		if (!Node) continue;
+
+		int32 NodeW = FMath::Max(Node->NodeWidth, 200);
+		int32 NodeH = FMath::Max(Node->NodeHeight, 100);
+
+		// AABB intersection test
+		bool bIntersects = Node->NodePosX < MaxX && (Node->NodePosX + NodeW) > MinX
+			&& Node->NodePosY < MaxY && (Node->NodePosY + NodeH) > MinY;
+
+		if (bIntersects)
+		{
+			FGraphNodeInAreaInfo Info;
+			Info.NodeId = Node->NodeGuid.ToString();
+			Info.NodeTitle = Node->GetNodeTitle(ENodeTitleType::FullTitle).ToString();
+			Info.PosX = Node->NodePosX;
+			Info.PosY = Node->NodePosY;
+			Info.Width = NodeW;
+			Info.Height = NodeH;
+			Result.Nodes.Add(Info);
+		}
+	}
+
+	Result.bSuccess = true;
 	return Result;
 }

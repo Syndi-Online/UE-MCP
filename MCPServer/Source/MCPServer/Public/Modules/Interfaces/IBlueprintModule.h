@@ -203,6 +203,64 @@ struct FDeleteGraphNodeResult
 	FString ErrorMessage;
 };
 
+struct FGetBlueprintParentClassResult
+{
+	bool bSuccess = false;
+	FString ParentClass;
+	FString ParentBlueprint;
+	FString ErrorMessage;
+};
+
+struct FAddGraphNodesBatchNodeInfo
+{
+	FString LocalId;
+	FString NodeType;
+	FString MemberName;
+	FString Target;
+	int32 PosX = 0;
+	int32 PosY = 0;
+};
+
+struct FAddGraphNodesBatchConnection
+{
+	FString SourceLocalId;
+	FString SourcePinName;
+	FString TargetLocalId;
+	FString TargetPinName;
+};
+
+struct FAddGraphNodesBatchResultNode
+{
+	FString LocalId;
+	FString NodeId;
+	TArray<FGraphNodePinInfo> Pins;
+};
+
+struct FAddGraphNodesBatchResult
+{
+	bool bSuccess = false;
+	TArray<FAddGraphNodesBatchResultNode> Nodes;
+	int32 ConnectionsMade = 0;
+	FString ErrorMessage;
+};
+
+struct FGraphNodeInAreaInfo
+{
+	FString NodeId;
+	FString NodeTitle;
+	int32 PosX = 0;
+	int32 PosY = 0;
+	int32 Width = 0;
+	int32 Height = 0;
+};
+
+struct FGetGraphNodesInAreaResult
+{
+	bool bSuccess = false;
+	TArray<FGraphNodeInAreaInfo> Nodes;
+	FString ErrorMessage;
+};
+
 struct FEventDispatcherParamInfo
 {
 	FString ParamName;
@@ -257,4 +315,13 @@ public:
 
 	// Event Dispatchers
 	virtual FAddEventDispatcherResult AddEventDispatcher(const FString& BlueprintPath, const FString& DispatcherName, const TArray<FEventDispatcherParamInfo>* Parameters) = 0;
+
+	// Parent class
+	virtual FGetBlueprintParentClassResult GetBlueprintParentClass(const FString& BlueprintPath) = 0;
+
+	// Batch graph operations
+	virtual FAddGraphNodesBatchResult AddGraphNodesBatch(const FString& BlueprintPath, const FString& GraphName, const TArray<FAddGraphNodesBatchNodeInfo>& Nodes, const TArray<FAddGraphNodesBatchConnection>* Connections) = 0;
+
+	// Spatial queries
+	virtual FGetGraphNodesInAreaResult GetGraphNodesInArea(const FString& BlueprintPath, const FString& GraphName, int32 MinX, int32 MinY, int32 MaxX, int32 MaxY) = 0;
 };

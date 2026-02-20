@@ -11,6 +11,9 @@
 #include "Tools/Impl/SetPinDefaultValueImplTool.h"
 #include "Tools/Impl/DeleteGraphNodeImplTool.h"
 #include "Tools/Impl/AddEventDispatcherImplTool.h"
+#include "Tools/Impl/GetBlueprintParentClassImplTool.h"
+#include "Tools/Impl/AddGraphNodesBatchImplTool.h"
+#include "Tools/Impl/GetGraphNodesInAreaImplTool.h"
 #include "Tests/Mocks/MockBlueprintModule.h"
 #include "Tests/Integration/IntegrationTestUtils.h"
 
@@ -885,6 +888,375 @@ bool FAddEventDispatcherModuleFailureTest::RunTest(const FString& Parameters)
 }
 
 // ===========================================================================
+// GetBlueprintParentClass
+// ===========================================================================
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetBlueprintParentClassMetadataTest,
+	"MCPServer.Unit.BlueprintComponentGraph.GetBlueprintParentClass.Metadata",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetBlueprintParentClassMetadataTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	FGetBlueprintParentClassImplTool Tool(Mock);
+	TestEqual(TEXT("Name"), Tool.GetName(), TEXT("get_blueprint_parent_class"));
+	TestTrue(TEXT("Description not empty"), !Tool.GetDescription().IsEmpty());
+	TestTrue(TEXT("Schema valid"), Tool.GetInputSchema().IsValid());
+	TestTrue(TEXT("Schema has type"), Tool.GetInputSchema()->HasField(TEXT("type")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetBlueprintParentClassSuccessTest,
+	"MCPServer.Unit.BlueprintComponentGraph.GetBlueprintParentClass.Success",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetBlueprintParentClassSuccessTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.GetBlueprintParentClassResult.bSuccess = true;
+	Mock.GetBlueprintParentClassResult.ParentClass = TEXT("/Script/Engine.Actor");
+	FGetBlueprintParentClassImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("Success"), MCPTestUtils::IsSuccess(Result));
+	FString Text = MCPTestUtils::GetResultText(Result);
+	TestTrue(TEXT("Contains parent_class"), Text.Contains(TEXT("parent_class")));
+	TestTrue(TEXT("Contains Actor"), Text.Contains(TEXT("Actor")));
+	TestTrue(TEXT("Contains null parent_blueprint"), Text.Contains(TEXT("null")));
+	TestEqual(TEXT("GetBlueprintParentClass called"), Mock.Recorder.GetCallCount(TEXT("GetBlueprintParentClass")), 1);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetBlueprintParentClassWithBPParentTest,
+	"MCPServer.Unit.BlueprintComponentGraph.GetBlueprintParentClass.WithBPParent",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetBlueprintParentClassWithBPParentTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.GetBlueprintParentClassResult.bSuccess = true;
+	Mock.GetBlueprintParentClassResult.ParentClass = TEXT("/Game/BP_Base.BP_Base_C");
+	Mock.GetBlueprintParentClassResult.ParentBlueprint = TEXT("/Game/BP_Base");
+	FGetBlueprintParentClassImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Child"));
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("Success"), MCPTestUtils::IsSuccess(Result));
+	FString Text = MCPTestUtils::GetResultText(Result);
+	TestTrue(TEXT("Contains parent_blueprint"), Text.Contains(TEXT("parent_blueprint")));
+	TestTrue(TEXT("Contains BP_Base"), Text.Contains(TEXT("BP_Base")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetBlueprintParentClassMissingArgsTest,
+	"MCPServer.Unit.BlueprintComponentGraph.GetBlueprintParentClass.MissingArgs",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetBlueprintParentClassMissingArgsTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	FGetBlueprintParentClassImplTool Tool(Mock);
+	auto Result = Tool.Execute(MakeShared<FJsonObject>());
+	TestTrue(TEXT("Error"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Mentions blueprint_path"), MCPTestUtils::GetResultText(Result).Contains(TEXT("blueprint_path")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetBlueprintParentClassModuleFailureTest,
+	"MCPServer.Unit.BlueprintComponentGraph.GetBlueprintParentClass.ModuleFailure",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetBlueprintParentClassModuleFailureTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.GetBlueprintParentClassResult.bSuccess = false;
+	Mock.GetBlueprintParentClassResult.ErrorMessage = TEXT("Blueprint not found");
+	FGetBlueprintParentClassImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/Missing"));
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("isError"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Contains error"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Blueprint not found")));
+	return true;
+}
+
+// ===========================================================================
+// AddGraphNodesBatch
+// ===========================================================================
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FAddGraphNodesBatchMetadataTest,
+	"MCPServer.Unit.BlueprintComponentGraph.AddGraphNodesBatch.Metadata",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FAddGraphNodesBatchMetadataTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	FAddGraphNodesBatchImplTool Tool(Mock);
+	TestEqual(TEXT("Name"), Tool.GetName(), TEXT("add_graph_nodes_batch"));
+	TestTrue(TEXT("Description not empty"), !Tool.GetDescription().IsEmpty());
+	TestTrue(TEXT("Schema valid"), Tool.GetInputSchema().IsValid());
+	TestTrue(TEXT("Schema has type"), Tool.GetInputSchema()->HasField(TEXT("type")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FAddGraphNodesBatchSuccessTest,
+	"MCPServer.Unit.BlueprintComponentGraph.AddGraphNodesBatch.Success",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FAddGraphNodesBatchSuccessTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.AddGraphNodesBatchResult.bSuccess = true;
+	Mock.AddGraphNodesBatchResult.ConnectionsMade = 1;
+
+	FAddGraphNodesBatchResultNode N1;
+	N1.LocalId = TEXT("print");
+	N1.NodeId = TEXT("GUID-BATCH-001");
+	Mock.AddGraphNodesBatchResult.Nodes.Add(N1);
+
+	FAddGraphNodesBatchResultNode N2;
+	N2.LocalId = TEXT("delay");
+	N2.NodeId = TEXT("GUID-BATCH-002");
+	Mock.AddGraphNodesBatchResult.Nodes.Add(N2);
+
+	FAddGraphNodesBatchImplTool Tool(Mock);
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+
+	TArray<TSharedPtr<FJsonValue>> NodesArray;
+	auto Node1 = MakeShared<FJsonObject>();
+	Node1->SetStringField(TEXT("local_id"), TEXT("print"));
+	Node1->SetStringField(TEXT("node_type"), TEXT("CallFunction"));
+	Node1->SetStringField(TEXT("member_name"), TEXT("PrintString"));
+	Node1->SetStringField(TEXT("target"), TEXT("KismetSystemLibrary"));
+	Node1->SetNumberField(TEXT("pos_x"), 400);
+	Node1->SetNumberField(TEXT("pos_y"), 0);
+	NodesArray.Add(MakeShared<FJsonValueObject>(Node1));
+
+	auto Node2 = MakeShared<FJsonObject>();
+	Node2->SetStringField(TEXT("local_id"), TEXT("delay"));
+	Node2->SetStringField(TEXT("node_type"), TEXT("CallFunction"));
+	Node2->SetStringField(TEXT("member_name"), TEXT("Delay"));
+	Node2->SetStringField(TEXT("target"), TEXT("KismetSystemLibrary"));
+	Node2->SetNumberField(TEXT("pos_x"), 700);
+	Node2->SetNumberField(TEXT("pos_y"), 0);
+	NodesArray.Add(MakeShared<FJsonValueObject>(Node2));
+	Args->SetArrayField(TEXT("nodes"), NodesArray);
+
+	TArray<TSharedPtr<FJsonValue>> ConnsArray;
+	auto Conn = MakeShared<FJsonObject>();
+	Conn->SetStringField(TEXT("source"), TEXT("print"));
+	Conn->SetStringField(TEXT("source_pin"), TEXT("then"));
+	Conn->SetStringField(TEXT("target"), TEXT("delay"));
+	Conn->SetStringField(TEXT("target_pin"), TEXT("execute"));
+	ConnsArray.Add(MakeShared<FJsonValueObject>(Conn));
+	Args->SetArrayField(TEXT("connections"), ConnsArray);
+
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("Success"), MCPTestUtils::IsSuccess(Result));
+	FString Text = MCPTestUtils::GetResultText(Result);
+	TestTrue(TEXT("Contains 2 nodes"), Text.Contains(TEXT("2 nodes")));
+	TestTrue(TEXT("Contains 1 connection"), Text.Contains(TEXT("1 connection")));
+	TestTrue(TEXT("Contains GUID-BATCH-001"), Text.Contains(TEXT("GUID-BATCH-001")));
+	TestEqual(TEXT("AddGraphNodesBatch called"), Mock.Recorder.GetCallCount(TEXT("AddGraphNodesBatch")), 1);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FAddGraphNodesBatchMissingArgsTest,
+	"MCPServer.Unit.BlueprintComponentGraph.AddGraphNodesBatch.MissingArgs",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FAddGraphNodesBatchMissingArgsTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	FAddGraphNodesBatchImplTool Tool(Mock);
+	auto Result = Tool.Execute(MakeShared<FJsonObject>());
+	TestTrue(TEXT("Error"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Mentions blueprint_path"), MCPTestUtils::GetResultText(Result).Contains(TEXT("blueprint_path")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FAddGraphNodesBatchEmptyNodesTest,
+	"MCPServer.Unit.BlueprintComponentGraph.AddGraphNodesBatch.EmptyNodes",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FAddGraphNodesBatchEmptyNodesTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	FAddGraphNodesBatchImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+	TArray<TSharedPtr<FJsonValue>> EmptyArray;
+	Args->SetArrayField(TEXT("nodes"), EmptyArray);
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("Error"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Mentions nodes"), MCPTestUtils::GetResultText(Result).Contains(TEXT("nodes")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FAddGraphNodesBatchModuleFailureTest,
+	"MCPServer.Unit.BlueprintComponentGraph.AddGraphNodesBatch.ModuleFailure",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FAddGraphNodesBatchModuleFailureTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.AddGraphNodesBatchResult.bSuccess = false;
+	Mock.AddGraphNodesBatchResult.ErrorMessage = TEXT("Blueprint not found");
+	FAddGraphNodesBatchImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/Missing"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+
+	TArray<TSharedPtr<FJsonValue>> NodesArray;
+	auto Node1 = MakeShared<FJsonObject>();
+	Node1->SetStringField(TEXT("local_id"), TEXT("n1"));
+	Node1->SetStringField(TEXT("node_type"), TEXT("CallFunction"));
+	Node1->SetStringField(TEXT("member_name"), TEXT("PrintString"));
+	NodesArray.Add(MakeShared<FJsonValueObject>(Node1));
+	Args->SetArrayField(TEXT("nodes"), NodesArray);
+
+	auto Result = Tool.Execute(Args);
+	TestTrue(TEXT("isError"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Contains error"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Blueprint not found")));
+	return true;
+}
+
+// ===========================================================================
+// GetGraphNodesInArea
+// ===========================================================================
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetGraphNodesInAreaMetadataTest,
+	"MCPServer.Unit.BlueprintComponentGraph.GetGraphNodesInArea.Metadata",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetGraphNodesInAreaMetadataTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	FGetGraphNodesInAreaImplTool Tool(Mock);
+	TestEqual(TEXT("Name"), Tool.GetName(), TEXT("get_graph_nodes_in_area"));
+	TestTrue(TEXT("Description not empty"), !Tool.GetDescription().IsEmpty());
+	TestTrue(TEXT("Schema valid"), Tool.GetInputSchema().IsValid());
+	TestTrue(TEXT("Schema has type"), Tool.GetInputSchema()->HasField(TEXT("type")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetGraphNodesInAreaSuccessTest,
+	"MCPServer.Unit.BlueprintComponentGraph.GetGraphNodesInArea.Success",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetGraphNodesInAreaSuccessTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.GetGraphNodesInAreaResult.bSuccess = true;
+	FGraphNodeInAreaInfo Node;
+	Node.NodeId = TEXT("GUID-AREA-001");
+	Node.NodeTitle = TEXT("Print String");
+	Node.PosX = 100;
+	Node.PosY = 50;
+	Node.Width = 250;
+	Node.Height = 120;
+	Mock.GetGraphNodesInAreaResult.Nodes.Add(Node);
+
+	FGetGraphNodesInAreaImplTool Tool(Mock);
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+	Args->SetNumberField(TEXT("min_x"), 0);
+	Args->SetNumberField(TEXT("min_y"), 0);
+	Args->SetNumberField(TEXT("max_x"), 500);
+	Args->SetNumberField(TEXT("max_y"), 300);
+
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("Success"), MCPTestUtils::IsSuccess(Result));
+	FString Text = MCPTestUtils::GetResultText(Result);
+	TestTrue(TEXT("Contains 1 node"), Text.Contains(TEXT("1 node")));
+	TestTrue(TEXT("Contains GUID-AREA-001"), Text.Contains(TEXT("GUID-AREA-001")));
+	TestTrue(TEXT("Contains Print String"), Text.Contains(TEXT("Print String")));
+	TestEqual(TEXT("GetGraphNodesInArea called"), Mock.Recorder.GetCallCount(TEXT("GetGraphNodesInArea")), 1);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetGraphNodesInAreaEmptyTest,
+	"MCPServer.Unit.BlueprintComponentGraph.GetGraphNodesInArea.Empty",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetGraphNodesInAreaEmptyTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.GetGraphNodesInAreaResult.bSuccess = true;
+	// No nodes in result = area is free
+
+	FGetGraphNodesInAreaImplTool Tool(Mock);
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+	Args->SetNumberField(TEXT("min_x"), 5000);
+	Args->SetNumberField(TEXT("min_y"), 5000);
+	Args->SetNumberField(TEXT("max_x"), 6000);
+	Args->SetNumberField(TEXT("max_y"), 6000);
+
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("Success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Area is free"), MCPTestUtils::GetResultText(Result).Contains(TEXT("free")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetGraphNodesInAreaMissingArgsTest,
+	"MCPServer.Unit.BlueprintComponentGraph.GetGraphNodesInArea.MissingArgs",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetGraphNodesInAreaMissingArgsTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	FGetGraphNodesInAreaImplTool Tool(Mock);
+	auto Result = Tool.Execute(MakeShared<FJsonObject>());
+	TestTrue(TEXT("Error"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Mentions required"), MCPTestUtils::GetResultText(Result).Contains(TEXT("blueprint_path")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetGraphNodesInAreaModuleFailureTest,
+	"MCPServer.Unit.BlueprintComponentGraph.GetGraphNodesInArea.ModuleFailure",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetGraphNodesInAreaModuleFailureTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.GetGraphNodesInAreaResult.bSuccess = false;
+	Mock.GetGraphNodesInAreaResult.ErrorMessage = TEXT("Graph not found");
+	FGetGraphNodesInAreaImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("BadGraph"));
+	Args->SetNumberField(TEXT("min_x"), 0);
+	Args->SetNumberField(TEXT("min_y"), 0);
+	Args->SetNumberField(TEXT("max_x"), 500);
+	Args->SetNumberField(TEXT("max_y"), 500);
+
+	auto Result = Tool.Execute(Args);
+	TestTrue(TEXT("isError"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Contains error"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Graph not found")));
+	return true;
+}
+
+// ===========================================================================
 // Integration: Blueprint Components + Graph Editing full workflow
 // ===========================================================================
 
@@ -1061,6 +1433,60 @@ bool FBlueprintComponentGraphIntegrationTest::RunTest(const FString& Parameters)
 	TestTrue(TEXT("Step11: AddEventDispatcher success"), MCPTestUtils::IsSuccess(Result));
 	TestTrue(TEXT("Step11: Contains OnDamageReceived"), MCPTestUtils::GetResultText(Result).Contains(TEXT("OnDamageReceived")));
 
+	// Step 12: Get blueprint parent class
+	Mock.GetBlueprintParentClassResult.bSuccess = true;
+	Mock.GetBlueprintParentClassResult.ParentClass = TEXT("/Script/Engine.Actor");
+	FGetBlueprintParentClassImplTool ParentClassTool(Mock);
+	Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Result = ParentClassTool.Execute(Args);
+	TestTrue(TEXT("Step12: GetParentClass success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Step12: Contains Actor"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Actor")));
+
+	// Step 13: Batch add graph nodes
+	Mock.AddGraphNodesBatchResult.bSuccess = true;
+	Mock.AddGraphNodesBatchResult.ConnectionsMade = 1;
+	FAddGraphNodesBatchResultNode BN1;
+	BN1.LocalId = TEXT("print");
+	BN1.NodeId = TEXT("GUID-BATCH-P");
+	Mock.AddGraphNodesBatchResult.Nodes.Add(BN1);
+	FAddGraphNodesBatchImplTool BatchNodesTool(Mock);
+	Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+	TArray<TSharedPtr<FJsonValue>> BatchNodes;
+	auto BNode = MakeShared<FJsonObject>();
+	BNode->SetStringField(TEXT("local_id"), TEXT("print"));
+	BNode->SetStringField(TEXT("node_type"), TEXT("CallFunction"));
+	BNode->SetStringField(TEXT("member_name"), TEXT("PrintString"));
+	BatchNodes.Add(MakeShared<FJsonValueObject>(BNode));
+	Args->SetArrayField(TEXT("nodes"), BatchNodes);
+	Result = BatchNodesTool.Execute(Args);
+	TestTrue(TEXT("Step13: BatchNodes success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Step13: Contains GUID-BATCH-P"), MCPTestUtils::GetResultText(Result).Contains(TEXT("GUID-BATCH-P")));
+
+	// Step 14: Query graph nodes in area
+	Mock.GetGraphNodesInAreaResult.bSuccess = true;
+	FGraphNodeInAreaInfo AreaNode;
+	AreaNode.NodeId = TEXT("GUID-BATCH-P");
+	AreaNode.NodeTitle = TEXT("Print String");
+	AreaNode.PosX = 400;
+	AreaNode.PosY = 0;
+	AreaNode.Width = 250;
+	AreaNode.Height = 100;
+	Mock.GetGraphNodesInAreaResult.Nodes.Add(AreaNode);
+	FGetGraphNodesInAreaImplTool AreaTool(Mock);
+	Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+	Args->SetNumberField(TEXT("min_x"), 0);
+	Args->SetNumberField(TEXT("min_y"), 0);
+	Args->SetNumberField(TEXT("max_x"), 800);
+	Args->SetNumberField(TEXT("max_y"), 300);
+	Result = AreaTool.Execute(Args);
+	TestTrue(TEXT("Step14: NodesInArea success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Step14: Contains 1 node"), MCPTestUtils::GetResultText(Result).Contains(TEXT("1 node")));
+
 	// Verify call counts
 	TestEqual(TEXT("GetBlueprintComponents total"), Mock.Recorder.GetCallCount(TEXT("GetBlueprintComponents")), 1);
 	TestEqual(TEXT("AddBlueprintComponent total"), Mock.Recorder.GetCallCount(TEXT("AddBlueprintComponent")), 2);
@@ -1072,6 +1498,9 @@ bool FBlueprintComponentGraphIntegrationTest::RunTest(const FString& Parameters)
 	TestEqual(TEXT("SetPinDefaultValue total"), Mock.Recorder.GetCallCount(TEXT("SetPinDefaultValue")), 1);
 	TestEqual(TEXT("DeleteGraphNode total"), Mock.Recorder.GetCallCount(TEXT("DeleteGraphNode")), 1);
 	TestEqual(TEXT("AddEventDispatcher total"), Mock.Recorder.GetCallCount(TEXT("AddEventDispatcher")), 1);
+	TestEqual(TEXT("GetBlueprintParentClass total"), Mock.Recorder.GetCallCount(TEXT("GetBlueprintParentClass")), 1);
+	TestEqual(TEXT("AddGraphNodesBatch total"), Mock.Recorder.GetCallCount(TEXT("AddGraphNodesBatch")), 1);
+	TestEqual(TEXT("GetGraphNodesInArea total"), Mock.Recorder.GetCallCount(TEXT("GetGraphNodesInArea")), 1);
 
 	return true;
 }

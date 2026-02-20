@@ -15,6 +15,9 @@
 #include "Tools/Impl/GetAssetReferencersImplTool.h"
 #include "Tools/Impl/GetAssetMetadataImplTool.h"
 #include "Tools/Impl/SetAssetMetadataImplTool.h"
+#include "Tools/Impl/SetAssetPropertyImplTool.h"
+#include "Tools/Impl/GetAssetPropertyImplTool.h"
+#include "Tools/Impl/FindReferencersOfClassImplTool.h"
 #include "Tests/Mocks/MockAssetModule.h"
 #include "Tests/Integration/IntegrationTestUtils.h"
 
@@ -1056,6 +1059,238 @@ bool FSetAssetMetadataModuleFailureTest::RunTest(const FString& Parameters)
 	auto Result = Tool.Execute(Args);
 	TestTrue(TEXT("IsError"), MCPTestUtils::IsError(Result));
 	TestTrue(TEXT("Contains error"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Set metadata failed")));
+	return true;
+}
+
+// ============================================================================
+// SetAssetProperty
+// ============================================================================
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSetAssetPropertyMetadataTest,
+	"MCPServer.Unit.Assets.SetAssetProperty.Metadata",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FSetAssetPropertyMetadataTest::RunTest(const FString& Parameters)
+{
+	FMockAssetModule Mock;
+	FSetAssetPropertyImplTool Tool(Mock);
+	TestEqual(TEXT("Name"), Tool.GetName(), TEXT("set_asset_property"));
+	TestTrue(TEXT("Description not empty"), !Tool.GetDescription().IsEmpty());
+	TestTrue(TEXT("Schema valid"), Tool.GetInputSchema().IsValid());
+	TestTrue(TEXT("Schema has type"), Tool.GetInputSchema()->HasField(TEXT("type")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSetAssetPropertySuccessTest,
+	"MCPServer.Unit.Assets.SetAssetProperty.Success",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FSetAssetPropertySuccessTest::RunTest(const FString& Parameters)
+{
+	FMockAssetModule Mock;
+	Mock.SetAssetPropertyResult.bSuccess = true;
+
+	FSetAssetPropertyImplTool Tool(Mock);
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("asset_path"), TEXT("/Game/Sounds/MySound"));
+	Args->SetStringField(TEXT("property_name"), TEXT("bLooping"));
+	Args->SetStringField(TEXT("property_value"), TEXT("true"));
+
+	auto Result = Tool.Execute(Args);
+	TestTrue(TEXT("Success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Contains property name"), MCPTestUtils::GetResultText(Result).Contains(TEXT("bLooping")));
+	TestEqual(TEXT("Mock called"), Mock.Recorder.GetCallCount(TEXT("SetAssetProperty")), 1);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSetAssetPropertyMissingArgsTest,
+	"MCPServer.Unit.Assets.SetAssetProperty.MissingArgs",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FSetAssetPropertyMissingArgsTest::RunTest(const FString& Parameters)
+{
+	FMockAssetModule Mock;
+	FSetAssetPropertyImplTool Tool(Mock);
+	auto Result = Tool.Execute(MakeShared<FJsonObject>());
+	TestTrue(TEXT("IsError"), MCPTestUtils::IsError(Result));
+	TestEqual(TEXT("Mock not called"), Mock.Recorder.GetCallCount(TEXT("SetAssetProperty")), 0);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSetAssetPropertyModuleFailureTest,
+	"MCPServer.Unit.Assets.SetAssetProperty.ModuleFailure",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FSetAssetPropertyModuleFailureTest::RunTest(const FString& Parameters)
+{
+	FMockAssetModule Mock;
+	Mock.SetAssetPropertyResult.bSuccess = false;
+	Mock.SetAssetPropertyResult.ErrorMessage = TEXT("Property not found");
+
+	FSetAssetPropertyImplTool Tool(Mock);
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("asset_path"), TEXT("/Game/Sounds/MySound"));
+	Args->SetStringField(TEXT("property_name"), TEXT("BadProp"));
+	Args->SetStringField(TEXT("property_value"), TEXT("true"));
+
+	auto Result = Tool.Execute(Args);
+	TestTrue(TEXT("IsError"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Contains error"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Property not found")));
+	return true;
+}
+
+// ============================================================================
+// GetAssetProperty
+// ============================================================================
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetAssetPropertyMetadataTest,
+	"MCPServer.Unit.Assets.GetAssetProperty.Metadata",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetAssetPropertyMetadataTest::RunTest(const FString& Parameters)
+{
+	FMockAssetModule Mock;
+	FGetAssetPropertyImplTool Tool(Mock);
+	TestEqual(TEXT("Name"), Tool.GetName(), TEXT("get_asset_property"));
+	TestTrue(TEXT("Description not empty"), !Tool.GetDescription().IsEmpty());
+	TestTrue(TEXT("Schema valid"), Tool.GetInputSchema().IsValid());
+	TestTrue(TEXT("Schema has type"), Tool.GetInputSchema()->HasField(TEXT("type")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetAssetPropertySuccessTest,
+	"MCPServer.Unit.Assets.GetAssetProperty.Success",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetAssetPropertySuccessTest::RunTest(const FString& Parameters)
+{
+	FMockAssetModule Mock;
+	Mock.GetAssetPropertyResult.bSuccess = true;
+	Mock.GetAssetPropertyResult.PropertyValue = TEXT("1.5");
+
+	FGetAssetPropertyImplTool Tool(Mock);
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("asset_path"), TEXT("/Game/Sounds/MySound"));
+	Args->SetStringField(TEXT("property_name"), TEXT("VolumeMultiplier"));
+
+	auto Result = Tool.Execute(Args);
+	TestTrue(TEXT("Success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Contains property name"), MCPTestUtils::GetResultText(Result).Contains(TEXT("VolumeMultiplier")));
+	TestTrue(TEXT("Contains value"), MCPTestUtils::GetResultText(Result).Contains(TEXT("1.5")));
+	TestEqual(TEXT("Mock called"), Mock.Recorder.GetCallCount(TEXT("GetAssetProperty")), 1);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetAssetPropertyMissingArgsTest,
+	"MCPServer.Unit.Assets.GetAssetProperty.MissingArgs",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetAssetPropertyMissingArgsTest::RunTest(const FString& Parameters)
+{
+	FMockAssetModule Mock;
+	FGetAssetPropertyImplTool Tool(Mock);
+	auto Result = Tool.Execute(MakeShared<FJsonObject>());
+	TestTrue(TEXT("IsError"), MCPTestUtils::IsError(Result));
+	TestEqual(TEXT("Mock not called"), Mock.Recorder.GetCallCount(TEXT("GetAssetProperty")), 0);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetAssetPropertyModuleFailureTest,
+	"MCPServer.Unit.Assets.GetAssetProperty.ModuleFailure",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetAssetPropertyModuleFailureTest::RunTest(const FString& Parameters)
+{
+	FMockAssetModule Mock;
+	Mock.GetAssetPropertyResult.bSuccess = false;
+	Mock.GetAssetPropertyResult.ErrorMessage = TEXT("Asset not found");
+
+	FGetAssetPropertyImplTool Tool(Mock);
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("asset_path"), TEXT("/Game/Missing"));
+	Args->SetStringField(TEXT("property_name"), TEXT("SomeProp"));
+
+	auto Result = Tool.Execute(Args);
+	TestTrue(TEXT("IsError"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Contains error"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Asset not found")));
+	return true;
+}
+
+// ============================================================================
+// FindReferencersOfClass
+// ============================================================================
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFindReferencersOfClassMetadataTest,
+	"MCPServer.Unit.Assets.FindReferencersOfClass.Metadata",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FFindReferencersOfClassMetadataTest::RunTest(const FString& Parameters)
+{
+	FMockAssetModule Mock;
+	FFindReferencersOfClassImplTool Tool(Mock);
+	TestEqual(TEXT("Name"), Tool.GetName(), TEXT("find_referencers_of_class"));
+	TestTrue(TEXT("Description not empty"), !Tool.GetDescription().IsEmpty());
+	TestTrue(TEXT("Schema valid"), Tool.GetInputSchema().IsValid());
+	TestTrue(TEXT("Schema has type"), Tool.GetInputSchema()->HasField(TEXT("type")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFindReferencersOfClassSuccessTest,
+	"MCPServer.Unit.Assets.FindReferencersOfClass.Success",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FFindReferencersOfClassSuccessTest::RunTest(const FString& Parameters)
+{
+	FMockAssetModule Mock;
+	Mock.FindReferencersOfClassResult.bSuccess = true;
+	FAssetInfo Info;
+	Info.AssetName = TEXT("BP_RepairStation");
+	Info.AssetPath = TEXT("/Game/BP_RepairStation");
+	Info.AssetClass = TEXT("Blueprint");
+	Mock.FindReferencersOfClassResult.Assets.Add(Info);
+
+	FFindReferencersOfClassImplTool Tool(Mock);
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("class_path"), TEXT("/Script/MyGame.RepairActivity"));
+
+	auto Result = Tool.Execute(Args);
+	TestTrue(TEXT("Success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Contains asset"), MCPTestUtils::GetResultText(Result).Contains(TEXT("BP_RepairStation")));
+	TestEqual(TEXT("Mock called"), Mock.Recorder.GetCallCount(TEXT("FindReferencersOfClass")), 1);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFindReferencersOfClassMissingArgsTest,
+	"MCPServer.Unit.Assets.FindReferencersOfClass.MissingArgs",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FFindReferencersOfClassMissingArgsTest::RunTest(const FString& Parameters)
+{
+	FMockAssetModule Mock;
+	FFindReferencersOfClassImplTool Tool(Mock);
+	auto Result = Tool.Execute(MakeShared<FJsonObject>());
+	TestTrue(TEXT("IsError"), MCPTestUtils::IsError(Result));
+	TestEqual(TEXT("Mock not called"), Mock.Recorder.GetCallCount(TEXT("FindReferencersOfClass")), 0);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFindReferencersOfClassModuleFailureTest,
+	"MCPServer.Unit.Assets.FindReferencersOfClass.ModuleFailure",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FFindReferencersOfClassModuleFailureTest::RunTest(const FString& Parameters)
+{
+	FMockAssetModule Mock;
+	Mock.FindReferencersOfClassResult.bSuccess = false;
+	Mock.FindReferencersOfClassResult.ErrorMessage = TEXT("Class not found");
+
+	FFindReferencersOfClassImplTool Tool(Mock);
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("class_path"), TEXT("/Script/Missing.BadClass"));
+
+	auto Result = Tool.Execute(Args);
+	TestTrue(TEXT("IsError"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Contains error"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Class not found")));
 	return true;
 }
 

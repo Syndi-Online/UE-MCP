@@ -50,6 +50,9 @@
 #include "Tools/Impl/GetAssetReferencersImplTool.h"
 #include "Tools/Impl/GetAssetMetadataImplTool.h"
 #include "Tools/Impl/SetAssetMetadataImplTool.h"
+#include "Tools/Impl/SetAssetPropertyImplTool.h"
+#include "Tools/Impl/GetAssetPropertyImplTool.h"
+#include "Tools/Impl/FindReferencersOfClassImplTool.h"
 #include "Tools/Impl/GetViewportCameraImplTool.h"
 #include "Tools/Impl/SetViewportCameraImplTool.h"
 #include "Tools/Impl/SetGameViewImplTool.h"
@@ -89,6 +92,9 @@
 #include "Tools/Impl/SetPinDefaultValueImplTool.h"
 #include "Tools/Impl/DeleteGraphNodeImplTool.h"
 #include "Tools/Impl/AddEventDispatcherImplTool.h"
+#include "Tools/Impl/GetBlueprintParentClassImplTool.h"
+#include "Tools/Impl/AddGraphNodesBatchImplTool.h"
+#include "Tools/Impl/GetGraphNodesInAreaImplTool.h"
 #include "Tools/Impl/CreateMaterialExpressionImplTool.h"
 #include "Tools/Impl/DeleteMaterialExpressionImplTool.h"
 #include "Tools/Impl/ConnectMaterialExpressionsImplTool.h"
@@ -333,6 +339,9 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FGetAssetReferencersImplTool>(*AssetModule));
 	ToolRegistry->RegisterTool(MakeShared<FGetAssetMetadataImplTool>(*AssetModule));
 	ToolRegistry->RegisterTool(MakeShared<FSetAssetMetadataImplTool>(*AssetModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetAssetPropertyImplTool>(*AssetModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetAssetPropertyImplTool>(*AssetModule));
+	ToolRegistry->RegisterTool(MakeShared<FFindReferencersOfClassImplTool>(*AssetModule));
 
 	// Viewport and camera tools
 	ToolRegistry->RegisterTool(MakeShared<FGetViewportCameraImplTool>(*ViewportModule));
@@ -382,6 +391,9 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FSetPinDefaultValueImplTool>(*BlueprintModule));
 	ToolRegistry->RegisterTool(MakeShared<FDeleteGraphNodeImplTool>(*BlueprintModule));
 	ToolRegistry->RegisterTool(MakeShared<FAddEventDispatcherImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetBlueprintParentClassImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FAddGraphNodesBatchImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetGraphNodesInAreaImplTool>(*BlueprintModule));
 
 	// Material tools
 	ToolRegistry->RegisterTool(MakeShared<FCreateMaterialExpressionImplTool>(*MaterialModule));

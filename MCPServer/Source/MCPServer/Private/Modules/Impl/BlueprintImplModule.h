@@ -42,6 +42,12 @@ public:
 
 	virtual FAddEventDispatcherResult AddEventDispatcher(const FString& BlueprintPath, const FString& DispatcherName, const TArray<FEventDispatcherParamInfo>* Parameters) override;
 
+	virtual FGetBlueprintParentClassResult GetBlueprintParentClass(const FString& BlueprintPath) override;
+
+	virtual FAddGraphNodesBatchResult AddGraphNodesBatch(const FString& BlueprintPath, const FString& GraphName, const TArray<FAddGraphNodesBatchNodeInfo>& Nodes, const TArray<FAddGraphNodesBatchConnection>* Connections) override;
+
+	virtual FGetGraphNodesInAreaResult GetGraphNodesInArea(const FString& BlueprintPath, const FString& GraphName, int32 MinX, int32 MinY, int32 MaxX, int32 MaxY) override;
+
 private:
 	UEdGraph* FindGraph(UBlueprint* Blueprint, const FString& GraphName);
 	UEdGraphNode* FindNodeById(UEdGraph* Graph, const FString& NodeId);

@@ -187,7 +187,7 @@ FAssetSaveResult FAssetImplModule::SaveAsset(const FString& AssetPath)
 	return Result;
 }
 
-FAssetFindResult FAssetImplModule::FindAssets(const FString& PackagePath, const FString& ClassName, bool bRecursive)
+FAssetFindResult FAssetImplModule::FindAssets(const FString& PackagePath, const FString& ClassName, bool bRecursive, const FString& NameFilter, int32 Limit)
 {
 	FAssetFindResult Result;
 
@@ -218,12 +218,25 @@ FAssetFindResult FAssetImplModule::FindAssets(const FString& PackagePath, const 
 
 	for (const FAssetData& Data : AssetDataList)
 	{
+		if (!NameFilter.IsEmpty())
+		{
+			if (!Data.AssetName.ToString().MatchesWildcard(NameFilter))
+			{
+				continue;
+			}
+		}
+
 		FAssetInfo Info;
 		Info.AssetName = Data.AssetName.ToString();
 		Info.AssetPath = Data.GetObjectPathString();
 		Info.AssetClass = Data.AssetClassPath.ToString();
 		Info.PackagePath = Data.PackagePath.ToString();
 		Result.Assets.Add(Info);
+
+		if (Limit > 0 && Result.Assets.Num() >= Limit)
+		{
+			break;
+		}
 	}
 
 	Result.bSuccess = true;
@@ -392,6 +405,127 @@ FAssetSetMetadataResult FAssetImplModule::SetAssetMetadata(const FString& AssetP
 	}
 
 	AssetSubsystem->SetMetadataTag(Asset, FName(*TagName), TagValue);
+
+	Result.bSuccess = true;
+	return Result;
+}
+
+FAssetSetPropertyResult FAssetImplModule::SetAssetProperty(const FString& AssetPath, const FString& PropertyName, const FString& PropertyValue)
+{
+	FAssetSetPropertyResult Result;
+
+	UObject* Asset = LoadObject<UObject>(nullptr, *AssetPath);
+	if (!Asset)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Asset not found: %s"), *AssetPath);
+		return Result;
+	}
+
+	FProperty* Property = Asset->GetClass()->FindPropertyByName(FName(*PropertyName));
+	if (!Property)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Property not found: %s"), *PropertyName);
+		return Result;
+	}
+
+	const TCHAR* ImportResult = Property->ImportText_Direct(*PropertyValue, Property->ContainerPtrToValuePtr<void>(Asset), Asset, PPF_None);
+	if (!ImportResult)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Failed to set property '%s' to '%s'"), *PropertyName, *PropertyValue);
+		return Result;
+	}
+
+	Asset->GetPackage()->MarkPackageDirty();
+
+	Result.bSuccess = true;
+	return Result;
+}
+
+FAssetGetPropertyResult FAssetImplModule::GetAssetProperty(const FString& AssetPath, const FString& PropertyName)
+{
+	FAssetGetPropertyResult Result;
+
+	UObject* Asset = LoadObject<UObject>(nullptr, *AssetPath);
+	if (!Asset)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Asset not found: %s"), *AssetPath);
+		return Result;
+	}
+
+	FProperty* Property = Asset->GetClass()->FindPropertyByName(FName(*PropertyName));
+	if (!Property)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Property not found: %s"), *PropertyName);
+		return Result;
+	}
+
+	FString ValueStr;
+	Property->ExportTextItem_Direct(ValueStr, Property->ContainerPtrToValuePtr<void>(Asset), nullptr, Asset, PPF_None);
+
+	Result.bSuccess = true;
+	Result.PropertyValue = ValueStr;
+	return Result;
+}
+
+FAssetFindReferencersOfClassResult FAssetImplModule::FindReferencersOfClass(const FString& ClassPath, const FString& PackagePath, bool bRecursive)
+{
+	FAssetFindReferencersOfClassResult Result;
+
+	IAssetRegistry& AssetRegistry = IAssetRegistry::GetChecked();
+
+	// Convert the class path to a package name for GetReferencers
+	FString ClassPackageName = ClassPath;
+	if (ClassPackageName.Contains(TEXT(".")))
+	{
+		ClassPackageName = FPackageName::ObjectPathToPackageName(ClassPath);
+	}
+
+	// Get all packages that reference the class package
+	TArray<FName> Referencers;
+	AssetRegistry.GetReferencers(FName(*ClassPackageName), Referencers);
+
+	for (const FName& ReferencerPackage : Referencers)
+	{
+		// If PackagePath is provided, filter by it
+		if (!PackagePath.IsEmpty())
+		{
+			FString ReferencerStr = ReferencerPackage.ToString();
+			if (bRecursive)
+			{
+				if (!ReferencerStr.StartsWith(PackagePath))
+				{
+					continue;
+				}
+			}
+			else
+			{
+				FString ReferencerDir = FPackageName::GetLongPackagePath(ReferencerStr);
+				if (ReferencerDir != PackagePath)
+				{
+					continue;
+				}
+			}
+		}
+
+		// Get the asset data for this referencer package
+		TArray<FAssetData> PackageAssets;
+		AssetRegistry.GetAssetsByPackageName(ReferencerPackage, PackageAssets, true);
+
+		for (const FAssetData& Data : PackageAssets)
+		{
+			FAssetInfo Info;
+			Info.AssetName = Data.AssetName.ToString();
+			Info.AssetPath = Data.GetObjectPathString();
+			Info.AssetClass = Data.AssetClassPath.ToString();
+			Info.PackagePath = Data.PackagePath.ToString();
+			Result.Assets.Add(Info);
+		}
+	}
 
 	Result.bSuccess = true;
 	return Result;
