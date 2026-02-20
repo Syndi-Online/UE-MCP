@@ -73,6 +73,7 @@
 #include "Tools/Impl/ReparentBlueprintImplTool.h"
 #include "Tools/Impl/OpenBlueprintEditorImplTool.h"
 #include "Tools/Impl/GetGraphNodesImplTool.h"
+#include "Tools/Impl/GetGraphNodesSummaryImplTool.h"
 #include "Tools/Impl/SetNodePositionImplTool.h"
 #include "Tools/Impl/BatchSetNodePositionsImplTool.h"
 #include "Tools/Impl/AddCommentBoxImplTool.h"
@@ -351,6 +352,7 @@ void FMCPServerModule::RegisterBuiltinTools()
 
 	// Blueprint graph node tools
 	ToolRegistry->RegisterTool(MakeShared<FGetGraphNodesImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetGraphNodesSummaryImplTool>(*BlueprintModule));
 	ToolRegistry->RegisterTool(MakeShared<FSetNodePositionImplTool>(*BlueprintModule));
 	ToolRegistry->RegisterTool(MakeShared<FBatchSetNodePositionsImplTool>(*BlueprintModule));
 	ToolRegistry->RegisterTool(MakeShared<FAddCommentBoxImplTool>(*BlueprintModule));

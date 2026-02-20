@@ -2,6 +2,7 @@
 
 #include "Misc/AutomationTest.h"
 #include "Tools/Impl/GetGraphNodesImplTool.h"
+#include "Tools/Impl/GetGraphNodesSummaryImplTool.h"
 #include "Tools/Impl/SetNodePositionImplTool.h"
 #include "Tools/Impl/BatchSetNodePositionsImplTool.h"
 #include "Tools/Impl/AddCommentBoxImplTool.h"
@@ -95,6 +96,235 @@ bool FGetGraphNodesModuleFailureTest::RunTest(const FString& Parameters)
 	Mock.GetGraphNodesResult.bSuccess = false;
 	Mock.GetGraphNodesResult.ErrorMessage = TEXT("Blueprint not found");
 	FGetGraphNodesImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/Missing"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("isError"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Contains error"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Blueprint not found")));
+	return true;
+}
+
+// ===========================================================================
+// GetGraphNodes with node_ids filter
+// ===========================================================================
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetGraphNodesWithNodeIdsFilterTest,
+	"MCPServer.Unit.GraphNodes.GetGraphNodes.NodeIdsFilter",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetGraphNodesWithNodeIdsFilterTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.GetGraphNodesResult.bSuccess = true;
+
+	FGraphNodeInfo Node1;
+	Node1.NodeId = TEXT("GUID-001");
+	Node1.NodeClass = TEXT("K2Node_Event");
+	Node1.NodeTitle = TEXT("Event BeginPlay");
+	FGraphNodeInfo Node2;
+	Node2.NodeId = TEXT("GUID-002");
+	Node2.NodeClass = TEXT("K2Node_CallFunction");
+	Node2.NodeTitle = TEXT("Print String");
+	FGraphNodeInfo Node3;
+	Node3.NodeId = TEXT("GUID-003");
+	Node3.NodeClass = TEXT("K2Node_VariableGet");
+	Node3.NodeTitle = TEXT("Get Health");
+	Mock.GetGraphNodesResult.Nodes.Add(Node1);
+	Mock.GetGraphNodesResult.Nodes.Add(Node2);
+	Mock.GetGraphNodesResult.Nodes.Add(Node3);
+
+	FGetGraphNodesImplTool Tool(Mock);
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+	TArray<TSharedPtr<FJsonValue>> NodeIds;
+	NodeIds.Add(MakeShared<FJsonValueString>(TEXT("GUID-001")));
+	NodeIds.Add(MakeShared<FJsonValueString>(TEXT("GUID-003")));
+	Args->SetArrayField(TEXT("node_ids"), NodeIds);
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("Success"), MCPTestUtils::IsSuccess(Result));
+	FString Text = MCPTestUtils::GetResultText(Result);
+	TestTrue(TEXT("Contains Returning 2 of 3"), Text.Contains(TEXT("Returning 2 of 3")));
+	TestTrue(TEXT("Contains GUID-001"), Text.Contains(TEXT("GUID-001")));
+	TestTrue(TEXT("Contains GUID-003"), Text.Contains(TEXT("GUID-003")));
+	TestFalse(TEXT("Does not contain GUID-002"), Text.Contains(TEXT("GUID-002")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetGraphNodesEmptyNodeIdsTest,
+	"MCPServer.Unit.GraphNodes.GetGraphNodes.EmptyNodeIds",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetGraphNodesEmptyNodeIdsTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.GetGraphNodesResult.bSuccess = true;
+
+	FGraphNodeInfo Node1;
+	Node1.NodeId = TEXT("GUID-001");
+	Node1.NodeClass = TEXT("K2Node_Event");
+	Node1.NodeTitle = TEXT("Event BeginPlay");
+	Mock.GetGraphNodesResult.Nodes.Add(Node1);
+
+	FGetGraphNodesImplTool Tool(Mock);
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+	// No node_ids — should return all nodes with original text
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("Success"), MCPTestUtils::IsSuccess(Result));
+	FString Text = MCPTestUtils::GetResultText(Result);
+	TestTrue(TEXT("Contains Graph has 1 nodes"), Text.Contains(TEXT("Graph has 1 nodes")));
+	TestTrue(TEXT("Contains GUID-001"), Text.Contains(TEXT("GUID-001")));
+	return true;
+}
+
+// ===========================================================================
+// GetGraphNodesSummary
+// ===========================================================================
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetGraphNodesSummaryMetadataTest,
+	"MCPServer.Unit.GraphNodes.GetGraphNodesSummary.Metadata",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetGraphNodesSummaryMetadataTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	FGetGraphNodesSummaryImplTool Tool(Mock);
+	TestEqual(TEXT("Name"), Tool.GetName(), TEXT("get_graph_nodes_summary"));
+	TestTrue(TEXT("Description not empty"), !Tool.GetDescription().IsEmpty());
+	TestTrue(TEXT("Schema valid"), Tool.GetInputSchema().IsValid());
+	TestTrue(TEXT("Schema has type"), Tool.GetInputSchema()->HasField(TEXT("type")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetGraphNodesSummarySuccessTest,
+	"MCPServer.Unit.GraphNodes.GetGraphNodesSummary.Success",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetGraphNodesSummarySuccessTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.GetGraphNodesResult.bSuccess = true;
+
+	// Node1 has a pin connected to Node2's pin
+	FGraphNodeInfo Node1;
+	Node1.NodeId = TEXT("GUID-001");
+	Node1.NodeClass = TEXT("K2Node_Event");
+	Node1.NodeTitle = TEXT("Event BeginPlay");
+	FGraphNodePinInfo Pin1;
+	Pin1.PinId = TEXT("PIN-001");
+	Pin1.PinName = TEXT("then");
+	Pin1.PinType = TEXT("exec");
+	Pin1.Direction = TEXT("Output");
+	Pin1.ConnectedPinIds.Add(TEXT("PIN-002"));
+	Node1.Pins.Add(Pin1);
+
+	FGraphNodeInfo Node2;
+	Node2.NodeId = TEXT("GUID-002");
+	Node2.NodeClass = TEXT("K2Node_CallFunction");
+	Node2.NodeTitle = TEXT("Print String");
+	FGraphNodePinInfo Pin2;
+	Pin2.PinId = TEXT("PIN-002");
+	Pin2.PinName = TEXT("execute");
+	Pin2.PinType = TEXT("exec");
+	Pin2.Direction = TEXT("Input");
+	Pin2.ConnectedPinIds.Add(TEXT("PIN-001"));
+	Node2.Pins.Add(Pin2);
+
+	Mock.GetGraphNodesResult.Nodes.Add(Node1);
+	Mock.GetGraphNodesResult.Nodes.Add(Node2);
+
+	FGetGraphNodesSummaryImplTool Tool(Mock);
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("Success"), MCPTestUtils::IsSuccess(Result));
+	FString Text = MCPTestUtils::GetResultText(Result);
+	TestTrue(TEXT("Contains 2 nodes"), Text.Contains(TEXT("2 nodes")));
+	TestTrue(TEXT("Contains node_id GUID-001"), Text.Contains(TEXT("GUID-001")));
+	TestTrue(TEXT("Contains node_id GUID-002"), Text.Contains(TEXT("GUID-002")));
+	TestTrue(TEXT("Contains connected_node_ids"), Text.Contains(TEXT("connected_node_ids")));
+	// Should NOT contain pin details
+	TestFalse(TEXT("No pin_id"), Text.Contains(TEXT("pin_id")));
+	TestFalse(TEXT("No position"), Text.Contains(TEXT("position")));
+	TestFalse(TEXT("No size"), Text.Contains(TEXT("\"size\"")));
+	TestEqual(TEXT("GetGraphNodes called"), Mock.Recorder.GetCallCount(TEXT("GetGraphNodes")), 1);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetGraphNodesSummaryClassFilterTest,
+	"MCPServer.Unit.GraphNodes.GetGraphNodesSummary.ClassFilter",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetGraphNodesSummaryClassFilterTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.GetGraphNodesResult.bSuccess = true;
+
+	FGraphNodeInfo Node1;
+	Node1.NodeId = TEXT("GUID-001");
+	Node1.NodeClass = TEXT("K2Node_Event");
+	Node1.NodeTitle = TEXT("Event BeginPlay");
+	FGraphNodeInfo Node2;
+	Node2.NodeId = TEXT("GUID-002");
+	Node2.NodeClass = TEXT("K2Node_CallFunction");
+	Node2.NodeTitle = TEXT("Print String");
+	FGraphNodeInfo Node3;
+	Node3.NodeId = TEXT("GUID-003");
+	Node3.NodeClass = TEXT("K2Node_Event");
+	Node3.NodeTitle = TEXT("Event Tick");
+	Mock.GetGraphNodesResult.Nodes.Add(Node1);
+	Mock.GetGraphNodesResult.Nodes.Add(Node2);
+	Mock.GetGraphNodesResult.Nodes.Add(Node3);
+
+	FGetGraphNodesSummaryImplTool Tool(Mock);
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+	Args->SetStringField(TEXT("class_filter"), TEXT("K2Node_Event"));
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("Success"), MCPTestUtils::IsSuccess(Result));
+	FString Text = MCPTestUtils::GetResultText(Result);
+	TestTrue(TEXT("Contains 2 nodes filtered from 3"), Text.Contains(TEXT("2 nodes (filtered from 3 total)")));
+	TestTrue(TEXT("Contains GUID-001"), Text.Contains(TEXT("GUID-001")));
+	TestTrue(TEXT("Contains GUID-003"), Text.Contains(TEXT("GUID-003")));
+	TestFalse(TEXT("Does not contain GUID-002"), Text.Contains(TEXT("GUID-002")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetGraphNodesSummaryMissingArgsTest,
+	"MCPServer.Unit.GraphNodes.GetGraphNodesSummary.MissingArgs",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetGraphNodesSummaryMissingArgsTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	FGetGraphNodesSummaryImplTool Tool(Mock);
+	auto Result = Tool.Execute(MakeShared<FJsonObject>());
+	TestTrue(TEXT("Error"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Mentions blueprint_path"), MCPTestUtils::GetResultText(Result).Contains(TEXT("blueprint_path")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FGetGraphNodesSummaryModuleFailureTest,
+	"MCPServer.Unit.GraphNodes.GetGraphNodesSummary.ModuleFailure",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FGetGraphNodesSummaryModuleFailureTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.GetGraphNodesResult.bSuccess = false;
+	Mock.GetGraphNodesResult.ErrorMessage = TEXT("Blueprint not found");
+	FGetGraphNodesSummaryImplTool Tool(Mock);
 
 	auto Args = MakeShared<FJsonObject>();
 	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/Missing"));
@@ -536,32 +766,85 @@ bool FGraphNodesIntegrationTest::RunTest(const FString& Parameters)
 {
 	FMockBlueprintModule Mock;
 
-	// Step 1: Get graph nodes
+	// Setup: Two connected nodes
 	FGraphNodeInfo Node1;
 	Node1.NodeId = TEXT("GUID-001");
 	Node1.NodeClass = TEXT("K2Node_Event");
 	Node1.NodeTitle = TEXT("Event BeginPlay");
 	Node1.PosX = 0;
 	Node1.PosY = 0;
+	FGraphNodePinInfo Pin1Out;
+	Pin1Out.PinId = TEXT("PIN-001");
+	Pin1Out.PinName = TEXT("then");
+	Pin1Out.PinType = TEXT("exec");
+	Pin1Out.Direction = TEXT("Output");
+	Pin1Out.ConnectedPinIds.Add(TEXT("PIN-002"));
+	Node1.Pins.Add(Pin1Out);
+
 	FGraphNodeInfo Node2;
 	Node2.NodeId = TEXT("GUID-002");
 	Node2.NodeClass = TEXT("K2Node_CallFunction");
 	Node2.NodeTitle = TEXT("Print String");
 	Node2.PosX = 300;
 	Node2.PosY = 0;
+	FGraphNodePinInfo Pin2In;
+	Pin2In.PinId = TEXT("PIN-002");
+	Pin2In.PinName = TEXT("execute");
+	Pin2In.PinType = TEXT("exec");
+	Pin2In.Direction = TEXT("Input");
+	Pin2In.ConnectedPinIds.Add(TEXT("PIN-001"));
+	Node2.Pins.Add(Pin2In);
+
+	FGraphNodeInfo Node3;
+	Node3.NodeId = TEXT("GUID-003");
+	Node3.NodeClass = TEXT("K2Node_VariableGet");
+	Node3.NodeTitle = TEXT("Get Health");
+	Node3.PosX = 100;
+	Node3.PosY = 200;
+
 	Mock.GetGraphNodesResult.bSuccess = true;
 	Mock.GetGraphNodesResult.Nodes.Add(Node1);
 	Mock.GetGraphNodesResult.Nodes.Add(Node2);
+	Mock.GetGraphNodesResult.Nodes.Add(Node3);
 
-	FGetGraphNodesImplTool GetNodesTool(Mock);
+	// Step 1: get_graph_nodes_summary — lightweight overview
+	FGetGraphNodesSummaryImplTool SummaryTool(Mock);
 	auto Args = MakeShared<FJsonObject>();
 	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
 	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
-	auto Result = GetNodesTool.Execute(Args);
-	TestTrue(TEXT("Step1: GetGraphNodes success"), MCPTestUtils::IsSuccess(Result));
-	TestTrue(TEXT("Step1: 2 nodes"), MCPTestUtils::GetResultText(Result).Contains(TEXT("2 nodes")));
+	auto Result = SummaryTool.Execute(Args);
+	TestTrue(TEXT("Step1: Summary success"), MCPTestUtils::IsSuccess(Result));
+	FString SummaryText = MCPTestUtils::GetResultText(Result);
+	TestTrue(TEXT("Step1: 3 nodes"), SummaryText.Contains(TEXT("3 nodes")));
+	TestTrue(TEXT("Step1: has connected_node_ids"), SummaryText.Contains(TEXT("connected_node_ids")));
+	TestFalse(TEXT("Step1: no pin_id"), SummaryText.Contains(TEXT("pin_id")));
 
-	// Step 2: Set node position
+	// Step 2: get_graph_nodes with node_ids filter — detailed view of specific nodes
+	FGetGraphNodesImplTool GetNodesTool(Mock);
+	Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+	TArray<TSharedPtr<FJsonValue>> FilterIds;
+	FilterIds.Add(MakeShared<FJsonValueString>(TEXT("GUID-001")));
+	FilterIds.Add(MakeShared<FJsonValueString>(TEXT("GUID-002")));
+	Args->SetArrayField(TEXT("node_ids"), FilterIds);
+	Result = GetNodesTool.Execute(Args);
+	TestTrue(TEXT("Step2: Filtered success"), MCPTestUtils::IsSuccess(Result));
+	FString FilteredText = MCPTestUtils::GetResultText(Result);
+	TestTrue(TEXT("Step2: Returning 2 of 3"), FilteredText.Contains(TEXT("Returning 2 of 3")));
+	TestTrue(TEXT("Step2: Has GUID-001"), FilteredText.Contains(TEXT("GUID-001")));
+	TestTrue(TEXT("Step2: Has GUID-002"), FilteredText.Contains(TEXT("GUID-002")));
+	TestFalse(TEXT("Step2: No GUID-003"), FilteredText.Contains(TEXT("GUID-003")));
+
+	// Step 3: get_graph_nodes without filter — all nodes
+	Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+	Result = GetNodesTool.Execute(Args);
+	TestTrue(TEXT("Step3: GetGraphNodes success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Step3: 3 nodes"), MCPTestUtils::GetResultText(Result).Contains(TEXT("3 nodes")));
+
+	// Step 4: Set node position
 	Mock.SetNodePositionResult.bSuccess = true;
 	FSetNodePositionImplTool SetPosTool(Mock);
 	Args = MakeShared<FJsonObject>();
@@ -573,9 +856,9 @@ bool FGraphNodesIntegrationTest::RunTest(const FString& Parameters)
 	Pos->SetNumberField(TEXT("y"), 200);
 	Args->SetObjectField(TEXT("position"), Pos);
 	Result = SetPosTool.Execute(Args);
-	TestTrue(TEXT("Step2: SetNodePosition success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Step4: SetNodePosition success"), MCPTestUtils::IsSuccess(Result));
 
-	// Step 3: Batch set node positions
+	// Step 5: Batch set node positions
 	FBatchSetNodePositionsImplTool BatchPosTool(Mock);
 	Args = MakeShared<FJsonObject>();
 	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
@@ -593,10 +876,10 @@ bool FGraphNodesIntegrationTest::RunTest(const FString& Parameters)
 	}
 	Args->SetArrayField(TEXT("operations"), Ops);
 	Result = BatchPosTool.Execute(Args);
-	TestTrue(TEXT("Step3: Batch success"), MCPTestUtils::IsSuccess(Result));
-	TestTrue(TEXT("Step3: 5 succeeded"), MCPTestUtils::GetResultText(Result).Contains(TEXT("5 succeeded")));
+	TestTrue(TEXT("Step5: Batch success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Step5: 5 succeeded"), MCPTestUtils::GetResultText(Result).Contains(TEXT("5 succeeded")));
 
-	// Step 4: Add comment box
+	// Step 6: Add comment box
 	Mock.AddCommentBoxResult.bSuccess = true;
 	Mock.AddCommentBoxResult.NodeId = TEXT("COMMENT-001");
 	FAddCommentBoxImplTool AddBoxTool(Mock);
@@ -613,10 +896,10 @@ bool FGraphNodesIntegrationTest::RunTest(const FString& Parameters)
 	BoxSize->SetNumberField(TEXT("height"), 300);
 	Args->SetObjectField(TEXT("size"), BoxSize);
 	Result = AddBoxTool.Execute(Args);
-	TestTrue(TEXT("Step4: AddCommentBox success"), MCPTestUtils::IsSuccess(Result));
-	TestTrue(TEXT("Step4: Got NodeId"), MCPTestUtils::GetResultText(Result).Contains(TEXT("COMMENT-001")));
+	TestTrue(TEXT("Step6: AddCommentBox success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Step6: Got NodeId"), MCPTestUtils::GetResultText(Result).Contains(TEXT("COMMENT-001")));
 
-	// Step 5: Set comment box properties
+	// Step 7: Set comment box properties
 	Mock.SetCommentBoxPropertiesResult.bSuccess = true;
 	FSetCommentBoxPropertiesImplTool SetPropsTool(Mock);
 	Args = MakeShared<FJsonObject>();
@@ -631,9 +914,9 @@ bool FGraphNodesIntegrationTest::RunTest(const FString& Parameters)
 	Color->SetNumberField(TEXT("a"), 1.0);
 	Args->SetObjectField(TEXT("color"), Color);
 	Result = SetPropsTool.Execute(Args);
-	TestTrue(TEXT("Step5: SetCommentBoxProperties success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Step7: SetCommentBoxProperties success"), MCPTestUtils::IsSuccess(Result));
 
-	// Step 6: Delete comment box
+	// Step 8: Delete comment box
 	Mock.DeleteCommentBoxResult.bSuccess = true;
 	FDeleteCommentBoxImplTool DeleteBoxTool(Mock);
 	Args = MakeShared<FJsonObject>();
@@ -641,10 +924,10 @@ bool FGraphNodesIntegrationTest::RunTest(const FString& Parameters)
 	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
 	Args->SetStringField(TEXT("node_id"), TEXT("COMMENT-001"));
 	Result = DeleteBoxTool.Execute(Args);
-	TestTrue(TEXT("Step6: DeleteCommentBox success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Step8: DeleteCommentBox success"), MCPTestUtils::IsSuccess(Result));
 
 	// Verify call counts
-	TestEqual(TEXT("GetGraphNodes total"), Mock.Recorder.GetCallCount(TEXT("GetGraphNodes")), 1);
+	TestEqual(TEXT("GetGraphNodes total"), Mock.Recorder.GetCallCount(TEXT("GetGraphNodes")), 4); // 1 summary + 1 filtered + 1 all + 1 in summary call
 	TestEqual(TEXT("SetNodePosition total"), Mock.Recorder.GetCallCount(TEXT("SetNodePosition")), 6); // 1 + 5 batch
 	TestEqual(TEXT("AddCommentBox total"), Mock.Recorder.GetCallCount(TEXT("AddCommentBox")), 1);
 	TestEqual(TEXT("SetCommentBoxProperties total"), Mock.Recorder.GetCallCount(TEXT("SetCommentBoxProperties")), 1);

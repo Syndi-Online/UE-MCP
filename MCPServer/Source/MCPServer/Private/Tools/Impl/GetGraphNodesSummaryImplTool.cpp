@@ -1,27 +1,27 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "Tools/Impl/GetGraphNodesImplTool.h"
+#include "Tools/Impl/GetGraphNodesSummaryImplTool.h"
 #include "Modules/Interfaces/IBlueprintModule.h"
 #include "Dom/JsonValue.h"
 #include "Serialization/JsonWriter.h"
 #include "Serialization/JsonSerializer.h"
 
-FGetGraphNodesImplTool::FGetGraphNodesImplTool(IBlueprintModule& InBlueprintModule)
+FGetGraphNodesSummaryImplTool::FGetGraphNodesSummaryImplTool(IBlueprintModule& InBlueprintModule)
 	: BlueprintModule(InBlueprintModule)
 {
 }
 
-FString FGetGraphNodesImplTool::GetName() const
+FString FGetGraphNodesSummaryImplTool::GetName() const
 {
-	return TEXT("get_graph_nodes");
+	return TEXT("get_graph_nodes_summary");
 }
 
-FString FGetGraphNodesImplTool::GetDescription() const
+FString FGetGraphNodesSummaryImplTool::GetDescription() const
 {
-	return TEXT("Get all nodes in a Blueprint graph with their id, class, title, position, size, pins, and comment text");
+	return TEXT("Get a lightweight summary of all nodes in a Blueprint graph — id, class, title, and connected node ids. No pins, no positions, no sizes.");
 }
 
-TSharedPtr<FJsonObject> FGetGraphNodesImplTool::GetInputSchema() const
+TSharedPtr<FJsonObject> FGetGraphNodesSummaryImplTool::GetInputSchema() const
 {
 	TSharedPtr<FJsonObject> Schema = MakeShared<FJsonObject>();
 	Schema->SetStringField(TEXT("type"), TEXT("object"));
@@ -38,13 +38,10 @@ TSharedPtr<FJsonObject> FGetGraphNodesImplTool::GetInputSchema() const
 	GraphNameProp->SetStringField(TEXT("description"), TEXT("Name of the graph within the Blueprint"));
 	Properties->SetObjectField(TEXT("graph_name"), GraphNameProp);
 
-	TSharedPtr<FJsonObject> NodeIdsProp = MakeShared<FJsonObject>();
-	NodeIdsProp->SetStringField(TEXT("type"), TEXT("array"));
-	NodeIdsProp->SetStringField(TEXT("description"), TEXT("If specified, return full data only for nodes with these GUIDs. Otherwise return all nodes."));
-	TSharedPtr<FJsonObject> NodeIdsItems = MakeShared<FJsonObject>();
-	NodeIdsItems->SetStringField(TEXT("type"), TEXT("string"));
-	NodeIdsProp->SetObjectField(TEXT("items"), NodeIdsItems);
-	Properties->SetObjectField(TEXT("node_ids"), NodeIdsProp);
+	TSharedPtr<FJsonObject> ClassFilterProp = MakeShared<FJsonObject>();
+	ClassFilterProp->SetStringField(TEXT("type"), TEXT("string"));
+	ClassFilterProp->SetStringField(TEXT("description"), TEXT("If specified, return only nodes of this class"));
+	Properties->SetObjectField(TEXT("class_filter"), ClassFilterProp);
 
 	Schema->SetObjectField(TEXT("properties"), Properties);
 
@@ -56,7 +53,7 @@ TSharedPtr<FJsonObject> FGetGraphNodesImplTool::GetInputSchema() const
 	return Schema;
 }
 
-TSharedPtr<FJsonObject> FGetGraphNodesImplTool::Execute(const TSharedPtr<FJsonObject>& Arguments)
+TSharedPtr<FJsonObject> FGetGraphNodesSummaryImplTool::Execute(const TSharedPtr<FJsonObject>& Arguments)
 {
 	TSharedPtr<FJsonObject> Result = MakeShared<FJsonObject>();
 	TArray<TSharedPtr<FJsonValue>> ContentArray;
@@ -85,20 +82,8 @@ TSharedPtr<FJsonObject> FGetGraphNodesImplTool::Execute(const TSharedPtr<FJsonOb
 		return Result;
 	}
 
-	// Parse optional node_ids filter
-	TSet<FString> NodeIdFilter;
-	const TArray<TSharedPtr<FJsonValue>>* NodeIdsArray = nullptr;
-	if (Arguments->TryGetArrayField(TEXT("node_ids"), NodeIdsArray) && NodeIdsArray)
-	{
-		for (const TSharedPtr<FJsonValue>& Value : *NodeIdsArray)
-		{
-			FString NodeIdStr;
-			if (Value.IsValid() && Value->TryGetString(NodeIdStr))
-			{
-				NodeIdFilter.Add(NodeIdStr);
-			}
-		}
-	}
+	FString ClassFilter;
+	Arguments->TryGetStringField(TEXT("class_filter"), ClassFilter);
 
 	FGetGraphNodesResult NodesResult = BlueprintModule.GetGraphNodes(BlueprintPath, GraphName);
 
@@ -108,12 +93,12 @@ TSharedPtr<FJsonObject> FGetGraphNodesImplTool::Execute(const TSharedPtr<FJsonOb
 	if (NodesResult.bSuccess)
 	{
 		const int32 TotalNodeCount = NodesResult.Nodes.Num();
-		const bool bHasFilter = NodeIdFilter.Num() > 0;
 
+		// Collect connected node IDs per node from pin data
 		TArray<TSharedPtr<FJsonValue>> NodesArray;
 		for (const FGraphNodeInfo& Info : NodesResult.Nodes)
 		{
-			if (bHasFilter && !NodeIdFilter.Contains(Info.NodeId))
+			if (!ClassFilter.IsEmpty() && Info.NodeClass != ClassFilter)
 			{
 				continue;
 			}
@@ -123,37 +108,33 @@ TSharedPtr<FJsonObject> FGetGraphNodesImplTool::Execute(const TSharedPtr<FJsonOb
 			NodeObj->SetStringField(TEXT("node_class"), Info.NodeClass);
 			NodeObj->SetStringField(TEXT("node_title"), Info.NodeTitle);
 
-			TSharedPtr<FJsonObject> PosObj = MakeShared<FJsonObject>();
-			PosObj->SetNumberField(TEXT("x"), Info.PosX);
-			PosObj->SetNumberField(TEXT("y"), Info.PosY);
-			NodeObj->SetObjectField(TEXT("position"), PosObj);
-
-			TSharedPtr<FJsonObject> SizeObj = MakeShared<FJsonObject>();
-			SizeObj->SetNumberField(TEXT("width"), Info.Width);
-			SizeObj->SetNumberField(TEXT("height"), Info.Height);
-			NodeObj->SetObjectField(TEXT("size"), SizeObj);
-
-			NodeObj->SetStringField(TEXT("comment"), Info.Comment);
-
-			TArray<TSharedPtr<FJsonValue>> PinsArray;
+			// Collect unique connected node IDs from all pins
+			TSet<FString> ConnectedNodeIdSet;
 			for (const FGraphNodePinInfo& PinInfo : Info.Pins)
 			{
-				TSharedPtr<FJsonObject> PinObj = MakeShared<FJsonObject>();
-				PinObj->SetStringField(TEXT("pin_id"), PinInfo.PinId);
-				PinObj->SetStringField(TEXT("pin_name"), PinInfo.PinName);
-				PinObj->SetStringField(TEXT("pin_type"), PinInfo.PinType);
-				PinObj->SetStringField(TEXT("direction"), PinInfo.Direction);
-
-				TArray<TSharedPtr<FJsonValue>> ConnectedArray;
-				for (const FString& ConnectedId : PinInfo.ConnectedPinIds)
+				for (const FString& ConnectedPinId : PinInfo.ConnectedPinIds)
 				{
-					ConnectedArray.Add(MakeShared<FJsonValueString>(ConnectedId));
+					// Find which node owns this pin
+					for (const FGraphNodeInfo& OtherNode : NodesResult.Nodes)
+					{
+						if (OtherNode.NodeId == Info.NodeId) continue;
+						for (const FGraphNodePinInfo& OtherPin : OtherNode.Pins)
+						{
+							if (OtherPin.PinId == ConnectedPinId)
+							{
+								ConnectedNodeIdSet.Add(OtherNode.NodeId);
+							}
+						}
+					}
 				}
-				PinObj->SetArrayField(TEXT("connected_pin_ids"), ConnectedArray);
-
-				PinsArray.Add(MakeShared<FJsonValueObject>(PinObj));
 			}
-			NodeObj->SetArrayField(TEXT("pins"), PinsArray);
+
+			TArray<TSharedPtr<FJsonValue>> ConnectedArray;
+			for (const FString& ConnectedNodeId : ConnectedNodeIdSet)
+			{
+				ConnectedArray.Add(MakeShared<FJsonValueString>(ConnectedNodeId));
+			}
+			NodeObj->SetArrayField(TEXT("connected_node_ids"), ConnectedArray);
 
 			NodesArray.Add(MakeShared<FJsonValueObject>(NodeObj));
 		}
@@ -162,27 +143,24 @@ TSharedPtr<FJsonObject> FGetGraphNodesImplTool::Execute(const TSharedPtr<FJsonOb
 		TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&JsonString);
 		FJsonSerializer::Serialize(NodesArray, Writer);
 
-		const int32 ReturnedCount = NodesArray.Num();
+		const int32 FilteredCount = NodesArray.Num();
 		FString ResponseText;
-		if (bHasFilter)
+		if (ClassFilter.IsEmpty())
 		{
-			ResponseText = FString::Printf(
-				TEXT("Returning %d of %d total nodes.\n%s"),
-				ReturnedCount, TotalNodeCount, *JsonString);
+			ResponseText = FString::Printf(TEXT("Graph has %d nodes.\n%s"), TotalNodeCount, *JsonString);
 		}
 		else
 		{
-			ResponseText = FString::Printf(
-				TEXT("Graph has %d nodes.\n%s"),
-				TotalNodeCount, *JsonString);
+			ResponseText = FString::Printf(TEXT("Graph has %d nodes (filtered from %d total).\n%s"), FilteredCount, TotalNodeCount, *JsonString);
 		}
+
 		TextContent->SetStringField(TEXT("text"), ResponseText);
 		Result->SetBoolField(TEXT("isError"), false);
 	}
 	else
 	{
 		TextContent->SetStringField(TEXT("text"),
-			FString::Printf(TEXT("Failed to get graph nodes: %s"), *NodesResult.ErrorMessage));
+			FString::Printf(TEXT("Failed to get graph nodes summary: %s"), *NodesResult.ErrorMessage));
 		Result->SetBoolField(TEXT("isError"), true);
 	}
 

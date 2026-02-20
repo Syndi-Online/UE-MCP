@@ -218,5 +218,5 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] add_comment_box — добавление Comment Box (EdGraphNode_Comment)
 - [x] delete_comment_box — удаление Comment Box
 - [x] set_comment_box_properties — изменение свойств Comment Box (текст, цвет, позиция, размер)
-- [ ] get_graph_nodes_summary — облегчённый список нод графа (id, class, title, connected_node_ids) с опциональным class_filter
-- [ ] get_graph_nodes (node_ids filter) — опциональная фильтрация по списку node_ids для получения полных данных только нужных нод
+- [x] get_graph_nodes_summary — облегчённый список нод графа (id, class, title, connected_node_ids) с опциональным class_filter
+- [x] get_graph_nodes (node_ids filter) — опциональная фильтрация по списку node_ids для получения полных данных только нужных нод
