@@ -1,0 +1,47 @@
+# batch_set_actor_folders
+
+Set folder paths for multiple actors in one call. Up to 100 operations per batch.
+
+## Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| operations | array | Yes | Array of operations. Each has actor_identifier and folder_path. |
+
+Each object in the `operations` array has the following fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| actor_identifier | string | Identifier of the actor (name or label) |
+| folder_path | string | Folder path to assign to the actor |
+
+## Returns
+
+On success, returns a text message with the number of succeeded and failed operations (e.g. `"Batch completed: 3 succeeded, 0 failed"`). The `isError` flag is `true` only when all operations fail.
+
+On error (missing or invalid parameters), returns an error message describing the issue.
+
+If any individual operations fail, the errors are listed with their index and error message.
+
+## Example
+
+```json
+{
+  "operations": [
+    {
+      "actor_identifier": "Cube_1",
+      "folder_path": "/Environment/Props"
+    },
+    {
+      "actor_identifier": "PointLight_0",
+      "folder_path": "/Lighting"
+    }
+  ]
+}
+```
+
+## Notes
+
+- Maximum of 100 operations per batch. Exceeding this limit returns an error.
+- Each operation is executed independently; a failure in one does not stop the others.
+- The `isError` flag is only set to `true` when all operations fail (succeeded == 0 and failed > 0).
