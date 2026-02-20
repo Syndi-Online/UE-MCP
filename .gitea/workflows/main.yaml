@@ -51,13 +51,34 @@ jobs:
 
       - name: Build Plugin (UE ${{ matrix.ue_version }})
         shell: powershell
-        run: >
-          & "D:\UE_${{ matrix.ue_version }}\Engine\Build\BatchFiles\RunUAT.bat"
-          BuildPlugin
-          -Plugin="D:\${{ env.REPO_NAME }}\${{ env.PLUGIN_NAME }}\${{ env.PLUGIN_NAME }}.uplugin"
-          -Package="D:\${{ env.REPO_NAME }}-Build-${{ matrix.ue_version }}"
-          -TargetPlatforms=Win64
-          -Rocket
+        run: |
+          $LogDir = "$env:APPDATA\Unreal Engine\AutomationTool\Logs\D+UE_${{ matrix.ue_version }}"
+          & "D:\UE_${{ matrix.ue_version }}\Engine\Build\BatchFiles\RunUAT.bat" `
+            BuildPlugin `
+            -Plugin="D:\${{ env.REPO_NAME }}\${{ env.PLUGIN_NAME }}\${{ env.PLUGIN_NAME }}.uplugin" `
+            -Package="D:\${{ env.REPO_NAME }}-Build-${{ matrix.ue_version }}" `
+            -TargetPlatforms=Win64 `
+            -Rocket
+          $ExitCode = $LASTEXITCODE
+          if ($ExitCode -ne 0) {
+            Write-Host "========== BUILD FAILED (exit code $ExitCode) =========="
+            Write-Host ""
+            Write-Host "=== UBT Log ==="
+            $UbtLog = Get-ChildItem "$LogDir" -Filter "*.txt" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+            if ($UbtLog) {
+              Get-Content $UbtLog.FullName | Select-String -Pattern "error|fatal|failed" -CaseSensitive:$false | Where-Object { $_ -notmatch "Error=False|WarningsAsErrors|ifError|isError|ErrorMessage|bSuccess" } | Select-Object -Last 50
+              Write-Host ""
+              Write-Host "=== Last 30 lines of $($UbtLog.Name) ==="
+              Get-Content $UbtLog.FullName | Select-Object -Last 30
+            }
+            Write-Host ""
+            Write-Host "=== UAT Log ==="
+            $UatLog = Get-ChildItem "$LogDir" -Filter "Log.txt" -ErrorAction SilentlyContinue
+            if ($UatLog) {
+              Get-Content $UatLog.FullName | Select-String -Pattern "error|fatal|failed" -CaseSensitive:$false | Where-Object { $_ -notmatch "Error=False|WarningsAsErrors" } | Select-Object -Last 30
+            }
+            exit $ExitCode
+          }
 
       - uses: actions/upload-artifact@v3
         with:
