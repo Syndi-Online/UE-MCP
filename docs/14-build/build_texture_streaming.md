@@ -18,6 +18,18 @@ On error, returns an error message describing why the texture streaming build fa
 {}
 ```
 
+## Response
+
+### Success
+```
+Texture streaming data built successfully.
+```
+
+### Error
+```
+Failed to build texture streaming data: No world available
+```
+
 ## Notes
 
 - Builds texture streaming data which helps the engine efficiently manage texture memory by streaming textures in and out based on distance and screen coverage.

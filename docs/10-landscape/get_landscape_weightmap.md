@@ -29,6 +29,25 @@ Using the first landscape in the level:
 {}
 ```
 
+## Response
+
+### Success
+```json
+{
+    "layers":
+    [
+        "Grass",
+        "Rock",
+        "Sand"
+    ]
+}
+```
+
+### Error
+```
+Failed to get weightmap: No landscape found in level
+```
+
 ## Notes
 
 - If `landscape_name` is omitted or empty, the tool uses the first landscape actor found in the current level.

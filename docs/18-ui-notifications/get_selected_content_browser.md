@@ -23,6 +23,25 @@ On error, returns `isError: true` with a message in the format "Failed to get Co
 {}
 ```
 
+## Response
+
+### Success
+```
+Selected Assets:
+  /Game/Blueprints/BP_Player.BP_Player
+  /Game/Materials/M_Ground.M_Ground
+Selected Folders:
+  /Game/Textures
+```
+```
+No items selected in Content Browser
+```
+
+### Error
+```
+Failed to get Content Browser selection: Content Browser module not loaded
+```
+
 ## Notes
 
 - This is a read-only query tool that does not modify the selection.

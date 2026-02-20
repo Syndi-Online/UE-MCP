@@ -24,6 +24,19 @@ On error, returns a message describing the failure (e.g., Blueprint not found, i
 }
 ```
 
+## Response
+
+### Success
+```
+Interface added successfully.
+InterfaceName: MyInteractableInterface
+```
+
+### Error
+```
+Failed to add interface: Interface not found: /Script/MyProject.MyInteractableInterface
+```
+
 ## Notes
 
 - The `interface_path` must be a fully qualified class path to a valid Blueprint Interface or C++ interface.

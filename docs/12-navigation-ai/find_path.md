@@ -27,6 +27,23 @@ On error, returns an error message describing why pathfinding failed.
 }
 ```
 
+## Response
+
+### Success
+```
+Path found (partial: false, points: 4)
+Waypoints:
+  [0] (X=0.00, Y=0.00, Z=100.00)
+  [1] (X=250.00, Y=125.00, Z=100.00)
+  [2] (X=600.00, Y=350.00, Z=100.00)
+  [3] (X=1000.00, Y=500.00, Z=100.00)
+```
+
+### Error
+```
+Failed to find path: Navigation system not available
+```
+
 ## Notes
 
 - Navigation mesh must be built before using this tool. Use `build_navigation` or `rebuild_navigation` first.

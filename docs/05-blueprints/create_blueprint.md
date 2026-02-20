@@ -24,6 +24,21 @@ On error, returns a message describing the failure (e.g., invalid path, class no
 }
 ```
 
+## Response
+
+### Success
+```
+Blueprint created successfully.
+BlueprintName: BP_MyCharacter
+BlueprintPath: /Game/Blueprints/BP_MyCharacter
+ParentClass: Character
+```
+
+### Error
+```
+Failed to create Blueprint: Asset already exists at /Game/Blueprints/BP_MyCharacter
+```
+
 ## Notes
 
 - The `blueprint_path` must be a valid content path starting with `/Game/`.

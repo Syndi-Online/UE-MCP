@@ -29,6 +29,25 @@ On error, returns a message describing the failure (e.g., material not found).
 }
 ```
 
+## Response
+
+### Success
+```
+Material statistics retrieved successfully.
+NumVertexShaderInstructions: 78
+NumPixelShaderInstructions: 142
+NumSamplers: 3
+NumVertexTextureSamples: 0
+NumPixelTextureSamples: 3
+NumVirtualTextureSamples: 0
+NumInterpolatorScalars: 4
+```
+
+### Error
+```
+Failed to get material statistics: Material not found: /Game/Materials/M_Missing
+```
+
 ## Notes
 
 - The material must be compiled for statistics to be available. Use `recompile_material` first if needed.

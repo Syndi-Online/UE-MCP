@@ -27,6 +27,26 @@ On error, returns "Failed to retrieve project paths."
 {}
 ```
 
+## Response
+
+### Success
+```
+Project: D:/Projects/MyGame/
+Content: D:/Projects/MyGame/Content/
+Config: D:/Projects/MyGame/Config/
+Saved: D:/Projects/MyGame/Saved/
+Plugins: D:/Projects/MyGame/Plugins/
+Intermediate: D:/Projects/MyGame/Intermediate/
+Logs: D:/Projects/MyGame/Saved/Logs/
+Project File: D:/Projects/MyGame/MyGame.uproject
+Engine: D:/UE_5.7/
+```
+
+### Error
+```
+Failed to retrieve project paths.
+```
+
 ## Notes
 
 - All returned paths are absolute filesystem paths.

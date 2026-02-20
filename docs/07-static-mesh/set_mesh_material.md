@@ -26,6 +26,18 @@ On error, returns an error message describing the failure reason (e.g., mesh not
 }
 ```
 
+## Response
+
+### Success
+```
+Material '/Game/Materials/M_BrickWall' assigned to slot 0 on '/Game/Meshes/SM_Wall'.
+```
+
+### Error
+```
+Failed to set mesh material: Asset not found: /Game/Meshes/SM_Missing
+```
+
 ## Notes
 
 - The `material_index` is zero-based. Use `get_lod_settings` or inspect the mesh to determine how many material slots are available.

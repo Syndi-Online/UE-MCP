@@ -24,6 +24,18 @@ Create a new level from an existing template level.
 }
 ```
 
+## Response
+
+### Success
+```
+Level created from template: MyNewLevel (/Game/Maps/MyNewLevel)
+```
+
+### Error
+```
+Failed to create level from template: Template '/Game/Maps/NonExistentTemplate' not found
+```
+
 ## Notes
 
 - The `template_path` must point to an existing level asset.

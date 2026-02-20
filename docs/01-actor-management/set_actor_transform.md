@@ -52,6 +52,21 @@ Set the transform (location, rotation, scale) of an actor. Only provided compone
 }
 ```
 
+## Response
+
+### Success
+```
+Transform updated for 'StaticMeshActor_0':
+Location: (500.000, 0.000, 100.000)
+Rotation: (Pitch=0.000, Yaw=90.000, Roll=0.000)
+Scale: (2.000, 2.000, 2.000)
+```
+
+### Error
+```
+Failed to set transform: Actor 'NonExistentActor' not found
+```
+
 ## Notes
 
 - Only the provided components (location, rotation, scale) are modified. Omitted components remain unchanged.

@@ -24,6 +24,18 @@ On error, returns an error message describing the failure reason (e.g., landscap
 }
 ```
 
+## Response
+
+### Success
+```
+Heightmap imported from 'D:/Assets/heightmap.png' into landscape.
+```
+
+### Error
+```
+Failed to set heightmap: File not found: D:/Assets/missing_heightmap.png
+```
+
 ## Notes
 
 - The heightmap file must be in PNG or RAW format.

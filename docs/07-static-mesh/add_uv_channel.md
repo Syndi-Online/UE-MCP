@@ -24,6 +24,19 @@ On error, returns an error message describing the failure reason (e.g., mesh not
 }
 ```
 
+## Response
+
+### Success
+```
+UV channel added to '/Game/Meshes/SM_Floor' at LOD 0.
+NumUVChannels: 3
+```
+
+### Error
+```
+Failed to add UV channel: Asset not found: /Game/Meshes/SM_Missing
+```
+
 ## Notes
 
 - If `lod_index` is not specified, it defaults to 0 (the highest detail LOD).

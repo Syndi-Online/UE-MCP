@@ -26,6 +26,19 @@ On error, returns an error message describing the failure reason (e.g., mesh not
 }
 ```
 
+## Response
+
+### Success
+```
+LOD imported successfully for '/Game/Meshes/SM_Building'.
+LodIndex: 1
+```
+
+### Error
+```
+Failed to import LOD: Source file not found: D:/Assets/SM_Building_LOD1.fbx
+```
+
 ## Notes
 
 - The `source_file` must be an absolute path to an FBX file on disk.

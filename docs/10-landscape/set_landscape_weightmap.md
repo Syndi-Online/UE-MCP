@@ -26,6 +26,18 @@ On error, returns an error message describing the failure reason (e.g., landscap
 }
 ```
 
+## Response
+
+### Success
+```
+Weightmap for layer 'Grass' imported from 'D:/Assets/grass_weightmap.png'.
+```
+
+### Error
+```
+Failed to set weightmap: Layer 'MissingLayer' not found on landscape
+```
+
 ## Notes
 
 - The weightmap file must be in PNG or RAW format.

@@ -57,6 +57,21 @@ On error, returns a message describing the failure.
 }
 ```
 
+## Response
+
+### Success
+```
+Comment box properties updated
+```
+
+### Error
+```
+Missing required parameter: node_id
+```
+```
+Failed to update comment box properties: Node not found in graph
+```
+
 ## Notes
 
 - All optional parameters (`comment_text`, `color`, `position`, `size`) are independent. Only the provided ones are updated.

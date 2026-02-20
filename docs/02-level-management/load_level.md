@@ -22,6 +22,18 @@ Load/open an existing level by asset path.
 }
 ```
 
+## Response
+
+### Success
+```
+Level loaded: MyLevel
+```
+
+### Error
+```
+Failed to load level: Level '/Game/Maps/NonExistentLevel' not found
+```
+
 ## Notes
 
 - The `level_path` must point to an existing level asset.

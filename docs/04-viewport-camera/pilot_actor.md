@@ -22,6 +22,18 @@ On error, returns an error message describing why the piloting could not be star
 }
 ```
 
+## Response
+
+### Success
+```
+Now piloting actor: CameraActor_1
+```
+
+### Error
+```
+Failed to pilot actor: Actor not found: CameraActor_1
+```
+
 ## Notes
 
 - Piloting locks the viewport camera to the specified actor's position and rotation.

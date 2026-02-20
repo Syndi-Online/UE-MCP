@@ -24,6 +24,18 @@ On error, returns an error message describing why the projection failed (e.g. no
 }
 ```
 
+## Response
+
+### Success
+```
+Projected location: (X=100.00, Y=200.00, Z=0.00)
+```
+
+### Error
+```
+Failed to project point: No navigation mesh found within extent
+```
+
 ## Notes
 
 - Navigation mesh must be built before using this tool.

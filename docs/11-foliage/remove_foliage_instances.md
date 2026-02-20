@@ -26,6 +26,18 @@ On error, returns an error message describing the failure.
 }
 ```
 
+## Response
+
+### Success
+```
+Removed 15 foliage instances
+```
+
+### Error
+```
+Failed to remove foliage instances: No foliage instances found matching criteria
+```
+
 ## Notes
 
 - All parameters are optional. If no parameters are provided, the behavior depends on the implementation defaults (center at origin, radius 0).

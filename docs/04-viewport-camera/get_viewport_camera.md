@@ -21,6 +21,20 @@ On error, returns an error message describing why the camera information could n
 {}
 ```
 
+## Response
+
+### Success
+```
+Location: (1250.000, -340.500, 620.000)
+Rotation: (Pitch=-15.000, Yaw=45.000, Roll=0.000)
+FOV: 90.0
+```
+
+### Error
+```
+Failed to get viewport camera: No active viewport client
+```
+
 ## Notes
 
 - Operates on the active editor viewport.

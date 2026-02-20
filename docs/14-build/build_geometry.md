@@ -18,6 +18,18 @@ On error, returns an error message describing why the geometry build failed.
 {}
 ```
 
+## Response
+
+### Success
+```
+Geometry built successfully.
+```
+
+### Error
+```
+Failed to build geometry: No world available
+```
+
 ## Notes
 
 - Builds BSP (Binary Space Partitioning) geometry for the current level.

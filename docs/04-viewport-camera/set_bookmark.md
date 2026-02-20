@@ -22,6 +22,18 @@ On error, returns an error message describing why the bookmark could not be save
 }
 ```
 
+## Response
+
+### Success
+```
+Bookmark 3 set
+```
+
+### Error
+```
+Failed to set bookmark: No active viewport client
+```
+
 ## Notes
 
 - Bookmark indices range from 0 to 9, providing up to 10 saved camera positions.

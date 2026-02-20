@@ -34,6 +34,21 @@ On error, returns an error message describing why the search failed.
 }
 ```
 
+## Response
+
+### Success
+```
+Found 3 assets:
+- AssetName: SM_Wall_01  AssetPath: /Game/Meshes/SM_Wall_01  AssetClass: StaticMesh  PackagePath: /Game/Meshes
+- AssetName: SM_Wall_02  AssetPath: /Game/Meshes/SM_Wall_02  AssetClass: StaticMesh  PackagePath: /Game/Meshes
+- AssetName: SM_Wall_Corner  AssetPath: /Game/Meshes/SM_Wall_Corner  AssetClass: StaticMesh  PackagePath: /Game/Meshes
+```
+
+### Error
+```
+Failed to find assets: Invalid package path '/NonExistent'
+```
+
 ## Notes
 
 - All parameters are optional. Calling with no parameters returns all assets in the project.

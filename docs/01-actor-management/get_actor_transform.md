@@ -22,6 +22,21 @@ Get the transform (location, rotation, scale) of an actor.
 }
 ```
 
+## Response
+
+### Success
+```
+Transform for 'StaticMeshActor_0':
+Location: (100.000, 200.000, 300.000)
+Rotation: (Pitch=0.000, Yaw=45.000, Roll=0.000)
+Scale: (1.000, 1.000, 1.000)
+```
+
+### Error
+```
+Failed to get transform: Actor 'NonExistentActor' not found
+```
+
 ## Notes
 
 - Location values are in world-space units.

@@ -28,6 +28,30 @@ On error, returns an error message describing the failure.
 }
 ```
 
+## Response
+
+### Success
+```
+[/Script/EngineSettings.GeneralProjectSettings] ProjectVersion = 1.0.0
+```
+
+### Error
+```
+Missing required parameter: config
+```
+```
+Missing required parameter: section
+```
+```
+Missing required parameter: key
+```
+```
+Missing required parameter: value
+```
+```
+Failed to set config value: Invalid config file name
+```
+
 ## Notes
 
 - Valid config file names are: `Engine`, `Game`, `Editor`, `Input`, `Scalability`.

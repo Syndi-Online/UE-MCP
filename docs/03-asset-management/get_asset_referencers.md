@@ -22,6 +22,20 @@ On error, returns an error message describing why the query failed.
 }
 ```
 
+## Response
+
+### Success
+```
+Asset '/Game/Textures/MyTexture' is referenced by 2 assets:
+- /Game/Materials/M_Wall
+- /Game/Materials/M_Floor
+```
+
+### Error
+```
+Failed to get asset referencers: Asset not found at /Game/Textures/MyTexture
+```
+
 ## Notes
 
 - Referencers are assets that use or depend on the queried asset (e.g., materials that use a specific texture).

@@ -28,6 +28,18 @@ On error, returns a message describing the failure (e.g., instance not found, pa
 }
 ```
 
+## Response
+
+### Success
+```
+Material instance parameter set successfully.
+```
+
+### Error
+```
+Failed to set material instance parameter: Material Instance not found: /Game/Materials/MI_Missing
+```
+
 ## Notes
 
 - The `parameter_type` must match the actual type of the parameter in the parent material.

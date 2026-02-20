@@ -26,6 +26,27 @@ On error, returns an error message describing the failure (e.g. section or key n
 }
 ```
 
+## Response
+
+### Success
+```
+[/Script/Engine.RendererSettings] r.DefaultFeature.AntiAliasing = 2
+```
+
+### Error
+```
+Missing required parameter: config
+```
+```
+Missing required parameter: section
+```
+```
+Missing required parameter: key
+```
+```
+Failed to get config value: Key not found in section
+```
+
 ## Notes
 
 - Valid config file names are: `Engine`, `Game`, `Editor`, `Input`, `Scalability`.

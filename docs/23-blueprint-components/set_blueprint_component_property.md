@@ -28,6 +28,21 @@ On error, returns a message describing the failure.
 }
 ```
 
+## Response
+
+### Success
+```
+Property 'Intensity' set on component 'MyLight'
+```
+
+### Error
+```
+Missing required parameter: property_value
+```
+```
+Failed to set component property: Component 'NonExistent' not found
+```
+
 ## Notes
 
 - Property values are passed as strings and converted internally by Unreal Engine.

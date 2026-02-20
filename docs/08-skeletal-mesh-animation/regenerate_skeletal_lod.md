@@ -26,6 +26,18 @@ On error, returns an error message describing the failure reason (e.g., mesh not
 }
 ```
 
+## Response
+
+### Success
+```
+Skeletal mesh LOD regenerated for '/Game/Characters/SK_Mannequin'. New LOD count: 3.
+```
+
+### Error
+```
+Failed to regenerate skeletal LOD: Asset not found: /Game/Characters/SK_Missing
+```
+
 ## Notes
 
 - If `lod_count` is not specified or is set to 0, the engine's default LOD generation settings are used.

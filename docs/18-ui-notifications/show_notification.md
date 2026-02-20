@@ -26,6 +26,21 @@ On error, returns `isError: true` with an error message describing what went wro
 }
 ```
 
+## Response
+
+### Success
+```
+Notification shown successfully
+```
+
+### Error
+```
+Missing required parameter: message
+```
+```
+Failed to create notification
+```
+
 ## Notes
 
 - The notification appears as a toast popup in the lower-right corner of the Unreal Editor.

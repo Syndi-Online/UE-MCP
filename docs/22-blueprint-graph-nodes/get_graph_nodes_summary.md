@@ -42,6 +42,28 @@ With class filter:
 }
 ```
 
+## Response
+
+### Success
+```
+Graph has 3 nodes.
+[{"node_id":"4A8B12C3-4D5E6F78-9A0B1C2D-3E4F5678","node_class":"K2Node_Event","node_title":"Event BeginPlay","connected_node_ids":["F1E2D3C4-B5A6F7E8-D9C0B1A2-F3E4D5C6"]}]
+```
+
+With class_filter:
+```
+Graph has 1 nodes (filtered from 3 total).
+[{"node_id":"F1E2D3C4-B5A6F7E8-D9C0B1A2-F3E4D5C6","node_class":"K2Node_CallFunction","node_title":"Print String","connected_node_ids":["4A8B12C3-4D5E6F78-9A0B1C2D-3E4F5678"]}]
+```
+
+### Error
+```
+Missing required parameter: graph_name
+```
+```
+Failed to get graph nodes summary: Blueprint not found: /Game/Blueprints/BP_Missing
+```
+
 ## Notes
 
 - This is a lighter-weight alternative to `get_graph_nodes`. It does not return pin details, positions, or sizes.

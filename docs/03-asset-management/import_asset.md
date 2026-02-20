@@ -24,6 +24,20 @@ On error, returns an error message describing why the import failed.
 }
 ```
 
+## Response
+
+### Success
+```
+Import successful. 2 asset(s) imported:
+- /Game/Meshes/Characters/character
+- /Game/Meshes/Characters/character_PhysicsAsset
+```
+
+### Error
+```
+Failed to import asset: File not found: C:/Models/character.fbx
+```
+
 ## Notes
 
 - The `file_path` must be an absolute path to a file on disk.

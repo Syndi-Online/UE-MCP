@@ -22,6 +22,18 @@ On error, returns an error message describing why the view mode could not be set
 }
 ```
 
+## Response
+
+### Success
+```
+View mode set to Wireframe
+```
+
+### Error
+```
+Failed to set view mode: Unknown view mode: InvalidMode. Supported: Lit, Unlit, Wireframe, BrushWireframe, LightingOnly, LightComplexity, ShaderComplexity, DetailLighting, CollisionPawn, CollisionVisibility
+```
+
 ## Notes
 
 - The `mode` value must be one of the supported view modes listed above.

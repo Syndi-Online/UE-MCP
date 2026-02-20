@@ -24,6 +24,18 @@ On error, returns an error message describing the failure reason (e.g., no activ
 }
 ```
 
+## Response
+
+### Success
+```
+Marker 'Explosion Start' added at 5.000 seconds (index: 0).
+```
+
+### Error
+```
+Failed to add marker: No active sequencer found
+```
+
 ## Notes
 
 - A Level Sequence must be open in the Sequencer editor for this tool to work.

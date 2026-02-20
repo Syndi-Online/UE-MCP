@@ -26,6 +26,21 @@ On error, returns a message describing the failure.
 }
 ```
 
+## Response
+
+### Success
+```
+Comment box deleted
+```
+
+### Error
+```
+Missing required parameter: node_id
+```
+```
+Failed to delete comment box: Node not found in graph
+```
+
 ## Notes
 
 - The `node_id` must refer to a comment box node. Use `get_graph_nodes` to find comment box node IDs.

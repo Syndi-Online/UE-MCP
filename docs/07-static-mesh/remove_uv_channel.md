@@ -26,6 +26,19 @@ On error, returns an error message describing the failure reason (e.g., mesh not
 }
 ```
 
+## Response
+
+### Success
+```
+UV channel 2 removed from '/Game/Meshes/SM_Floor' at LOD 0.
+NumUVChannels: 2
+```
+
+### Error
+```
+Failed to remove UV channel: Asset not found: /Game/Meshes/SM_Missing
+```
+
 ## Notes
 
 - If `lod_index` is not specified, it defaults to 0 (the highest detail LOD).

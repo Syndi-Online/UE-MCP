@@ -24,6 +24,18 @@ On error, returns an error message describing the failure reason (e.g., landscap
 }
 ```
 
+## Response
+
+### Success
+```
+Landscape heightmap exported to 'D:/output/heightmap.png'.
+```
+
+### Error
+```
+Failed to export landscape: No landscape found in level
+```
+
 ## Notes
 
 - The exported file is in PNG format.

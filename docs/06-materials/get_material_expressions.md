@@ -26,6 +26,38 @@ On error, returns a message describing the failure (e.g., material not found).
 }
 ```
 
+## Response
+
+### Success
+```
+Material has 3 expressions.
+[
+    {
+        "index": 0,
+        "name": "MaterialExpressionConstant3Vector_0",
+        "class": "MaterialExpressionConstant3Vector",
+        "position": { "x": -300, "y": 0 }
+    },
+    {
+        "index": 1,
+        "name": "MaterialExpressionMultiply_0",
+        "class": "MaterialExpressionMultiply",
+        "position": { "x": -150, "y": 0 }
+    },
+    {
+        "index": 2,
+        "name": "MaterialExpressionScalarParameter_0",
+        "class": "MaterialExpressionScalarParameter",
+        "position": { "x": -300, "y": 200 }
+    }
+]
+```
+
+### Error
+```
+Failed to get material expressions: Material not found: /Game/Materials/M_Missing
+```
+
 ## Notes
 
 - The `index` field is used to reference expressions in tools like `connect_material_expressions`, `connect_material_property`, `delete_material_expression`, `get_material_expression_property`, and `set_material_expression_property`.

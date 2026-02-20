@@ -22,6 +22,21 @@ On error, returns an error message (e.g. if the console variable does not exist)
 }
 ```
 
+## Response
+
+### Success
+```
+r.ScreenPercentage = 100
+```
+
+### Error
+```
+Missing required parameter: name
+```
+```
+Console variable 'r.InvalidCVar' not found
+```
+
 ## Notes
 
 - Console variables (CVars) are used to configure various engine and game settings at runtime.

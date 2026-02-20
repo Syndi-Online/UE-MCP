@@ -24,6 +24,19 @@ On error, returns a message describing the failure (e.g., Blueprint not found, d
 }
 ```
 
+## Response
+
+### Success
+```
+Function added successfully.
+FunctionName: CalculateDamage
+```
+
+### Error
+```
+Failed to add function: Blueprint not found: /Game/Blueprints/BP_Missing
+```
+
 ## Notes
 
 - Function names must be unique within the Blueprint.

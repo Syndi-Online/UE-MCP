@@ -24,6 +24,24 @@ On error, returns an error message (e.g. if the console variable does not exist 
 }
 ```
 
+## Response
+
+### Success
+```
+r.ScreenPercentage set to 100
+```
+
+### Error
+```
+Missing required parameter: name
+```
+```
+Missing required parameter: value
+```
+```
+Console variable 'r.InvalidCVar' not found
+```
+
 ## Notes
 
 - The value is passed as a string and will be parsed according to the CVar's type (int, float, string).

@@ -22,6 +22,18 @@ On error, returns an error message describing the failure reason (e.g., actor no
 }
 ```
 
+## Response
+
+### Success
+```
+Actor 'DirectionalLight' added to sequencer. Binding GUID: A1B2C3D4-E5F6-7890-ABCD-EF1234567890
+```
+
+### Error
+```
+Failed to add actor: Actor 'MissingActor' not found in current level
+```
+
 ## Notes
 
 - The actor must exist in the current level.

@@ -22,6 +22,18 @@ On error, returns an error message describing why the asset could not be deleted
 }
 ```
 
+## Response
+
+### Success
+```
+Asset '/Game/Meshes/UnusedMesh' deleted successfully.
+```
+
+### Error
+```
+Failed to delete asset: Asset not found at /Game/Meshes/UnusedMesh
+```
+
 ## Notes
 
 - The asset must exist at the specified path.

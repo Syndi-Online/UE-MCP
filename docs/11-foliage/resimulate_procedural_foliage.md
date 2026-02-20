@@ -22,6 +22,18 @@ On error, returns an error message describing the failure.
 }
 ```
 
+## Response
+
+### Success
+```
+Resimulated 3 procedural foliage volume(s)
+```
+
+### Error
+```
+Failed to resimulate procedural foliage: No procedural foliage volumes found
+```
+
 ## Notes
 
 - If `volume_name` is omitted or empty, all procedural foliage volumes in the current level are resimulated.

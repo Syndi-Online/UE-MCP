@@ -22,6 +22,18 @@ On error, returns an error message describing why the realtime setting could not
 }
 ```
 
+## Response
+
+### Success
+```
+Realtime rendering enabled
+```
+
+### Error
+```
+Failed to set viewport realtime: ULevelEditorSubsystem is not available
+```
+
 ## Notes
 
 - When realtime rendering is enabled, the viewport continuously updates (animations play, particles simulate, etc.).

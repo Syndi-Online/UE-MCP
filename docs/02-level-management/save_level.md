@@ -18,6 +18,18 @@ This tool takes no parameters.
 {}
 ```
 
+## Response
+
+### Success
+```
+Level saved: MyLevel
+```
+
+### Error
+```
+Failed to save level: No level currently loaded
+```
+
 ## Notes
 
 - Saves the currently active level to disk.

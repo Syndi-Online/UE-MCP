@@ -32,6 +32,21 @@ On error, returns a message describing the failure.
 }
 ```
 
+## Response
+
+### Success
+```
+Disconnected 4A8B12C3-4D5E6F78-9A0B1C2D-3E4F5678.then from F1E2D3C4-B5A6F7E8-D9C0B1A2-F3E4D5C6.execute
+```
+
+### Error
+```
+Missing required parameter: source_pin_name
+```
+```
+Failed to disconnect pins: Pins are not connected
+```
+
 ## Notes
 
 - The specified pins must currently be connected; otherwise the operation will fail.

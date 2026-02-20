@@ -22,6 +22,18 @@ Add an existing level as a streaming sublevel to the current world.
 }
 ```
 
+## Response
+
+### Success
+```
+Sublevel added: SubLevel_Lighting
+```
+
+### Error
+```
+Failed to add sublevel: Level '/Game/Maps/NonExistentLevel' not found
+```
+
 ## Notes
 
 - The `level_path` must point to an existing level asset.

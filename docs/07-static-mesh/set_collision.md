@@ -24,6 +24,18 @@ On error, returns an error message describing the failure reason (e.g., mesh not
 }
 ```
 
+## Response
+
+### Success
+```
+Collision set to 'Box' for '/Game/Meshes/SM_Wall'.
+```
+
+### Error
+```
+Failed to set collision: Asset not found: /Game/Meshes/SM_Missing
+```
+
 ## Notes
 
 - Supported collision types:

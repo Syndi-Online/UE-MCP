@@ -20,6 +20,17 @@ Returns a status report with the following fields:
 {}
 ```
 
+## Response
+
+### Success
+```
+Build Status:
+- Building: yes
+- Lighting Build: yes
+- Navigation Build: no
+- Cancelled: no
+```
+
 ## Notes
 
 - Use this tool to check whether an asynchronous build operation (such as `build_lighting` or `build_all`) is still running.

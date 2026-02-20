@@ -18,6 +18,27 @@ On error, returns `isError: true` with an error message describing what went wro
 {}
 ```
 
+## Response
+
+### Success
+```
+HLOD data deleted
+```
+
+### Error
+```
+No editor world available
+```
+```
+Current world is not a World Partition world
+```
+```
+WorldPartitionHLODsBuilder class not found
+```
+```
+HLOD deletion failed
+```
+
 ## Notes
 
 - This removes all generated HLOD data for the current World Partition level.

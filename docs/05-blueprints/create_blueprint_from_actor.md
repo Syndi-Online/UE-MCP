@@ -24,6 +24,21 @@ On error, returns a message describing the failure (e.g., actor not found, inval
 }
 ```
 
+## Response
+
+### Success
+```
+Blueprint created from actor successfully.
+BlueprintName: BP_FromActor
+BlueprintPath: /Game/Blueprints/BP_FromActor
+SourceActorName: MyActor_01
+```
+
+### Error
+```
+Failed to create Blueprint from actor: Actor not found: MyActor_01
+```
+
 ## Notes
 
 - The `actor_identifier` can be the actor's name, display label, or full path in the level.

@@ -27,6 +27,22 @@ On error, returns a message describing the failure.
 }
 ```
 
+## Response
+
+### Success
+```
+Blueprint has 2 components.
+[{"name":"DefaultSceneRoot","class":"SceneComponent","parent":"","is_root":true},{"name":"MyLight","class":"PointLightComponent","parent":"DefaultSceneRoot","is_root":false}]
+```
+
+### Error
+```
+Missing required parameter: blueprint_path
+```
+```
+Failed to get components: Blueprint not found: /Game/Blueprints/BP_Missing
+```
+
 ## Notes
 
 - Returns all components in the Blueprint's component hierarchy.

@@ -22,6 +22,18 @@ On error, returns a message describing the failure (e.g., material not found, co
 }
 ```
 
+## Response
+
+### Success
+```
+Material recompiled successfully.
+```
+
+### Error
+```
+Failed to recompile material: Material not found: /Game/Materials/M_Missing
+```
+
 ## Notes
 
 - Recompilation is necessary after making changes to a material's expression graph (creating, deleting, or connecting expressions).

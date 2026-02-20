@@ -26,6 +26,20 @@ On error, returns an error message describing why the search failed.
 }
 ```
 
+## Response
+
+### Success
+```
+Found 2 assets referencing '/Script/Engine.StaticMeshActor':
+- /Game/Maps/MainLevel (World)
+- /Game/Maps/TestLevel (World)
+```
+
+### Error
+```
+Failed: Class not found: /Script/Engine.NonExistentClass
+```
+
 ## Notes
 
 - Only `class_path` is required. The other parameters are optional filters.

@@ -26,6 +26,21 @@ On error, returns a message describing the failure.
 }
 ```
 
+## Response
+
+### Success
+```
+Node 4A8B12C3-4D5E6F78-9A0B1C2D-3E4F5678 deleted from graph 'EventGraph'
+```
+
+### Error
+```
+Missing required parameter: node_id
+```
+```
+Failed to delete node: Node not found in graph
+```
+
 ## Notes
 
 - Deleting a node automatically disconnects all its pins.

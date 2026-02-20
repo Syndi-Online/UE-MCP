@@ -22,6 +22,18 @@ On error, returns an error message describing why the asset could not be saved.
 }
 ```
 
+## Response
+
+### Success
+```
+Asset saved successfully: /Game/Meshes/MyMesh
+```
+
+### Error
+```
+Failed to save asset: Asset not found at /Game/Meshes/MyMesh
+```
+
 ## Notes
 
 - The asset must be loaded in memory before it can be saved.

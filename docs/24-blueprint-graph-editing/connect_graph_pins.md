@@ -32,6 +32,21 @@ On error, returns a message describing the failure.
 }
 ```
 
+## Response
+
+### Success
+```
+Connected 4A8B12C3-4D5E6F78-9A0B1C2D-3E4F5678.then -> F1E2D3C4-B5A6F7E8-D9C0B1A2-F3E4D5C6.execute
+```
+
+### Error
+```
+Missing required parameter: target_pin_name
+```
+```
+Failed to connect pins: Pin 'NonExistent' not found on source node
+```
+
 ## Notes
 
 - Pin names must match exactly. Use `get_graph_nodes` to inspect available pin names on nodes.

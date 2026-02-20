@@ -36,6 +36,20 @@ On error, returns a message describing the failure (e.g., Blueprint not found, d
 }
 ```
 
+## Response
+
+### Success
+```
+Event Dispatcher created successfully.
+dispatcher_name: OnHealthChanged
+graph_name: OnHealthChanged
+```
+
+### Error
+```
+Failed to add event dispatcher: Blueprint not found: /Game/Blueprints/BP_Missing
+```
+
 ## Notes
 
 - Event Dispatchers are multicast delegates that can be bound to by other Blueprints or code.

@@ -24,6 +24,18 @@ Group multiple actors together in the editor.
 }
 ```
 
+## Response
+
+### Success
+```
+Grouped 3 actors into 'Building_A'
+```
+
+### Error
+```
+Failed to group actors: Need at least 2 actors to form a group
+```
+
 ## Notes
 
 - A minimum of 2 actors is required to form a group.

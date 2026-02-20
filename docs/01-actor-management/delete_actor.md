@@ -22,6 +22,18 @@ Delete an actor from the editor world by name, label, or path.
 }
 ```
 
+## Response
+
+### Success
+```
+Actor 'StaticMeshActor_0' deleted successfully.
+```
+
+### Error
+```
+Failed to delete actor: Actor 'NonExistentActor' not found
+```
+
 ## Notes
 
 - The actor can be identified by its internal name, display label, or full path.

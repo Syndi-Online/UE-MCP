@@ -24,6 +24,18 @@ Move one or more actors to a different streaming level.
 }
 ```
 
+## Response
+
+### Success
+```
+Moved 2 actor(s) to level 'SubLevel_Lighting'
+```
+
+### Error
+```
+Failed to move actors: Level 'NonExistentLevel' not found
+```
+
 ## Notes
 
 - The target level must be a loaded streaming sublevel or the persistent level.

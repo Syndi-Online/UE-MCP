@@ -18,6 +18,18 @@ On error, returns an error message describing why the HLOD build failed.
 {}
 ```
 
+## Response
+
+### Success
+```
+HLOD built successfully.
+```
+
+### Error
+```
+Failed to build HLOD: No world available
+```
+
 ## Notes
 
 - HLOD (Hierarchical Level of Detail) combines multiple static meshes into clustered proxy meshes for improved rendering performance at distance.

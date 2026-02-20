@@ -30,6 +30,18 @@ On error, returns a message describing the failure (e.g., material not found, in
 }
 ```
 
+## Response
+
+### Success
+```
+Material expressions connected successfully.
+```
+
+### Error
+```
+Failed to connect material expressions: Expression index 5 out of range
+```
+
 ## Notes
 
 - The `from_output` and `to_input` parameters specify the pin names on the source and destination expressions. If left empty (default), the first available pin is used.

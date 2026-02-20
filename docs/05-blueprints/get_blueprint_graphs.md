@@ -22,6 +22,21 @@ On error, returns a message describing the failure (e.g., Blueprint not found).
 }
 ```
 
+## Response
+
+### Success
+```
+Blueprint graphs (3 found):
+- EventGraph (Type: EventGraph)
+- CalculateDamage (Type: Function)
+- OnHealthChanged (Type: Delegate)
+```
+
+### Error
+```
+Failed to get Blueprint graphs: Blueprint not found: /Game/Blueprints/BP_Missing
+```
+
 ## Notes
 
 - The response lists all graph types: event graphs, function graphs, macro graphs, and delegate graphs.

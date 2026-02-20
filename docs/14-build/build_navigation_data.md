@@ -18,6 +18,18 @@ On error, returns an error message describing why the navigation data build fail
 {}
 ```
 
+## Response
+
+### Success
+```
+Navigation data built successfully.
+```
+
+### Error
+```
+Failed to build navigation data: No world available
+```
+
 ## Notes
 
 - Builds navigation data (NavMesh) as part of the editor build pipeline.

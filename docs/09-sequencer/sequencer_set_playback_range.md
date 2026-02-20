@@ -24,6 +24,18 @@ On error, returns an error message describing the failure reason (e.g., no activ
 }
 ```
 
+## Response
+
+### Success
+```
+Playback range set to 0.000 - 10.000 seconds.
+```
+
+### Error
+```
+Failed to set playback range: No active sequencer found
+```
+
 ## Notes
 
 - A Level Sequence must be open in the Sequencer editor for this tool to work.

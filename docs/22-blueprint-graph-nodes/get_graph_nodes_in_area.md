@@ -34,6 +34,28 @@ On error, returns a message describing the failure.
 }
 ```
 
+## Response
+
+### Success (no nodes found)
+```
+Area is free — 0 nodes found.
+```
+
+### Success (nodes found)
+```
+Found 2 nodes in area:
+- node_id: 4A8B12C3-4D5E6F78-9A0B1C2D-3E4F5678  title: Event BeginPlay  position: (0, 0)  size: (200 x 75)
+- node_id: F1E2D3C4-B5A6F7E8-D9C0B1A2-F3E4D5C6  title: Print String  position: (300, 0)  size: (250 x 100)
+```
+
+### Error
+```
+Missing required parameters: blueprint_path, graph_name, min_x, min_y, max_x, max_y
+```
+```
+Failed: Graph 'NonExistent' not found in Blueprint
+```
+
 ## Notes
 
 - The area is defined by its min/max corners in graph space coordinates.

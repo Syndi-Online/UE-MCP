@@ -28,6 +28,21 @@ On error, returns a message describing the failure (e.g., material not found, in
 }
 ```
 
+## Response
+
+### Success
+```
+Material expression created successfully.
+ExpressionName: MaterialExpressionConstant3Vector_0
+ExpressionClass: MaterialExpressionConstant3Vector
+ExpressionIndex: 3
+```
+
+### Error
+```
+Failed to create material expression: Material not found: /Game/Materials/M_Missing
+```
+
 ## Notes
 
 - Common expression class names include: `Constant`, `Constant2Vector`, `Constant3Vector`, `Constant4Vector`, `ScalarParameter`, `VectorParameter`, `TextureSample`, `TextureObject`, `Add`, `Multiply`, `Lerp`, `Power`, `TexCoord`, `Time`, `Panner`, `ComponentMask`.

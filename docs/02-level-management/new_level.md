@@ -22,6 +22,18 @@ Create a new empty level at the specified asset path.
 }
 ```
 
+## Response
+
+### Success
+```
+New level created: NewMap (/Game/Maps/NewMap)
+```
+
+### Error
+```
+Failed to create level: Path '/Game/Maps/ExistingMap' already exists
+```
+
 ## Notes
 
 - The `level_path` must be a valid Unreal Engine asset path starting with "/Game/".

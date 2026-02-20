@@ -35,6 +35,21 @@ On error, returns a message describing the failure.
 }
 ```
 
+## Response
+
+### Success
+```
+Node moved to (200, 300)
+```
+
+### Error
+```
+Missing required parameter: position
+```
+```
+Failed to set node position: Node not found in graph
+```
+
 ## Notes
 
 - Coordinates are integer values in graph space.

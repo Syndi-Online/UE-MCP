@@ -18,6 +18,18 @@ On error, returns an error message describing why the ejection failed.
 {}
 ```
 
+## Response
+
+### Success
+```
+Ejected from piloted actor
+```
+
+### Error
+```
+Failed to eject pilot: ULevelEditorSubsystem is not available
+```
+
 ## Notes
 
 - This stops piloting mode and returns the viewport camera to free movement.

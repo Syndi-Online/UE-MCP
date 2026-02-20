@@ -22,6 +22,18 @@ On error, returns an error message describing why the jump failed (e.g., no book
 }
 ```
 
+## Response
+
+### Success
+```
+Jumped to bookmark 3
+```
+
+### Error
+```
+Failed to jump to bookmark: Bookmark 3 does not exist
+```
+
 ## Notes
 
 - Bookmark indices range from 0 to 9.

@@ -32,6 +32,18 @@ Using default compression:
 }
 ```
 
+## Response
+
+### Success
+```
+Compression applied to '/Game/Animations/Idle_Anim'.
+```
+
+### Error
+```
+Failed to apply compression: Asset not found: /Game/Animations/Missing_Anim
+```
+
 ## Notes
 
 - If `compression_settings_path` is not provided or is an empty string, the engine's default bone compression settings are used.

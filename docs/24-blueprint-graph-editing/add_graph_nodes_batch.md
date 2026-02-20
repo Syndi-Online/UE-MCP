@@ -69,6 +69,26 @@ On error, returns a message describing the failure.
 }
 ```
 
+## Response
+
+### Success
+```
+Created 2 nodes, 1 connections:
+- event -> node_id: 4A8B12C3-4D5E6F78-9A0B1C2D-3E4F5678 (3 pins)
+- print -> node_id: F1E2D3C4-B5A6F7E8-D9C0B1A2-F3E4D5C6 (5 pins)
+```
+
+### Error
+```
+Missing required parameters: blueprint_path, graph_name
+```
+```
+Missing or empty required parameter: nodes
+```
+```
+Batch failed: Blueprint not found: /Game/Blueprints/BP_Missing
+```
+
 ## Notes
 
 - The `local_id` fields are temporary identifiers used only within this call to define connections between nodes being created. They are not persisted.

@@ -24,6 +24,18 @@ On error, returns a message describing the failure (e.g., instance not found, pa
 }
 ```
 
+## Response
+
+### Success
+```
+Material instance parent set successfully.
+```
+
+### Error
+```
+Failed to set material instance parent: Material Instance not found: /Game/Materials/MI_Missing
+```
+
 ## Notes
 
 - The `parent_path` can point to either a Material or another Material Instance (creating a Material Instance chain).

@@ -22,6 +22,27 @@ On error, returns `isError: true` with an error message describing what went wro
 }
 ```
 
+## Response
+
+### Success
+```
+Editor closed for: /Game/Blueprints/BP_Player.uasset
+```
+
+### Error
+```
+Missing required parameter: asset_path
+```
+```
+Editor not available
+```
+```
+Asset editor subsystem not available
+```
+```
+Asset not found in memory: /Game/Blueprints/BP_Player.uasset
+```
+
 ## Notes
 
 - Only closes the editor if it is currently open for the specified asset.

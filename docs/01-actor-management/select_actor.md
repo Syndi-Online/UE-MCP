@@ -24,6 +24,18 @@ Select one or more actors in the editor. Can replace or add to the current selec
 }
 ```
 
+## Response
+
+### Success
+```
+Selected 2 actor(s)
+```
+
+### Error
+```
+Failed to select actors: No actors found matching the provided identifiers
+```
+
 ## Notes
 
 - By default, the current selection is replaced. Set `add_to_selection` to `true` to add to the existing selection.

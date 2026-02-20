@@ -47,6 +47,22 @@ On error, returns a message describing the failure.
 }
 ```
 
+## Response
+
+### Success
+```
+Node added with ID: 4A8B12C3-4D5E6F78-9A0B1C2D-3E4F5678 and 5 pins.
+{"node_id":"4A8B12C3-4D5E6F78-9A0B1C2D-3E4F5678","pins":[{"pin_id":"A1B2C3D4-E5F6A7B8-C9D0E1F2-A3B4C5D6","pin_name":"execute","pin_type":"exec","direction":"input","connected_pin_ids":[]},{"pin_id":"B2C3D4E5-F6A7B8C9-D0E1F2A3-B4C5D6E7","pin_name":"then","pin_type":"exec","direction":"output","connected_pin_ids":[]},{"pin_id":"C3D4E5F6-A7B8C9D0-E1F2A3B4-C5D6E7F8","pin_name":"InString","pin_type":"string","direction":"input","connected_pin_ids":[]}]}
+```
+
+### Error
+```
+Missing required parameter: node_type
+```
+```
+Failed to add graph node: Blueprint not found: /Game/Blueprints/BP_Missing
+```
+
 ## Notes
 
 - The `member_name` parameter is required for most node types (CallFunction, Event, VariableGet, VariableSet, MacroInstance) but not for IfThenElse/Branch or DynamicCast.

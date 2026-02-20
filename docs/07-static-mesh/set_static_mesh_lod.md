@@ -24,6 +24,18 @@ On error, returns an error message describing the failure reason (e.g., mesh not
 }
 ```
 
+## Response
+
+### Success
+```
+LOD screen sizes updated for '/Game/Meshes/SM_Rock' with 3 LOD level(s).
+```
+
+### Error
+```
+Failed to set LOD screen sizes: Asset not found: /Game/Meshes/SM_Missing
+```
+
 ## Notes
 
 - The `screen_sizes` array length determines how many LOD levels are configured. Each entry corresponds to a LOD index.

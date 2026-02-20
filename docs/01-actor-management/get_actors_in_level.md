@@ -22,6 +22,21 @@ Get a list of all actors in the current level. Optionally filter by class.
 }
 ```
 
+## Response
+
+### Success
+```
+Found 3 actors in level:
+- StaticMeshActor [StaticMeshActor_0] Class=/Script/Engine.StaticMeshActor Loc=(0.0, 0.0, 0.0) Folder=Geometry
+- PointLight [PointLight_0] Class=/Script/Engine.PointLight Loc=(100.0, 200.0, 300.0) Folder=Lighting
+- PlayerStart [PlayerStart_0] Class=/Script/Engine.PlayerStart Loc=(0.0, 0.0, 50.0) Folder=
+```
+
+### Error
+```
+Failed to get actors: No editor world available
+```
+
 ## Notes
 
 - If `class_filter` is omitted or empty, all actors in the level are returned.

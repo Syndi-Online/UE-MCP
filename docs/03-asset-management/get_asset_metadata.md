@@ -22,6 +22,20 @@ On error, returns an error message describing why the metadata could not be retr
 }
 ```
 
+## Response
+
+### Success
+```
+Metadata for '/Game/Meshes/MyMesh' (2 tags):
+- Author = John
+- Version = 1.2
+```
+
+### Error
+```
+Failed to get asset metadata: Asset not found at /Game/Meshes/MyMesh
+```
+
 ## Notes
 
 - Metadata tags are custom key-value pairs stored on the asset's registry entry.

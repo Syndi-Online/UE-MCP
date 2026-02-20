@@ -30,6 +30,21 @@ On error, returns a message describing the failure.
 }
 ```
 
+## Response
+
+### Success
+```
+Default value of pin 'InString' on node 4A8B12C3-4D5E6F78-9A0B1C2D-3E4F5678 set to: Hello World
+```
+
+### Error
+```
+Missing required parameter: default_value
+```
+```
+Failed to set pin default value: Pin 'NonExistent' not found on node
+```
+
 ## Notes
 
 - Default values are provided as strings and are converted internally by Unreal Engine based on the pin type.

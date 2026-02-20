@@ -18,6 +18,21 @@ On error, returns `isError: true` with an error message describing what went wro
 {}
 ```
 
+## Response
+
+### Success
+```
+Play session end requested
+```
+
+### Error
+```
+Editor engine not available
+```
+```
+No play session is currently active
+```
+
 ## Notes
 
 - Stops both PIE (Play In Editor) and SIE (Simulate In Editor) sessions.

@@ -31,6 +31,42 @@ On error, returns an error message describing the failure reason (e.g., mesh not
 }
 ```
 
+## Response
+
+### Success
+```json
+{
+    "skeleton": "SK_Mannequin_Skeleton",
+    "num_bones": 68,
+    "num_raw_bones": 68,
+    "lod_count": 2,
+    "vertex_count_per_lod": [12500, 6000],
+    "bones":
+    [
+        {
+            "index": 0,
+            "name": "root",
+            "parent_index": -1
+        },
+        {
+            "index": 1,
+            "name": "pelvis",
+            "parent_index": 0
+        },
+        {
+            "index": 2,
+            "name": "spine_01",
+            "parent_index": 1
+        }
+    ]
+}
+```
+
+### Error
+```
+Failed to get skeleton info: Asset not found: /Game/Characters/SK_Missing
+```
+
 ## Notes
 
 - This is a read-only tool that does not modify the mesh or skeleton.

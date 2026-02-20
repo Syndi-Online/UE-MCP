@@ -22,6 +22,18 @@ On error, returns an error message describing why the screenshot could not be ta
 }
 ```
 
+## Response
+
+### Success
+```
+Screenshot saved to: C:/Screenshots/viewport_capture.png
+```
+
+### Error
+```
+Failed to take screenshot: No active viewport client
+```
+
 ## Notes
 
 - If `filename` is not provided or is empty, the file path will be auto-generated.

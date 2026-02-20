@@ -26,6 +26,18 @@ Set the value of a property on an actor. Uses UE text import format for the valu
 }
 ```
 
+## Response
+
+### Success
+```
+Property 'bHidden' set to 'true' successfully
+```
+
+### Error
+```
+Failed to set property: Property 'InvalidProperty' not found on actor 'StaticMeshActor_0'
+```
+
 ## Notes
 
 - The `property_value` must be provided as a string in Unreal Engine text import format.

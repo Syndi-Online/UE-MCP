@@ -24,6 +24,18 @@ On error, returns an error message describing why no reachable point could be fo
 }
 ```
 
+## Response
+
+### Success
+```
+Random reachable point: (X=523.45, Y=-187.30, Z=100.00)
+```
+
+### Error
+```
+Failed to find random reachable point: No navigable area within radius
+```
+
 ## Notes
 
 - Navigation mesh must be built before using this tool.

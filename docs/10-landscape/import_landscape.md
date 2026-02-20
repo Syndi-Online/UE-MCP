@@ -34,6 +34,18 @@ Minimal example with defaults:
 }
 ```
 
+## Response
+
+### Success
+```
+Landscape heightmap data loaded from 'D:/Assets/terrain_heightmap.png'.
+```
+
+### Error
+```
+Failed to import landscape: File not found: D:/Assets/missing_heightmap.png
+```
+
 ## Notes
 
 - The heightmap file must be in PNG or RAW format.

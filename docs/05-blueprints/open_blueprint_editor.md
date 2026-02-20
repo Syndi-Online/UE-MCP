@@ -22,6 +22,19 @@ On error, returns a message describing the failure (e.g., Blueprint not found).
 }
 ```
 
+## Response
+
+### Success
+```
+Blueprint editor opened successfully.
+BlueprintName: BP_MyActor
+```
+
+### Error
+```
+Failed to open Blueprint editor: Blueprint not found: /Game/Blueprints/BP_Missing
+```
+
 ## Notes
 
 - This opens the Blueprint Editor window in the Unreal Editor UI for the specified Blueprint.

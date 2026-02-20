@@ -18,6 +18,18 @@ On error, returns an error message describing why the lighting build failed.
 {}
 ```
 
+## Response
+
+### Success
+```
+Lighting build started successfully.
+```
+
+### Error
+```
+Failed to build lighting: No world available
+```
+
 ## Notes
 
 - Initiates the lighting build process which generates lightmaps for the current level.

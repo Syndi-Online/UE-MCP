@@ -24,6 +24,21 @@ Convert an actor to a different class type. Preserves transform but destroys old
 }
 ```
 
+## Response
+
+### Success
+```
+Actor converted successfully.
+New Name: PointLight_0
+New Label: PointLight
+New Class: /Script/Engine.PointLight
+```
+
+### Error
+```
+Failed to convert actor: Class '/Script/Engine.InvalidClass' not found
+```
+
 ## Notes
 
 - The original actor is destroyed during conversion. A new actor of the target class is created in its place.

@@ -22,6 +22,25 @@ On error, returns a message describing the failure (e.g., Blueprint not found).
 }
 ```
 
+## Response
+
+### Success
+```
+parent_class: /Script/Engine.Actor
+parent_blueprint: null
+```
+
+### Success (Blueprint parent)
+```
+parent_class: /Script/Engine.Character
+parent_blueprint: /Game/Blueprints/BP_BaseCharacter
+```
+
+### Error
+```
+Failed: Blueprint not found: /Game/Blueprints/BP_Missing
+```
+
 ## Notes
 
 - If the Blueprint inherits from a C++ class directly (e.g., Actor, Character), `parent_blueprint` will be `null`.

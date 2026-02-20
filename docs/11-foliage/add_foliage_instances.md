@@ -43,6 +43,24 @@ On error, returns an error message describing the failure (e.g. missing paramete
 }
 ```
 
+## Response
+
+### Success
+```
+Added 2 foliage instances for mesh: /Game/Meshes/MyTree
+```
+
+### Error
+```
+Missing required parameter: mesh_path
+```
+```
+Missing required parameter: transforms
+```
+```
+Failed to add foliage instances: Mesh not found at path /Game/Meshes/InvalidMesh
+```
+
 ## Notes
 
 - The mesh must already exist as an asset in the project. Use `register_foliage_mesh` first if needed to register it as a foliage type.

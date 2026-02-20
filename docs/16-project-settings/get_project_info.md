@@ -24,6 +24,23 @@ On error, returns an error message.
 {}
 ```
 
+## Response
+
+### Success
+```
+Project Name: MyGame
+Project Version: 1.0.0
+Description: An example Unreal project
+Company Name: MyStudio
+Engine Version: 5.7.0
+Project File Path: D:/Projects/MyGame/MyGame.uproject
+```
+
+### Error
+```
+Failed to retrieve project info.
+```
+
 ## Notes
 
 - This tool provides a quick overview of the currently loaded project.

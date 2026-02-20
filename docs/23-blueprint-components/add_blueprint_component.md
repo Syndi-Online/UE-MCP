@@ -28,6 +28,21 @@ On error, returns a message describing the failure.
 }
 ```
 
+## Response
+
+### Success
+```
+Component 'MyLight' (class: PointLightComponent) added to blueprint, parent: DefaultSceneRoot
+```
+
+### Error
+```
+Missing required parameter: component_class
+```
+```
+Failed to add component: Blueprint not found: /Game/Blueprints/BP_Missing
+```
+
 ## Notes
 
 - If `component_name` is not provided, UE will auto-generate a unique name.

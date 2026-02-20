@@ -34,6 +34,18 @@ Adding an unbound track:
 }
 ```
 
+## Response
+
+### Success
+```
+Track 'Transform' added to sequencer.
+```
+
+### Error
+```
+Failed to add track: No active sequencer found
+```
+
 ## Notes
 
 - Common track types include:

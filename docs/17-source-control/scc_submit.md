@@ -27,6 +27,27 @@ On error, returns `isError: true` with an error message describing what went wro
 }
 ```
 
+## Response
+
+### Success
+```
+Submitted 2 file(s)
+```
+
+### Error
+```
+Missing required parameter: files
+```
+```
+Missing required parameter: description
+```
+```
+Source control is not enabled
+```
+```
+Source control provider is not available
+```
+
 ## Notes
 
 - Requires a source control provider to be configured and enabled in the editor.

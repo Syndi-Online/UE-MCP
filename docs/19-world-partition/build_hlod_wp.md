@@ -18,6 +18,27 @@ On error, returns `isError: true` with an error message describing what went wro
 {}
 ```
 
+## Response
+
+### Success
+```
+HLOD build completed
+```
+
+### Error
+```
+No editor world available
+```
+```
+Current world is not a World Partition world
+```
+```
+WorldPartitionHLODsBuilder class not found
+```
+```
+HLOD build failed
+```
+
 ## Notes
 
 - HLOD (Hierarchical Level of Detail) is used with World Partition to optimize rendering of large open worlds.

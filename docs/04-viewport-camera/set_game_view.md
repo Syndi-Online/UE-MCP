@@ -22,6 +22,18 @@ On error, returns an error message describing why the view mode could not be set
 }
 ```
 
+## Response
+
+### Success
+```
+Game View enabled
+```
+
+### Error
+```
+Failed to set game view: ULevelEditorSubsystem is not available
+```
+
 ## Notes
 
 - Game View mode hides editor-only elements (icons, wireframes, debug shapes, etc.) to show the viewport as it would appear in-game.

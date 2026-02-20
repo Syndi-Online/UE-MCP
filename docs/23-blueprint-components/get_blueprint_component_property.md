@@ -26,6 +26,21 @@ On error, returns a message describing the failure.
 }
 ```
 
+## Response
+
+### Success
+```
+Property 'Intensity' on component 'MyLight': 5000.000000
+```
+
+### Error
+```
+Missing required parameter: property_name
+```
+```
+Failed to get component property: Component 'NonExistent' not found
+```
+
 ## Notes
 
 - The property value is returned as a string representation.

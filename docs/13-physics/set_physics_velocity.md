@@ -28,6 +28,21 @@ On error, returns an error message describing the failure (e.g. actor not found,
 }
 ```
 
+## Response
+
+### Success
+```
+Physics velocity set on actor: Cube_0
+```
+
+### Error
+```
+Missing required parameter: actor_name
+```
+```
+Failed to set physics velocity: Actor 'InvalidActor' not found
+```
+
 ## Notes
 
 - By default, physics simulation is enabled on the actor before setting velocity. Set `enable_physics` to `false` if the actor already has physics enabled and you do not want to reset it.

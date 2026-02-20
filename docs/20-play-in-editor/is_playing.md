@@ -23,6 +23,19 @@ This tool always succeeds (`isError` is always `false`).
 {}
 ```
 
+## Response
+
+### Success
+```
+Playing: false, Simulating: false
+```
+```
+Playing: true, Simulating: false
+```
+```
+Playing: false, Simulating: true
+```
+
 ## Notes
 
 - This is a read-only query tool that does not start or stop any session.

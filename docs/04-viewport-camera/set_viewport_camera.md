@@ -32,6 +32,18 @@ On error, returns an error message describing why the camera could not be set.
 }
 ```
 
+## Response
+
+### Success
+```
+Camera set to Location: (100.000, 200.000, 300.000), Rotation: (Pitch=-15.000, Yaw=45.000, Roll=0.000)
+```
+
+### Error
+```
+Failed to set viewport camera: No active viewport client
+```
+
 ## Notes
 
 - Both `location` and `rotation` are required parameters.

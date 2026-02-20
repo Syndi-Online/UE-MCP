@@ -18,6 +18,18 @@ This tool takes no parameters.
 {}
 ```
 
+## Response
+
+### Success
+```
+All actors deselected
+```
+
+### Error
+```
+Failed to deselect: No editor world available
+```
+
 ## Notes
 
 - This clears the entire editor selection in one call.

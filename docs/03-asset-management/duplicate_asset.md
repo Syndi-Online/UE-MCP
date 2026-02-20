@@ -26,6 +26,20 @@ On error, returns an error message describing why the asset could not be duplica
 }
 ```
 
+## Response
+
+### Success
+```
+Asset duplicated successfully.
+AssetName: MyMesh_Copy
+AssetPath: /Game/Meshes/MyMesh_Copy
+```
+
+### Error
+```
+Failed to duplicate asset: Source asset not found at /Game/Meshes/MyMesh
+```
+
 ## Notes
 
 - Both source and destination paths are required.

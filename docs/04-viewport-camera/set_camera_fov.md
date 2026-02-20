@@ -22,6 +22,18 @@ On error, returns an error message describing why the FOV could not be set.
 }
 ```
 
+## Response
+
+### Success
+```
+Camera FOV set to 90.0
+```
+
+### Error
+```
+Failed to set camera FOV: FOV must be between 5 and 170, got: 200.0
+```
+
 ## Notes
 
 - The FOV value must be between 5 and 170 degrees.

@@ -26,6 +26,23 @@ On error, returns an error message describing the failure reason (e.g., mesh not
 }
 ```
 
+## Response
+
+### Success
+```json
+{
+    "physics_asset_path": "/Game/Characters/PA_Mannequin",
+    "physics_asset_name": "PA_Mannequin",
+    "num_bodies": 18,
+    "num_constraints": 17
+}
+```
+
+### Error
+```
+Failed to get physics asset: Asset not found: /Game/Characters/SK_Missing
+```
+
 ## Notes
 
 - This is a read-only tool that does not modify any assets.

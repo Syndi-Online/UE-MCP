@@ -33,6 +33,23 @@ To clear the Physics Asset:
 }
 ```
 
+## Response
+
+### Success (assign)
+```
+Physics asset '/Game/Characters/PA_Mannequin' assigned to '/Game/Characters/SK_Mannequin'.
+```
+
+### Success (clear)
+```
+Physics asset cleared from '/Game/Characters/SK_Mannequin'.
+```
+
+### Error
+```
+Failed to set physics asset: Asset not found: /Game/Characters/SK_Missing
+```
+
 ## Notes
 
 - Pass an empty string for `physics_asset_path` to clear (remove) the Physics Asset from the skeletal mesh.

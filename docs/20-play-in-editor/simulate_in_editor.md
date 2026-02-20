@@ -18,6 +18,21 @@ On error, returns `isError: true` with an error message describing what went wro
 {}
 ```
 
+## Response
+
+### Success
+```
+Simulate In Editor session requested
+```
+
+### Error
+```
+Editor engine not available
+```
+```
+A play session is already in progress
+```
+
 ## Notes
 
 - Simulate In Editor (SIE) runs the game simulation while keeping the editor viewport active, allowing you to inspect and modify actors during gameplay.

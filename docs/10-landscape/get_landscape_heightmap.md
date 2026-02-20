@@ -34,6 +34,37 @@ Using the first landscape in the level:
 {}
 ```
 
+## Response
+
+### Success
+```json
+{
+    "min_x": 0,
+    "min_y": 0,
+    "max_x": 504,
+    "max_y": 504,
+    "width": 505,
+    "height": 505,
+    "scale":
+    {
+        "x": 100,
+        "y": 100,
+        "z": 100
+    },
+    "layers":
+    [
+        "Grass",
+        "Rock",
+        "Sand"
+    ]
+}
+```
+
+### Error
+```
+Failed to get heightmap: No landscape found in level
+```
+
 ## Notes
 
 - If `landscape_name` is omitted or empty, the tool uses the first landscape actor found in the current level.

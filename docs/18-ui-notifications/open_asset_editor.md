@@ -22,6 +22,30 @@ On error, returns `isError: true` with an error message describing what went wro
 }
 ```
 
+## Response
+
+### Success
+```
+Editor opened for: /Game/Blueprints/BP_Player.uasset
+```
+
+### Error
+```
+Missing required parameter: asset_path
+```
+```
+Editor not available
+```
+```
+Asset editor subsystem not available
+```
+```
+Failed to load asset: /Game/Blueprints/BP_Player.uasset
+```
+```
+Failed to open editor for: /Game/Blueprints/BP_Player.uasset
+```
+
 ## Notes
 
 - The appropriate editor type is determined automatically based on the asset type (e.g., Blueprint Editor for Blueprints, Material Editor for Materials).

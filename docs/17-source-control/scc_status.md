@@ -35,6 +35,32 @@ On error, returns `isError: true` with an error message describing what went wro
 }
 ```
 
+## Response
+
+### Success
+```
+/Game/Maps/MainLevel.umap: CheckedOut Modified
+/Game/Blueprints/BP_Player.uasset: UpToDate
+```
+```
+/Game/Textures/NewTexture.uasset: NotControlled
+/Game/Maps/SharedLevel.umap: LockedBy(john.doe)
+```
+
+### Error
+```
+Missing required parameter: files
+```
+```
+Source control is not enabled
+```
+```
+Source control provider is not available
+```
+```
+Failed to query file states
+```
+
 ## Notes
 
 - Requires a source control provider to be configured and enabled in the editor.

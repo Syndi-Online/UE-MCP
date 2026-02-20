@@ -32,6 +32,22 @@ Duplicate an actor in the editor world. The duplicate can be offset from the ori
 }
 ```
 
+## Response
+
+### Success
+```
+Actor duplicated successfully.
+Name: PointLight_1
+Label: PointLight
+Class: /Script/Engine.PointLight
+Location: (200.0, 0.0, 0.0)
+```
+
+### Error
+```
+Failed to duplicate actor: Actor 'NonExistentActor' not found
+```
+
 ## Notes
 
 - If `offset` is omitted, the duplicate is placed at the same position as the original.

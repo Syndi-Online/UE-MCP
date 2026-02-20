@@ -24,6 +24,21 @@ On error, returns a message describing the failure (e.g., material not found, pa
 }
 ```
 
+## Response
+
+### Success
+```
+Material parameter retrieved successfully.
+ParameterName: BaseColorTint
+ParameterType: Vector
+Value: (R=1.000000,G=0.500000,B=0.000000,A=1.000000)
+```
+
+### Error
+```
+Failed to get material parameter: Parameter 'MissingParam' not found in material
+```
+
 ## Notes
 
 - This tool works with material parameters exposed via parameter expressions (e.g., ScalarParameter, VectorParameter, TextureSampleParameter2D, StaticSwitchParameter).

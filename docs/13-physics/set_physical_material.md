@@ -24,6 +24,24 @@ On error, returns an error message describing the failure (e.g. actor not found,
 }
 ```
 
+## Response
+
+### Success
+```
+Physical material set successfully on actor: StaticMeshActor_0
+```
+
+### Error
+```
+Missing required parameter: actor_name
+```
+```
+Missing required parameter: material_path
+```
+```
+Failed to set physical material: Actor 'InvalidActor' not found
+```
+
 ## Notes
 
 - The physical material must be a valid `UPhysicalMaterial` asset in the project.

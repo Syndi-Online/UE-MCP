@@ -24,6 +24,21 @@ On error, returns a message describing the failure.
 }
 ```
 
+## Response
+
+### Success
+```
+Component 'MyLight' removed from blueprint
+```
+
+### Error
+```
+Missing required parameter: component_name
+```
+```
+Failed to remove component: Component 'NonExistent' not found
+```
+
 ## Notes
 
 - The component name must match exactly. Use `get_blueprint_components` to list available components and their names.

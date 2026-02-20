@@ -57,6 +57,21 @@ On error, returns a message describing the failure.
 }
 ```
 
+## Response
+
+### Success
+```
+Comment box created with ID: 4A8B12C3-4D5E6F78-9A0B1C2D-3E4F5678
+```
+
+### Error
+```
+Missing required parameter: comment_text
+```
+```
+Failed to add comment box: Blueprint not found: /Game/Blueprints/BP_Missing
+```
+
 ## Notes
 
 - If `position` is omitted, the comment box is placed at (0, 0).

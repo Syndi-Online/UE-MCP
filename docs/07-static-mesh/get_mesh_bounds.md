@@ -25,6 +25,21 @@ On error, returns an error message describing the failure reason (e.g., mesh not
 }
 ```
 
+## Response
+
+### Success
+```
+Bounds for '/Game/Meshes/SM_Table':
+Origin: (0.000, 0.000, 45.000)
+BoxExtent: (60.000, 60.000, 45.000)
+SphereRadius: 87.750
+```
+
+### Error
+```
+Failed to get mesh bounds: Asset not found: /Game/Meshes/SM_Missing
+```
+
 ## Notes
 
 - This is a read-only tool that does not modify the mesh.

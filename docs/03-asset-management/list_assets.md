@@ -24,6 +24,21 @@ On error, returns an error message describing why the listing failed.
 }
 ```
 
+## Response
+
+### Success
+```
+Found 3 assets:
+- /Game/Meshes/SM_Chair
+- /Game/Meshes/SM_Table
+- /Game/Meshes/SM_Lamp
+```
+
+### Error
+```
+Failed to list assets: Directory not found: /Game/NonExistent
+```
+
 ## Notes
 
 - The `directory_path` parameter is required and must be a valid content path.

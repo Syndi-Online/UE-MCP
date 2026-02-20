@@ -28,6 +28,27 @@ On error, returns an error message describing the failure (e.g. actors not found
 }
 ```
 
+## Response
+
+### Success
+```
+Created hinge constraint: PhysicsConstraintActor_0
+```
+
+### Error
+```
+Missing required parameter: actor_name_1
+```
+```
+Missing required parameter: actor_name_2
+```
+```
+Missing required parameter: constraint_type
+```
+```
+Failed to create constraint: Actor 'InvalidActor' not found
+```
+
 ## Notes
 
 - Valid constraint types are:

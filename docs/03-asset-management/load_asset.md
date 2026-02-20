@@ -25,6 +25,21 @@ On error, returns an error message describing why the asset could not be loaded.
 }
 ```
 
+## Response
+
+### Success
+```
+Asset loaded successfully.
+AssetName: MyMesh
+AssetPath: /Game/Meshes/MyMesh
+AssetClass: StaticMesh
+```
+
+### Error
+```
+Failed to load asset: Asset not found at /Game/Meshes/MyMesh
+```
+
 ## Notes
 
 - The asset must exist at the specified path. If the asset is not found, the tool returns an error.

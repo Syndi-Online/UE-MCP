@@ -26,6 +26,18 @@ On error, returns a message describing the failure (e.g., material not found, in
 }
 ```
 
+## Response
+
+### Success
+```
+Property 'R' on expression 0: 0.500000
+```
+
+### Error
+```
+Failed to get material expression property: Expression index 5 out of range
+```
+
 ## Notes
 
 - The `expression_index` can be obtained from `get_material_expressions` or from the result of `create_material_expression`.

@@ -29,6 +29,21 @@ On error, returns an error message describing why the asset could not be created
 }
 ```
 
+## Response
+
+### Success
+```
+Asset created successfully.
+AssetName: MyNewMaterial
+AssetPath: /Game/Materials/MyNewMaterial
+AssetClass: Material
+```
+
+### Error
+```
+Failed to create asset: Asset already exists at /Game/Materials/MyNewMaterial
+```
+
 ## Notes
 
 - All three parameters are required. The tool returns an error if any are missing.

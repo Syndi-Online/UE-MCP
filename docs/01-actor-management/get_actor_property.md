@@ -24,6 +24,18 @@ Get the value of a property on an actor by property name.
 }
 ```
 
+## Response
+
+### Success
+```
+Property 'Mobility' (EnumProperty): Movable
+```
+
+### Error
+```
+Failed to get property: Property 'InvalidProperty' not found on actor 'StaticMeshActor_0'
+```
+
 ## Notes
 
 - The `property_name` must match the UProperty name exactly (case-sensitive).

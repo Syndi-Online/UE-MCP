@@ -24,6 +24,18 @@ On error, returns an error message describing why the property could not be read
 }
 ```
 
+## Response
+
+### Success
+```
+VolumeMultiplier = 0.750000
+```
+
+### Error
+```
+Failed to get property: Property 'NonExistentProp' not found on asset '/Game/Sounds/TireSkid_Ice'
+```
+
 ## Notes
 
 - Both parameters are required.

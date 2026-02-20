@@ -25,6 +25,23 @@ On error, returns an error message describing the failure reason (e.g., mesh not
 }
 ```
 
+## Response
+
+### Success
+```
+LOD settings for '/Game/Meshes/SM_Chair':
+LodCount: 3
+LodGroup: SmallProp
+  LOD 0: ScreenSize=1.0000, Vertices=1250, Triangles=800
+  LOD 1: ScreenSize=0.5000, Vertices=600, Triangles=400
+  LOD 2: ScreenSize=0.2500, Vertices=200, Triangles=120
+```
+
+### Error
+```
+Failed to get LOD settings: Asset not found: /Game/Meshes/SM_Missing
+```
+
 ## Notes
 
 - This is a read-only tool that does not modify the mesh.

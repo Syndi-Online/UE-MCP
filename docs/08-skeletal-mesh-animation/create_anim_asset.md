@@ -28,6 +28,18 @@ On error, returns an error message describing the failure reason (e.g., skeleton
 }
 ```
 
+## Response
+
+### Success
+```
+Animation asset 'Idle_Anim' created at '/Game/Animations/Idle_Anim'.
+```
+
+### Error
+```
+Failed to create animation asset: Skeleton not found: /Game/Characters/SK_Missing_Skeleton
+```
+
 ## Notes
 
 - Supported asset types:

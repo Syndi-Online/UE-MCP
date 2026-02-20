@@ -24,6 +24,18 @@ Set the visibility of a streaming level in the editor.
 }
 ```
 
+## Response
+
+### Success
+```
+Level 'SubLevel_Lighting' visibility set to hidden
+```
+
+### Error
+```
+Failed to set level visibility: Level 'NonExistentLevel' not found
+```
+
 ## Notes
 
 - Partial name matching is supported for `level_name`.

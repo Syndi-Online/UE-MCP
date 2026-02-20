@@ -26,6 +26,18 @@ On error, returns an error message describing why the property could not be set.
 }
 ```
 
+## Response
+
+### Success
+```
+Property 'VolumeMultiplier' set on asset '/Game/Sounds/TireSkid_Ice'
+```
+
+### Error
+```
+Failed to set property: Property 'NonExistentProp' not found on asset '/Game/Sounds/TireSkid_Ice'
+```
+
 ## Notes
 
 - All three parameters are required.

@@ -18,6 +18,18 @@ On error, returns an error message describing the failure reason (e.g., no activ
 {}
 ```
 
+## Response
+
+### Success
+```
+Sequencer force-evaluated at current time.
+```
+
+### Error
+```
+Failed to force evaluate: No active sequencer found
+```
+
 ## Notes
 
 - A Level Sequence must be open in the Sequencer editor for this tool to work.

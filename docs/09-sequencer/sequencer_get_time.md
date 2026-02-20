@@ -21,6 +21,22 @@ On error, returns an error message describing the failure reason (e.g., no activ
 {}
 ```
 
+## Response
+
+### Success
+```json
+{
+    "time_seconds": 2.5,
+    "frame_number": 75,
+    "frame_rate": 30
+}
+```
+
+### Error
+```
+Failed to get time: No active sequencer found
+```
+
 ## Notes
 
 - A Level Sequence must be open in the Sequencer editor for this tool to work.

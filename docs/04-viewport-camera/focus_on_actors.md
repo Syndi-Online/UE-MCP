@@ -22,6 +22,18 @@ On error, returns an error message describing why the focus operation failed.
 }
 ```
 
+## Response
+
+### Success
+```
+Focused on 2 actor(s)
+```
+
+### Error
+```
+Failed to focus on actors: No actors found to focus on
+```
+
 ## Notes
 
 - The viewport camera will reposition to frame all specified actors in view.

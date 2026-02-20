@@ -26,6 +26,19 @@ On error, returns a message describing the failure (e.g., Blueprint not found, d
 }
 ```
 
+## Response
+
+### Success
+```
+Variable added successfully.
+VariableName: Health
+```
+
+### Error
+```
+Failed to add variable: Blueprint not found: /Game/Blueprints/BP_Missing
+```
+
 ## Notes
 
 - Supported built-in types: `Boolean`, `Integer`, `Int64`, `Float`, `String`, `Name`, `Text`, `Vector`, `Rotator`, `Transform`, `Byte`.

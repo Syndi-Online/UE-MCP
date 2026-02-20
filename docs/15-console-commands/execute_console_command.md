@@ -22,6 +22,21 @@ On error, returns the error message from the command execution.
 }
 ```
 
+## Response
+
+### Success
+```
+Command executed successfully.
+```
+
+### Error
+```
+Missing required parameter: command
+```
+```
+Failed to execute console command: Unknown command 'invalidcmd'
+```
+
 ## Notes
 
 - Executes any valid Unreal Engine console command in the editor context.

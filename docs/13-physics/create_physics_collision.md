@@ -28,6 +28,27 @@ On error, returns an error message describing the failure (e.g. actor not found,
 }
 ```
 
+## Response
+
+### Success
+```
+Added box collision shape (3 shape(s) total)
+```
+
+### Error
+```
+Missing required parameter: actor_name
+```
+```
+Missing required parameter: shape_type
+```
+```
+Missing required parameter: dimensions
+```
+```
+Failed to create physics collision: Actor 'InvalidActor' not found
+```
+
 ## Notes
 
 - Valid shape types are: `box`, `sphere`, and `capsule`.

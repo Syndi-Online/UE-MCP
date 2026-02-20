@@ -25,6 +25,19 @@ On error, returns an error message describing why the asset could not be renamed
 }
 ```
 
+## Response
+
+### Success
+```
+Asset renamed successfully.
+NewPath: /Game/Meshes/NewName
+```
+
+### Error
+```
+Failed to rename asset: Source asset not found at /Game/Meshes/OldName
+```
+
 ## Notes
 
 - This tool can be used both to rename an asset and to move it to a different directory.

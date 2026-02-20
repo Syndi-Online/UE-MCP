@@ -24,6 +24,18 @@ On error, returns an error message describing why the export failed.
 }
 ```
 
+## Response
+
+### Success
+```
+Asset '/Game/Meshes/MyMesh' exported successfully to 'C:/Exports/Meshes'.
+```
+
+### Error
+```
+Failed to export asset: Asset not found at /Game/Meshes/MyMesh
+```
+
 ## Notes
 
 - The `export_path` must be an absolute directory path on disk.

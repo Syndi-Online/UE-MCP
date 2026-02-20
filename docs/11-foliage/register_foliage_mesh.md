@@ -22,6 +22,21 @@ On error, returns an error message describing the failure (e.g. mesh not found, 
 }
 ```
 
+## Response
+
+### Success
+```
+Registered foliage mesh: MyTree
+```
+
+### Error
+```
+Missing required parameter: mesh_path
+```
+```
+Failed to register foliage mesh: Asset not found at /Game/Meshes/InvalidMesh
+```
+
 ## Notes
 
 - The mesh must be a valid static mesh asset in the project.

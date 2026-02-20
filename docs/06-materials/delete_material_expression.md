@@ -24,6 +24,18 @@ On error, returns a message describing the failure (e.g., material not found, in
 }
 ```
 
+## Response
+
+### Success
+```
+Material expression deleted successfully.
+```
+
+### Error
+```
+Failed to delete material expression: Expression index 5 out of range
+```
+
 ## Notes
 
 - The `expression_index` corresponds to the index returned by `create_material_expression` or found via `get_material_expressions`.

@@ -24,6 +24,19 @@ On error, returns a message describing the failure (e.g., Blueprint not found, v
 }
 ```
 
+## Response
+
+### Success
+```
+Variable removed successfully.
+VariableName: Health
+```
+
+### Error
+```
+Failed to remove variable: Variable 'Health' not found in Blueprint
+```
+
 ## Notes
 
 - The variable must exist in the Blueprint.

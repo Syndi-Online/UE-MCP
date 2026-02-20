@@ -24,6 +24,18 @@ Set the folder path for an actor in the World Outliner hierarchy.
 }
 ```
 
+## Response
+
+### Success
+```
+Actor 'PointLight_0' moved to folder 'Lighting/PointLights'
+```
+
+### Error
+```
+Failed to set folder: Actor 'NonExistentActor' not found
+```
+
 ## Notes
 
 - Folder paths use forward slashes to define hierarchy (e.g. "Lighting/PointLights").

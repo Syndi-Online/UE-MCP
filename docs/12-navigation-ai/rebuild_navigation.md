@@ -18,6 +18,18 @@ On error, returns an error message describing why the navigation rebuild failed.
 {}
 ```
 
+## Response
+
+### Success
+```
+Navigation mesh rebuilt successfully.
+```
+
+### Error
+```
+Failed to rebuild navigation mesh: Navigation system not available
+```
+
 ## Notes
 
 - Unlike `build_navigation`, this performs a full rebuild of the navigation mesh from scratch rather than an incremental update.

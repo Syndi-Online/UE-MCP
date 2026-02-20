@@ -22,6 +22,18 @@ Set the current working level for new actor placement.
 }
 ```
 
+## Response
+
+### Success
+```
+Current level set to: SubLevel_Gameplay
+```
+
+### Error
+```
+Failed to set current level: Level 'NonExistentLevel' not found
+```
+
 ## Notes
 
 - The current level determines where newly spawned actors are placed.

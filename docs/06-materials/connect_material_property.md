@@ -27,6 +27,19 @@ On error, returns a message describing the failure (e.g., material not found, in
 }
 ```
 
+## Response
+
+### Success
+```
+Expression connected to material property successfully.
+PropertyName: BaseColor
+```
+
+### Error
+```
+Failed to connect material property: Unknown material property: InvalidProperty
+```
+
 ## Notes
 
 - Supported material properties: `BaseColor`, `Metallic`, `Specular`, `Roughness`, `Normal`, `EmissiveColor`, `Opacity`, `OpacityMask`, `AmbientOcclusion`, `WorldPositionOffset`, `SubsurfaceColor`, `Refraction`, `Anisotropy`, `Tangent`.

@@ -22,6 +22,18 @@ On error, returns an error message describing the failure reason (e.g., no activ
 }
 ```
 
+## Response
+
+### Success
+```
+Sequencer time set to 2.500 seconds.
+```
+
+### Error
+```
+Failed to set time: No active sequencer found
+```
+
 ## Notes
 
 - A Level Sequence must be open in the Sequencer editor for this tool to work.

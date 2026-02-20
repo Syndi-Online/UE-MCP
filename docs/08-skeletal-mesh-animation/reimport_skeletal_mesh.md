@@ -22,6 +22,18 @@ On error, returns an error message describing the failure reason (e.g., mesh not
 }
 ```
 
+## Response
+
+### Success
+```
+Skeletal mesh '/Game/Characters/SK_Mannequin' reimported successfully.
+```
+
+### Error
+```
+Failed to reimport skeletal mesh: Source file not found for asset '/Game/Characters/SK_Mannequin'
+```
+
 ## Notes
 
 - The skeletal mesh must have been originally imported with a source file reference. If the original source file path is no longer valid, the reimport will fail.

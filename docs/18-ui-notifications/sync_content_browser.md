@@ -22,6 +22,21 @@ On error, returns `isError: true` with a message in the format "Failed to sync C
 }
 ```
 
+## Response
+
+### Success
+```
+Content Browser navigated to: /Game/Blueprints
+```
+
+### Error
+```
+Missing required parameter: path
+```
+```
+Failed to sync Content Browser: Content Browser module not loaded
+```
+
 ## Notes
 
 - This focuses the Content Browser and navigates it to the specified asset or folder path.

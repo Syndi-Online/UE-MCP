@@ -22,6 +22,18 @@ Remove a streaming sublevel from the current world.
 }
 ```
 
+## Response
+
+### Success
+```
+Sublevel removed: SubLevel_Lighting
+```
+
+### Error
+```
+Failed to remove sublevel: Sublevel 'NonExistentSublevel' not found
+```
+
 ## Notes
 
 - Partial name matching is supported, so you do not need to provide the full path.

@@ -28,6 +28,18 @@ Using the first landscape in the level:
 {}
 ```
 
+## Response
+
+### Success
+```
+Landscape data rebuilt successfully.
+```
+
+### Error
+```
+Failed to rebuild landscape: No landscape found in level
+```
+
 ## Notes
 
 - If `landscape_name` is omitted or empty, the tool rebuilds the first landscape actor found in the current level.

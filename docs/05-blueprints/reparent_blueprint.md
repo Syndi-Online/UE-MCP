@@ -24,6 +24,20 @@ On error, returns a message describing the failure (e.g., Blueprint not found, i
 }
 ```
 
+## Response
+
+### Success
+```
+Blueprint reparented successfully.
+OldParentClass: Actor
+NewParentClass: Character
+```
+
+### Error
+```
+Failed to reparent Blueprint: Blueprint not found: /Game/Blueprints/BP_Missing
+```
+
 ## Notes
 
 - The `new_parent_class` should be a fully qualified class path (e.g., `/Script/Engine.Actor`, `/Script/Engine.Pawn`).

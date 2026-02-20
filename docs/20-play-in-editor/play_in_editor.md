@@ -18,6 +18,21 @@ On error, returns `isError: true` with an error message describing what went wro
 {}
 ```
 
+## Response
+
+### Success
+```
+Play In Editor session requested
+```
+
+### Error
+```
+Editor engine not available
+```
+```
+A play session is already in progress
+```
+
 ## Notes
 
 - Starts a PIE (Play In Editor) session using the current editor settings.

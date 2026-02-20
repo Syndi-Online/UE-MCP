@@ -26,6 +26,18 @@ On error, returns an error message describing why the metadata could not be set.
 }
 ```
 
+## Response
+
+### Success
+```
+Metadata tag 'Author' set to 'John' on asset '/Game/Meshes/MyMesh'.
+```
+
+### Error
+```
+Failed to set asset metadata: Asset not found at /Game/Meshes/MyMesh
+```
+
 ## Notes
 
 - All three parameters are required.

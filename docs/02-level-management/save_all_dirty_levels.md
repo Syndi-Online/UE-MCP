@@ -18,6 +18,18 @@ This tool takes no parameters.
 {}
 ```
 
+## Response
+
+### Success
+```
+All dirty levels saved successfully
+```
+
+### Error
+```
+Failed to save dirty levels: No editor world available
+```
+
 ## Notes
 
 - Saves all levels that have unsaved modifications, including the persistent level and any loaded sublevels.

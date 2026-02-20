@@ -18,6 +18,18 @@ On error, returns an error message describing why the navigation build failed.
 {}
 ```
 
+## Response
+
+### Success
+```
+Navigation mesh built successfully.
+```
+
+### Error
+```
+Failed to build navigation mesh: Navigation system not available
+```
+
 ## Notes
 
 - Builds the navigation mesh (NavMesh) for the currently loaded level.

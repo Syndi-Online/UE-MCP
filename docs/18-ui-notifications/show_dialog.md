@@ -26,6 +26,27 @@ On error, returns `isError: true` with an error message describing what went wro
 }
 ```
 
+## Response
+
+### Success
+```
+Yes
+```
+```
+Ok
+```
+```
+Cancel
+```
+
+### Error
+```
+Missing required parameter: title
+```
+```
+Missing required parameter: message
+```
+
 ## Notes
 
 - This is a blocking modal dialog -- the editor waits for the user to respond before continuing.

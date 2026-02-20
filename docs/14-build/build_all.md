@@ -18,6 +18,18 @@ On error, returns an error message describing why the full build failed to start
 {}
 ```
 
+## Response
+
+### Success
+```
+Full build started successfully.
+```
+
+### Error
+```
+Failed to start full build: No world available
+```
+
 ## Notes
 
 - This triggers a complete build of all level data including geometry, HLOD, navigation, texture streaming, and lighting.

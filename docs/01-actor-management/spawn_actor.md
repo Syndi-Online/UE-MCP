@@ -42,6 +42,23 @@ Spawn an actor in the editor world from a class path. Returns the spawned actor'
 }
 ```
 
+## Response
+
+### Success
+```
+Actor spawned successfully.
+Name: StaticMeshActor_1
+Label: StaticMeshActor
+Class: /Script/Engine.StaticMeshActor
+Location: (100.0, 200.0, 300.0)
+Rotation: (Pitch=0.0, Yaw=45.0, Roll=0.0)
+```
+
+### Error
+```
+Failed to spawn actor: Class '/Script/Engine.InvalidClass' not found
+```
+
 ## Notes
 
 - The `actor_class` must be a full class path (e.g. "/Script/Engine.StaticMeshActor"), not a short name.

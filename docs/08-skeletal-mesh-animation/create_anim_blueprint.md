@@ -26,6 +26,18 @@ On error, returns an error message describing the failure reason (e.g., skeleton
 }
 ```
 
+## Response
+
+### Success
+```
+Anim Blueprint 'ABP_Mannequin' created at '/Game/Blueprints/ABP_Mannequin'.
+```
+
+### Error
+```
+Failed to create Anim Blueprint: Skeleton not found: /Game/Characters/SK_Missing_Skeleton
+```
+
 ## Notes
 
 - The skeleton at `skeleton_path` must already exist in the project.

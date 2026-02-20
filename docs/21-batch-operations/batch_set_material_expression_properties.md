@@ -45,6 +45,27 @@ If any individual operations fail, the errors are listed with their index and er
 }
 ```
 
+## Response
+
+### Success
+```
+Batch completed: 2 succeeded, 0 failed
+```
+
+### Error
+```
+Missing required parameter: material_path
+```
+```
+Too many operations. Maximum 100 per batch.
+```
+```
+Batch completed: 1 succeeded, 1 failed
+
+Errors:
+- [1] Expression index 10 out of range
+```
+
 ## Notes
 
 - Maximum of 100 operations per batch. Exceeding this limit returns an error.

@@ -22,6 +22,20 @@ On error, returns a message describing the compilation failure.
 }
 ```
 
+## Response
+
+### Success
+```
+Blueprint compiled successfully.
+NumErrors: 0
+NumWarnings: 0
+```
+
+### Error
+```
+Failed to compile Blueprint: Blueprint not found: /Game/Blueprints/BP_Missing
+```
+
 ## Notes
 
 - The Blueprint must exist at the specified asset path.
