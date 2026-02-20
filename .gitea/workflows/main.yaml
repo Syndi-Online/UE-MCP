@@ -61,5 +61,5 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: ${{ env.PLUGIN_NAME }}-UE${{ matrix.ue_version }}
+          name: SyndiOnlineUeMCP_Win_${{ matrix.ue_version }}
           path: D:\${{ env.REPO_NAME }}-Build-${{ matrix.ue_version }}
