@@ -86,24 +86,50 @@ jobs:
         shell: powershell
         timeout-minutes: 10
         run: |
-          $TestResultDir = "D:\${{ env.REPO_NAME }}-TestResults-${{ matrix.ue_version }}"
-          if (Test-Path $TestResultDir) { Remove-Item $TestResultDir -Recurse -Force }
-          New-Item -ItemType Directory -Path $TestResultDir -Force | Out-Null
+          $BuildDir   = "D:\${{ env.REPO_NAME }}-Build-${{ matrix.ue_version }}"
+          $ResultDir  = "D:\${{ env.REPO_NAME }}-TestResults-${{ matrix.ue_version }}"
+          $ProjectFile = "$BuildDir\HostProject\HostProject.uproject"
+          $EditorExe   = "D:\UE_${{ matrix.ue_version }}\Engine\Binaries\Win64\UnrealEditor-Cmd.exe"
+          $LogDir      = "$BuildDir\HostProject\Saved\Logs"
 
-          & "D:\UE_${{ matrix.ue_version }}\Engine\Binaries\Win64\UnrealEditor-Cmd.exe" `
-            "D:\${{ env.REPO_NAME }}-Build-${{ matrix.ue_version }}\HostProject\HostProject.uproject" `
-            -ExecCmds="Automation RunTests MCPServer.Unit" `
-            -TestExit="Automation Test Queue Empty" `
-            -Unattended -NoPause -NullRHI -NoSound `
-            -ReportExportPath="$TestResultDir\UnitTests"
+          if (Test-Path $ResultDir) { Remove-Item $ResultDir -Recurse -Force }
+          New-Item -ItemType Directory -Path "$ResultDir\UnitTests" -Force | Out-Null
 
-          $ExitCode = $LASTEXITCODE
-          Get-ChildItem "$TestResultDir\UnitTests" -Filter "*.json" -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
+          if (!(Test-Path $ProjectFile)) {
+            Write-Host "ERROR: HostProject not found at $ProjectFile"
+            Get-ChildItem $BuildDir -Depth 2 -ErrorAction SilentlyContinue
+            exit 1
+          }
+          Write-Host "Project file: $ProjectFile"
+
+          $proc = Start-Process -FilePath $EditorExe -ArgumentList @(
+            "`"$ProjectFile`"",
+            '-ExecCmds="Automation RunTests MCPServer.Unit"',
+            '-TestExit="Automation Test Queue Empty"',
+            '-Unattended', '-NoPause', '-NullRHI', '-NoSound', '-log',
+            "-ReportExportPath=`"$ResultDir\UnitTests`""
+          ) -Wait -PassThru -NoNewWindow
+          $ExitCode = $proc.ExitCode
+
+          # Copy editor log into test results for artifact upload
+          if (Test-Path $LogDir) {
+            Copy-Item "$LogDir\*" "$ResultDir\" -ErrorAction SilentlyContinue
+          }
+
+          # Show test result JSONs
+          Get-ChildItem "$ResultDir\UnitTests" -Filter "*.json" -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
             Write-Host "=== $($_.Name) ==="
             Get-Content $_.FullName
           }
+
           if ($ExitCode -ne 0) {
             Write-Host "========== UNIT TESTS FAILED (exit code $ExitCode) =========="
+            # Show last 80 lines of editor log
+            $EdLog = Get-ChildItem $LogDir -Filter "*.log" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+            if ($EdLog) {
+              Write-Host "=== Editor Log (last 80 lines) ==="
+              Get-Content $EdLog.FullName | Select-Object -Last 80
+            }
             exit $ExitCode
           }
           Write-Host "Unit tests passed."
@@ -112,22 +138,40 @@ jobs:
         shell: powershell
         timeout-minutes: 10
         run: |
-          $TestResultDir = "D:\${{ env.REPO_NAME }}-TestResults-${{ matrix.ue_version }}"
+          $BuildDir   = "D:\${{ env.REPO_NAME }}-Build-${{ matrix.ue_version }}"
+          $ResultDir  = "D:\${{ env.REPO_NAME }}-TestResults-${{ matrix.ue_version }}"
+          $ProjectFile = "$BuildDir\HostProject\HostProject.uproject"
+          $EditorExe   = "D:\UE_${{ matrix.ue_version }}\Engine\Binaries\Win64\UnrealEditor-Cmd.exe"
+          $LogDir      = "$BuildDir\HostProject\Saved\Logs"
 
-          & "D:\UE_${{ matrix.ue_version }}\Engine\Binaries\Win64\UnrealEditor-Cmd.exe" `
-            "D:\${{ env.REPO_NAME }}-Build-${{ matrix.ue_version }}\HostProject\HostProject.uproject" `
-            -ExecCmds="Automation RunTests MCPServer.Integration" `
-            -TestExit="Automation Test Queue Empty" `
-            -Unattended -NoPause -NullRHI -NoSound `
-            -ReportExportPath="$TestResultDir\IntegrationTests"
+          New-Item -ItemType Directory -Path "$ResultDir\IntegrationTests" -Force | Out-Null
 
-          $ExitCode = $LASTEXITCODE
-          Get-ChildItem "$TestResultDir\IntegrationTests" -Filter "*.json" -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
+          $proc = Start-Process -FilePath $EditorExe -ArgumentList @(
+            "`"$ProjectFile`"",
+            '-ExecCmds="Automation RunTests MCPServer.Integration"',
+            '-TestExit="Automation Test Queue Empty"',
+            '-Unattended', '-NoPause', '-NullRHI', '-NoSound', '-log',
+            "-ReportExportPath=`"$ResultDir\IntegrationTests`""
+          ) -Wait -PassThru -NoNewWindow
+          $ExitCode = $proc.ExitCode
+
+          # Copy editor log into test results
+          if (Test-Path $LogDir) {
+            Copy-Item "$LogDir\*" "$ResultDir\" -Force -ErrorAction SilentlyContinue
+          }
+
+          Get-ChildItem "$ResultDir\IntegrationTests" -Filter "*.json" -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
             Write-Host "=== $($_.Name) ==="
             Get-Content $_.FullName
           }
+
           if ($ExitCode -ne 0) {
             Write-Host "========== INTEGRATION TESTS FAILED (exit code $ExitCode) =========="
+            $EdLog = Get-ChildItem $LogDir -Filter "*.log" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+            if ($EdLog) {
+              Write-Host "=== Editor Log (last 80 lines) ==="
+              Get-Content $EdLog.FullName | Select-Object -Last 80
+            }
             exit $ExitCode
           }
           Write-Host "Integration tests passed."
