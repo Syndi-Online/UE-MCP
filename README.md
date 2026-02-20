@@ -204,6 +204,13 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] simulate_in_editor — режим Simulate
 - [x] is_playing — проверка статуса PIE
 
+### 21. Batch-операции
+- [x] batch_set_actor_folders — массовая установка папок акторов в Outliner (до 100 за вызов)
+- [x] batch_set_actor_properties — массовая установка свойств акторов (до 100 за вызов)
+- [x] batch_set_material_expression_properties — массовая установка свойств нод материала (до 100 за вызов)
+- [x] batch_connect_material_expressions — массовое соединение нод материала (до 100 за вызов)
+- [x] batch_set_actor_transforms — массовая установка трансформов акторов (до 100 за вызов)
+
 ### 22. Blueprint Graph Nodes
 - [x] get_graph_nodes — чтение всех нод в графе (node_id, class, title, position, size, pins, comment)
 - [x] set_node_position — перемещение ноды на графе
@@ -211,10 +218,5 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] add_comment_box — добавление Comment Box (EdGraphNode_Comment)
 - [x] delete_comment_box — удаление Comment Box
 - [x] set_comment_box_properties — изменение свойств Comment Box (текст, цвет, позиция, размер)
-
-### 21. Batch-операции
-- [x] batch_set_actor_folders — массовая установка папок акторов в Outliner (до 100 за вызов)
-- [x] batch_set_actor_properties — массовая установка свойств акторов (до 100 за вызов)
-- [x] batch_set_material_expression_properties — массовая установка свойств нод материала (до 100 за вызов)
-- [x] batch_connect_material_expressions — массовое соединение нод материала (до 100 за вызов)
-- [x] batch_set_actor_transforms — массовая установка трансформов акторов (до 100 за вызов)
+- [ ] get_graph_nodes_summary — облегчённый список нод графа (id, class, title, connected_node_ids) с опциональным class_filter
+- [ ] get_graph_nodes (node_ids filter) — опциональная фильтрация по списку node_ids для получения полных данных только нужных нод
