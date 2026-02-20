@@ -14,6 +14,7 @@
 #include "Tools/Impl/GetBlueprintParentClassImplTool.h"
 #include "Tools/Impl/AddGraphNodesBatchImplTool.h"
 #include "Tools/Impl/GetGraphNodesInAreaImplTool.h"
+#include "Tools/Impl/DisconnectGraphPinsImplTool.h"
 #include "Tests/Mocks/MockBlueprintModule.h"
 #include "Tests/Integration/IntegrationTestUtils.h"
 
@@ -1257,6 +1258,87 @@ bool FGetGraphNodesInAreaModuleFailureTest::RunTest(const FString& Parameters)
 }
 
 // ===========================================================================
+// DisconnectGraphPins
+// ===========================================================================
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDisconnectGraphPinsMetadataTest,
+	"MCPServer.Unit.BlueprintComponentGraph.DisconnectGraphPins.Metadata",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FDisconnectGraphPinsMetadataTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	FDisconnectGraphPinsImplTool Tool(Mock);
+	TestEqual(TEXT("Name"), Tool.GetName(), TEXT("disconnect_graph_pins"));
+	TestTrue(TEXT("Description non-empty"), !Tool.GetDescription().IsEmpty());
+	auto Schema = Tool.GetInputSchema();
+	TestTrue(TEXT("Schema valid"), Schema.IsValid());
+	const TArray<TSharedPtr<FJsonValue>>* Required;
+	TestTrue(TEXT("Has required"), Schema->TryGetArrayField(TEXT("required"), Required));
+	TestEqual(TEXT("6 required"), Required->Num(), 6);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDisconnectGraphPinsSuccessTest,
+	"MCPServer.Unit.BlueprintComponentGraph.DisconnectGraphPins.Success",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FDisconnectGraphPinsSuccessTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.DisconnectGraphPinsResult.bSuccess = true;
+	FDisconnectGraphPinsImplTool Tool(Mock);
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+	Args->SetStringField(TEXT("source_node_id"), TEXT("GUID-1"));
+	Args->SetStringField(TEXT("source_pin_name"), TEXT("then"));
+	Args->SetStringField(TEXT("target_node_id"), TEXT("GUID-2"));
+	Args->SetStringField(TEXT("target_pin_name"), TEXT("execute"));
+	auto Result = Tool.Execute(Args);
+	TestTrue(TEXT("Success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Contains Disconnected"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Disconnected")));
+	TestEqual(TEXT("Module called"), Mock.Recorder.GetCallCount(TEXT("DisconnectGraphPins")), 1);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDisconnectGraphPinsMissingArgsTest,
+	"MCPServer.Unit.BlueprintComponentGraph.DisconnectGraphPins.MissingArgs",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FDisconnectGraphPinsMissingArgsTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	FDisconnectGraphPinsImplTool Tool(Mock);
+	auto Result = Tool.Execute(MakeShared<FJsonObject>());
+	TestTrue(TEXT("Error on missing args"), MCPTestUtils::IsError(Result));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDisconnectGraphPinsModuleFailureTest,
+	"MCPServer.Unit.BlueprintComponentGraph.DisconnectGraphPins.ModuleFailure",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FDisconnectGraphPinsModuleFailureTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.DisconnectGraphPinsResult.bSuccess = false;
+	Mock.DisconnectGraphPinsResult.ErrorMessage = TEXT("Pins are not connected");
+	FDisconnectGraphPinsImplTool Tool(Mock);
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+	Args->SetStringField(TEXT("source_node_id"), TEXT("GUID-1"));
+	Args->SetStringField(TEXT("source_pin_name"), TEXT("then"));
+	Args->SetStringField(TEXT("target_node_id"), TEXT("GUID-2"));
+	Args->SetStringField(TEXT("target_pin_name"), TEXT("execute"));
+	auto Result = Tool.Execute(Args);
+	TestTrue(TEXT("Error on module failure"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Contains error msg"), MCPTestUtils::GetResultText(Result).Contains(TEXT("not connected")));
+	return true;
+}
+
+// ===========================================================================
 // Integration: Blueprint Components + Graph Editing full workflow
 // ===========================================================================
 
@@ -1487,6 +1569,20 @@ bool FBlueprintComponentGraphIntegrationTest::RunTest(const FString& Parameters)
 	TestTrue(TEXT("Step14: NodesInArea success"), MCPTestUtils::IsSuccess(Result));
 	TestTrue(TEXT("Step14: Contains 1 node"), MCPTestUtils::GetResultText(Result).Contains(TEXT("1 node")));
 
+	// Step 15: Disconnect graph pins
+	Mock.DisconnectGraphPinsResult.bSuccess = true;
+	FDisconnectGraphPinsImplTool DisconnectTool(Mock);
+	Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+	Args->SetStringField(TEXT("source_node_id"), TEXT("GUID-BEGINPLAY"));
+	Args->SetStringField(TEXT("source_pin_name"), TEXT("then"));
+	Args->SetStringField(TEXT("target_node_id"), TEXT("GUID-PRINT"));
+	Args->SetStringField(TEXT("target_pin_name"), TEXT("execute"));
+	Result = DisconnectTool.Execute(Args);
+	TestTrue(TEXT("Step15: DisconnectPins success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Step15: Contains Disconnected"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Disconnected")));
+
 	// Verify call counts
 	TestEqual(TEXT("GetBlueprintComponents total"), Mock.Recorder.GetCallCount(TEXT("GetBlueprintComponents")), 1);
 	TestEqual(TEXT("AddBlueprintComponent total"), Mock.Recorder.GetCallCount(TEXT("AddBlueprintComponent")), 2);
@@ -1501,6 +1597,7 @@ bool FBlueprintComponentGraphIntegrationTest::RunTest(const FString& Parameters)
 	TestEqual(TEXT("GetBlueprintParentClass total"), Mock.Recorder.GetCallCount(TEXT("GetBlueprintParentClass")), 1);
 	TestEqual(TEXT("AddGraphNodesBatch total"), Mock.Recorder.GetCallCount(TEXT("AddGraphNodesBatch")), 1);
 	TestEqual(TEXT("GetGraphNodesInArea total"), Mock.Recorder.GetCallCount(TEXT("GetGraphNodesInArea")), 1);
+	TestEqual(TEXT("DisconnectGraphPins total"), Mock.Recorder.GetCallCount(TEXT("DisconnectGraphPins")), 1);
 
 	return true;
 }

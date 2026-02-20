@@ -235,8 +235,9 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] get_blueprint_component_property — чтение свойства компонента
 
 ### 24. Blueprint Graph Editing
-- [x] add_graph_node — добавление ноды в граф (CallFunction, Event, ComponentBoundEvent, VariableGet)
+- [x] add_graph_node — добавление ноды в граф (CallFunction, Event, ComponentBoundEvent, VariableGet, VariableSet, DynamicCast, IfThenElse/Branch, MacroInstance, SwitchEnum)
 - [x] connect_graph_pins — соединение пинов между нодами
+- [x] disconnect_graph_pins — разъединение соединённых пинов
 - [x] set_pin_default_value — установка значения по умолчанию на пине
 - [x] delete_graph_node — удаление ноды из графа
 - [x] add_graph_nodes_batch — массовое создание нод + соединений за один вызов

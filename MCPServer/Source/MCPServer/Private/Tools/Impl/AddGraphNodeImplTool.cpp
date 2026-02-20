@@ -40,17 +40,17 @@ TSharedPtr<FJsonObject> FAddGraphNodeImplTool::GetInputSchema() const
 
 	TSharedPtr<FJsonObject> NodeTypeProp = MakeShared<FJsonObject>();
 	NodeTypeProp->SetStringField(TEXT("type"), TEXT("string"));
-	NodeTypeProp->SetStringField(TEXT("description"), TEXT("Type of node to add (e.g. CallFunction, Event, IfThenElse, MacroInstance, VariableGet, VariableSet)"));
+	NodeTypeProp->SetStringField(TEXT("description"), TEXT("Type of node: CallFunction, Event, ComponentBoundEvent, VariableGet, VariableSet, DynamicCast, IfThenElse/Branch, MacroInstance, SwitchEnum"));
 	Properties->SetObjectField(TEXT("node_type"), NodeTypeProp);
 
 	TSharedPtr<FJsonObject> MemberNameProp = MakeShared<FJsonObject>();
 	MemberNameProp->SetStringField(TEXT("type"), TEXT("string"));
-	MemberNameProp->SetStringField(TEXT("description"), TEXT("Optional function or member name for the node (e.g. PrintString for a CallFunction node)"));
+	MemberNameProp->SetStringField(TEXT("description"), TEXT("Function/variable/macro name. Required for: CallFunction, Event, VariableGet, VariableSet, MacroInstance. E.g. PrintString, ForEachLoop"));
 	Properties->SetObjectField(TEXT("member_name"), MemberNameProp);
 
 	TSharedPtr<FJsonObject> TargetProp = MakeShared<FJsonObject>();
 	TargetProp->SetStringField(TEXT("type"), TEXT("string"));
-	TargetProp->SetStringField(TEXT("description"), TEXT("Optional target class for the function (e.g. KismetSystemLibrary)"));
+	TargetProp->SetStringField(TEXT("description"), TEXT("Target class/type. For CallFunction: class name. For DynamicCast: class to cast to. For SwitchEnum: enum path. For ComponentBoundEvent: component variable name"));
 	Properties->SetObjectField(TEXT("target"), TargetProp);
 
 	TSharedPtr<FJsonObject> PositionProp = MakeShared<FJsonObject>();

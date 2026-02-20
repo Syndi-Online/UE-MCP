@@ -10,6 +10,7 @@
 #include "AssetToolsModule.h"
 #include "Factories/Factory.h"
 #include "UObject/UObjectGlobals.h"
+#include "UObject/SavePackage.h"
 
 FAssetLoadResult FAssetImplModule::LoadAsset(const FString& AssetPath)
 {
@@ -166,15 +167,33 @@ FAssetSaveResult FAssetImplModule::SaveAsset(const FString& AssetPath)
 {
 	FAssetSaveResult Result;
 
-	UEditorAssetSubsystem* AssetSubsystem = GEditor->GetEditorSubsystem<UEditorAssetSubsystem>();
-	if (!AssetSubsystem)
+	// Try loading the object to get its package
+	UObject* Asset = LoadObject<UObject>(nullptr, *AssetPath);
+	if (!Asset)
 	{
 		Result.bSuccess = false;
-		Result.ErrorMessage = TEXT("UEditorAssetSubsystem is not available");
+		Result.ErrorMessage = FString::Printf(TEXT("Asset not found: %s"), *AssetPath);
 		return Result;
 	}
 
-	bool bSaved = AssetSubsystem->SaveAsset(AssetPath, false);
+	UPackage* Package = Asset->GetOutermost();
+	if (!Package)
+	{
+		Result.bSuccess = false;
+		Result.ErrorMessage = FString::Printf(TEXT("Failed to get package for asset: %s"), *AssetPath);
+		return Result;
+	}
+
+	// Use UPackage::SavePackage directly — works for all asset types including Blueprints
+	FString PackageFilename;
+	if (!FPackageName::DoesPackageExist(Package->GetName(), &PackageFilename))
+	{
+		PackageFilename = FPackageName::LongPackageNameToFilename(Package->GetName(), FPackageName::GetAssetPackageExtension());
+	}
+
+	FSavePackageArgs SaveArgs;
+	SaveArgs.TopLevelFlags = RF_Standalone;
+	bool bSaved = UPackage::SavePackage(Package, Asset, *PackageFilename, SaveArgs);
 	if (!bSaved)
 	{
 		Result.bSuccess = false;

@@ -19,6 +19,11 @@
 #include "K2Node_Event.h"
 #include "K2Node_ComponentBoundEvent.h"
 #include "K2Node_VariableGet.h"
+#include "K2Node_VariableSet.h"
+#include "K2Node_DynamicCast.h"
+#include "K2Node_IfThenElse.h"
+#include "K2Node_MacroInstance.h"
+#include "K2Node_SwitchEnum.h"
 #include "K2Node_EditablePinBase.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -1349,9 +1354,173 @@ FAddGraphNodeResult FBlueprintImplModule::AddGraphNode(const FString& BlueprintP
 		GetNode->PostPlacedNewNode();
 		NewNode = GetNode;
 	}
+	else if (NodeType.Equals(TEXT("VariableSet"), ESearchCase::IgnoreCase))
+	{
+		if (!MemberName)
+		{
+			Result.ErrorMessage = TEXT("member_name is required for VariableSet nodes");
+			return Result;
+		}
+
+		UK2Node_VariableSet* SetNode = NewObject<UK2Node_VariableSet>(Graph);
+		SetNode->CreateNewGuid();
+		SetNode->VariableReference.SetSelfMember(FName(**MemberName));
+		SetNode->NodePosX = PosX ? *PosX : 0;
+		SetNode->NodePosY = PosY ? *PosY : 0;
+		SetNode->AllocateDefaultPins();
+		Graph->AddNode(SetNode, false, false);
+		SetNode->PostPlacedNewNode();
+		NewNode = SetNode;
+	}
+	else if (NodeType.Equals(TEXT("DynamicCast"), ESearchCase::IgnoreCase))
+	{
+		if (!Target)
+		{
+			Result.ErrorMessage = TEXT("target is required for DynamicCast nodes (class to cast to)");
+			return Result;
+		}
+
+		UClass* CastClass = FindFirstObject<UClass>(**Target, EFindFirstObjectOptions::ExactClass);
+		if (!CastClass)
+		{
+			CastClass = LoadObject<UClass>(nullptr, **Target);
+		}
+		if (!CastClass)
+		{
+			Result.ErrorMessage = FString::Printf(TEXT("Cast target class not found: %s"), **Target);
+			return Result;
+		}
+
+		UK2Node_DynamicCast* CastNode = NewObject<UK2Node_DynamicCast>(Graph);
+		CastNode->CreateNewGuid();
+		CastNode->TargetType = CastClass;
+		CastNode->NodePosX = PosX ? *PosX : 0;
+		CastNode->NodePosY = PosY ? *PosY : 0;
+		CastNode->AllocateDefaultPins();
+		Graph->AddNode(CastNode, false, false);
+		CastNode->PostPlacedNewNode();
+		NewNode = CastNode;
+	}
+	else if (NodeType.Equals(TEXT("IfThenElse"), ESearchCase::IgnoreCase) || NodeType.Equals(TEXT("Branch"), ESearchCase::IgnoreCase))
+	{
+		UK2Node_IfThenElse* BranchNode = NewObject<UK2Node_IfThenElse>(Graph);
+		BranchNode->CreateNewGuid();
+		BranchNode->NodePosX = PosX ? *PosX : 0;
+		BranchNode->NodePosY = PosY ? *PosY : 0;
+		BranchNode->AllocateDefaultPins();
+		Graph->AddNode(BranchNode, false, false);
+		BranchNode->PostPlacedNewNode();
+		NewNode = BranchNode;
+	}
+	else if (NodeType.Equals(TEXT("MacroInstance"), ESearchCase::IgnoreCase))
+	{
+		if (!MemberName)
+		{
+			Result.ErrorMessage = TEXT("member_name is required for MacroInstance nodes (macro graph name, e.g. ForEachLoop)");
+			return Result;
+		}
+
+		// Search for the macro graph in the blueprint itself, then in engine macros
+		UEdGraph* MacroGraph = nullptr;
+
+		// 1. Search in this blueprint's macro graphs
+		for (UEdGraph* G : Blueprint->MacroGraphs)
+		{
+			if (G && G->GetName() == *MemberName)
+			{
+				MacroGraph = G;
+				break;
+			}
+		}
+
+		// 2. Search in parent class blueprints
+		if (!MacroGraph && Blueprint->ParentClass)
+		{
+			UBlueprint* ParentBP = Cast<UBlueprint>(Blueprint->ParentClass->ClassGeneratedBy);
+			while (ParentBP && !MacroGraph)
+			{
+				for (UEdGraph* G : ParentBP->MacroGraphs)
+				{
+					if (G && G->GetName() == *MemberName)
+					{
+						MacroGraph = G;
+						break;
+					}
+				}
+				ParentBP = ParentBP->ParentClass ? Cast<UBlueprint>(ParentBP->ParentClass->ClassGeneratedBy) : nullptr;
+			}
+		}
+
+		// 3. Search in standard macro libraries (e.g. StandardMacros, which contains ForEachLoop, etc.)
+		if (!MacroGraph)
+		{
+			TArray<UBlueprint*> MacroLibraries;
+			for (TObjectIterator<UBlueprint> It; It; ++It)
+			{
+				UBlueprint* BP = *It;
+				if (BP && BP->BlueprintType == BPTYPE_MacroLibrary)
+				{
+					for (UEdGraph* G : BP->MacroGraphs)
+					{
+						if (G && G->GetName() == *MemberName)
+						{
+							MacroGraph = G;
+							break;
+						}
+					}
+					if (MacroGraph) break;
+				}
+			}
+		}
+
+		if (!MacroGraph)
+		{
+			Result.ErrorMessage = FString::Printf(TEXT("Macro graph not found: %s"), **MemberName);
+			return Result;
+		}
+
+		UK2Node_MacroInstance* MacroNode = NewObject<UK2Node_MacroInstance>(Graph);
+		MacroNode->CreateNewGuid();
+		MacroNode->SetMacroGraph(MacroGraph);
+		MacroNode->NodePosX = PosX ? *PosX : 0;
+		MacroNode->NodePosY = PosY ? *PosY : 0;
+		MacroNode->AllocateDefaultPins();
+		Graph->AddNode(MacroNode, false, false);
+		MacroNode->PostPlacedNewNode();
+		NewNode = MacroNode;
+	}
+	else if (NodeType.Equals(TEXT("SwitchEnum"), ESearchCase::IgnoreCase))
+	{
+		if (!Target)
+		{
+			Result.ErrorMessage = TEXT("target is required for SwitchEnum nodes (enum type path, e.g. /Script/Engine.ECollisionChannel)");
+			return Result;
+		}
+
+		UEnum* EnumType = FindFirstObject<UEnum>(**Target, EFindFirstObjectOptions::ExactClass);
+		if (!EnumType)
+		{
+			EnumType = LoadObject<UEnum>(nullptr, **Target);
+		}
+		if (!EnumType)
+		{
+			Result.ErrorMessage = FString::Printf(TEXT("Enum type not found: %s"), **Target);
+			return Result;
+		}
+
+		UK2Node_SwitchEnum* SwitchNode = NewObject<UK2Node_SwitchEnum>(Graph);
+		SwitchNode->CreateNewGuid();
+		SwitchNode->SetEnum(EnumType);
+		SwitchNode->NodePosX = PosX ? *PosX : 0;
+		SwitchNode->NodePosY = PosY ? *PosY : 0;
+		SwitchNode->AllocateDefaultPins();
+		Graph->AddNode(SwitchNode, false, false);
+		SwitchNode->PostPlacedNewNode();
+		NewNode = SwitchNode;
+	}
 	else
 	{
-		Result.ErrorMessage = FString::Printf(TEXT("Unsupported node type: %s. Supported: CallFunction, Event, ComponentBoundEvent, VariableGet"), *NodeType);
+		Result.ErrorMessage = FString::Printf(TEXT("Unsupported node type: %s. Supported: CallFunction, Event, ComponentBoundEvent, VariableGet, VariableSet, DynamicCast, IfThenElse/Branch, MacroInstance, SwitchEnum"), *NodeType);
 		return Result;
 	}
 
@@ -1783,6 +1952,89 @@ FAddGraphNodesBatchResult FBlueprintImplModule::AddGraphNodesBatch(const FString
 			Result.ConnectionsMade++;
 		}
 	}
+
+	Result.bSuccess = true;
+	return Result;
+}
+
+// ============================================================
+// Disconnect Graph Pins
+// ============================================================
+
+FDisconnectGraphPinsResult FBlueprintImplModule::DisconnectGraphPins(const FString& BlueprintPath, const FString& GraphName, const FString& SourceNodeId, const FString& SourcePinName, const FString& TargetNodeId, const FString& TargetPinName)
+{
+	FDisconnectGraphPinsResult Result;
+
+	UBlueprint* Blueprint = LoadObject<UBlueprint>(nullptr, *BlueprintPath);
+	if (!Blueprint)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Blueprint not found: %s"), *BlueprintPath);
+		return Result;
+	}
+
+	UEdGraph* Graph = FindGraph(Blueprint, GraphName);
+	if (!Graph)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Graph not found: %s"), *GraphName);
+		return Result;
+	}
+
+	UEdGraphNode* SourceNode = FindNodeById(Graph, SourceNodeId);
+	if (!SourceNode)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Source node not found: %s"), *SourceNodeId);
+		return Result;
+	}
+
+	UEdGraphNode* TargetNode = FindNodeById(Graph, TargetNodeId);
+	if (!TargetNode)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Target node not found: %s"), *TargetNodeId);
+		return Result;
+	}
+
+	// Find source pin
+	UEdGraphPin* SourcePin = nullptr;
+	for (UEdGraphPin* Pin : SourceNode->Pins)
+	{
+		if (Pin && Pin->PinName.ToString() == SourcePinName)
+		{
+			SourcePin = Pin;
+			break;
+		}
+	}
+	if (!SourcePin)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Source pin not found: %s on node %s"), *SourcePinName, *SourceNodeId);
+		return Result;
+	}
+
+	// Find target pin
+	UEdGraphPin* TargetPin = nullptr;
+	for (UEdGraphPin* Pin : TargetNode->Pins)
+	{
+		if (Pin && Pin->PinName.ToString() == TargetPinName)
+		{
+			TargetPin = Pin;
+			break;
+		}
+	}
+	if (!TargetPin)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Target pin not found: %s on node %s"), *TargetPinName, *TargetNodeId);
+		return Result;
+	}
+
+	// Check if the pins are actually connected
+	if (!SourcePin->LinkedTo.Contains(TargetPin))
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Pins are not connected: %s.%s and %s.%s"),
+			*SourceNodeId, *SourcePinName, *TargetNodeId, *TargetPinName);
+		return Result;
+	}
+
+	SourcePin->BreakLinkTo(TargetPin);
+	FBlueprintEditorUtils::MarkBlueprintAsModified(Blueprint);
 
 	Result.bSuccess = true;
 	return Result;

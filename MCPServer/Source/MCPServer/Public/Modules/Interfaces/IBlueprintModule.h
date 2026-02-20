@@ -254,6 +254,12 @@ struct FGraphNodeInAreaInfo
 	int32 Height = 0;
 };
 
+struct FDisconnectGraphPinsResult
+{
+	bool bSuccess = false;
+	FString ErrorMessage;
+};
+
 struct FGetGraphNodesInAreaResult
 {
 	bool bSuccess = false;
@@ -323,5 +329,6 @@ public:
 	virtual FAddGraphNodesBatchResult AddGraphNodesBatch(const FString& BlueprintPath, const FString& GraphName, const TArray<FAddGraphNodesBatchNodeInfo>& Nodes, const TArray<FAddGraphNodesBatchConnection>* Connections) = 0;
 
 	// Spatial queries
+	virtual FDisconnectGraphPinsResult DisconnectGraphPins(const FString& BlueprintPath, const FString& GraphName, const FString& SourceNodeId, const FString& SourcePinName, const FString& TargetNodeId, const FString& TargetPinName) = 0;
 	virtual FGetGraphNodesInAreaResult GetGraphNodesInArea(const FString& BlueprintPath, const FString& GraphName, int32 MinX, int32 MinY, int32 MaxX, int32 MaxY) = 0;
 };

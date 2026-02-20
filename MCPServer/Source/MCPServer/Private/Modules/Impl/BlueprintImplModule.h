@@ -46,6 +46,7 @@ public:
 
 	virtual FAddGraphNodesBatchResult AddGraphNodesBatch(const FString& BlueprintPath, const FString& GraphName, const TArray<FAddGraphNodesBatchNodeInfo>& Nodes, const TArray<FAddGraphNodesBatchConnection>* Connections) override;
 
+	virtual FDisconnectGraphPinsResult DisconnectGraphPins(const FString& BlueprintPath, const FString& GraphName, const FString& SourceNodeId, const FString& SourcePinName, const FString& TargetNodeId, const FString& TargetPinName) override;
 	virtual FGetGraphNodesInAreaResult GetGraphNodesInArea(const FString& BlueprintPath, const FString& GraphName, int32 MinX, int32 MinY, int32 MaxX, int32 MaxY) override;
 
 private:

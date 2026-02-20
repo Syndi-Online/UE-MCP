@@ -95,6 +95,7 @@
 #include "Tools/Impl/GetBlueprintParentClassImplTool.h"
 #include "Tools/Impl/AddGraphNodesBatchImplTool.h"
 #include "Tools/Impl/GetGraphNodesInAreaImplTool.h"
+#include "Tools/Impl/DisconnectGraphPinsImplTool.h"
 #include "Tools/Impl/CreateMaterialExpressionImplTool.h"
 #include "Tools/Impl/DeleteMaterialExpressionImplTool.h"
 #include "Tools/Impl/ConnectMaterialExpressionsImplTool.h"
@@ -394,6 +395,7 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FGetBlueprintParentClassImplTool>(*BlueprintModule));
 	ToolRegistry->RegisterTool(MakeShared<FAddGraphNodesBatchImplTool>(*BlueprintModule));
 	ToolRegistry->RegisterTool(MakeShared<FGetGraphNodesInAreaImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FDisconnectGraphPinsImplTool>(*BlueprintModule));
 
 	// Material tools
 	ToolRegistry->RegisterTool(MakeShared<FCreateMaterialExpressionImplTool>(*MaterialModule));

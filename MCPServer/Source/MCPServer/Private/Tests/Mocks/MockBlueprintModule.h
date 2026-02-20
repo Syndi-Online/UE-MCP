@@ -85,6 +85,11 @@ public:
 
 	virtual FAddGraphNodesBatchResult AddGraphNodesBatch(const FString& BlueprintPath, const FString& GraphName, const TArray<FAddGraphNodesBatchNodeInfo>& Nodes, const TArray<FAddGraphNodesBatchConnection>* Connections) override { Recorder.RecordCall(TEXT("AddGraphNodesBatch")); return AddGraphNodesBatchResult; }
 
+	// Disconnect pins
+	FDisconnectGraphPinsResult DisconnectGraphPinsResult;
+
+	virtual FDisconnectGraphPinsResult DisconnectGraphPins(const FString& BlueprintPath, const FString& GraphName, const FString& SourceNodeId, const FString& SourcePinName, const FString& TargetNodeId, const FString& TargetPinName) override { Recorder.RecordCall(TEXT("DisconnectGraphPins")); return DisconnectGraphPinsResult; }
+
 	// Spatial queries
 	FGetGraphNodesInAreaResult GetGraphNodesInAreaResult;
 
