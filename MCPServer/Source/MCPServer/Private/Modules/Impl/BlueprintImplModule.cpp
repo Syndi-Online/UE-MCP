@@ -692,6 +692,11 @@ FAddCommentBoxResult FBlueprintImplModule::AddCommentBox(const FString& Blueprin
 		return Result;
 	}
 
+	CommentNode->CreateNewGuid();
+	CommentNode->PostPlacedNewNode();
+	Graph->AddNode(CommentNode, false, false);
+
+	// Set properties AFTER PostPlacedNewNode() which resets NodeComment to default "Comment"
 	CommentNode->NodeComment = CommentText;
 	CommentNode->NodePosX = FinalPosX;
 	CommentNode->NodePosY = FinalPosY;
@@ -702,10 +707,6 @@ FAddCommentBoxResult FBlueprintImplModule::AddCommentBox(const FString& Blueprin
 	{
 		CommentNode->CommentColor = *Color;
 	}
-
-	CommentNode->CreateNewGuid();
-	CommentNode->PostPlacedNewNode();
-	Graph->AddNode(CommentNode, false, false);
 
 	FBlueprintEditorUtils::MarkBlueprintAsModified(Blueprint);
 

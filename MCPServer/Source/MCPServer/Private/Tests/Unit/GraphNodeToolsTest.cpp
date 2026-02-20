@@ -559,6 +559,7 @@ bool FAddCommentBoxSuccessTest::RunTest(const FString& Parameters)
 	TestTrue(TEXT("Success"), MCPTestUtils::IsSuccess(Result));
 	TestTrue(TEXT("Contains NodeId"), MCPTestUtils::GetResultText(Result).Contains(TEXT("COMMENT-001")));
 	TestEqual(TEXT("AddCommentBox called"), Mock.Recorder.GetCallCount(TEXT("AddCommentBox")), 1);
+	TestEqual(TEXT("CommentText passed to module"), Mock.LastAddCommentBoxText, TEXT("Input handling"));
 	return true;
 }
 
