@@ -132,6 +132,71 @@ struct FSetCommentBoxPropertiesResult
 	FString ErrorMessage;
 };
 
+// Blueprint Components
+struct FBlueprintComponentInfo
+{
+	FString ComponentName;
+	FString ComponentClass;
+	FString ParentComponent;
+	bool bIsRoot = false;
+};
+
+struct FAddBlueprintComponentResult
+{
+	bool bSuccess = false;
+	FString ComponentName;
+	FString ComponentClass;
+	FString ParentComponent;
+	FString ErrorMessage;
+};
+
+struct FRemoveBlueprintComponentResult
+{
+	bool bSuccess = false;
+	FString ErrorMessage;
+};
+
+struct FGetBlueprintComponentsResult
+{
+	bool bSuccess = false;
+	TArray<FBlueprintComponentInfo> Components;
+	FString ErrorMessage;
+};
+
+struct FSetBlueprintComponentPropertyResult
+{
+	bool bSuccess = false;
+	FString ErrorMessage;
+};
+
+struct FGetBlueprintComponentPropertyResult
+{
+	bool bSuccess = false;
+	FString PropertyValue;
+	FString ErrorMessage;
+};
+
+// Graph Editing
+struct FAddGraphNodeResult
+{
+	bool bSuccess = false;
+	FString NodeId;
+	TArray<FGraphNodePinInfo> Pins;
+	FString ErrorMessage;
+};
+
+struct FConnectGraphPinsResult
+{
+	bool bSuccess = false;
+	FString ErrorMessage;
+};
+
+struct FSetPinDefaultValueResult
+{
+	bool bSuccess = false;
+	FString ErrorMessage;
+};
+
 /**
  * Module interface for Blueprint operations.
  */
@@ -156,4 +221,16 @@ public:
 	virtual FAddCommentBoxResult AddCommentBox(const FString& BlueprintPath, const FString& GraphName, const FString& CommentText, int32 PosX, int32 PosY, int32 Width, int32 Height, const FLinearColor* Color, const TArray<FString>* NodeIds) = 0;
 	virtual FDeleteCommentBoxResult DeleteCommentBox(const FString& BlueprintPath, const FString& GraphName, const FString& NodeId) = 0;
 	virtual FSetCommentBoxPropertiesResult SetCommentBoxProperties(const FString& BlueprintPath, const FString& GraphName, const FString& NodeId, const FString* CommentText, const FLinearColor* Color, const int32* PosX, const int32* PosY, const int32* Width, const int32* Height) = 0;
+
+	// Blueprint Components
+	virtual FAddBlueprintComponentResult AddBlueprintComponent(const FString& BlueprintPath, const FString& ComponentClass, const FString* ComponentName, const FString* ParentComponent) = 0;
+	virtual FRemoveBlueprintComponentResult RemoveBlueprintComponent(const FString& BlueprintPath, const FString& ComponentName) = 0;
+	virtual FGetBlueprintComponentsResult GetBlueprintComponents(const FString& BlueprintPath) = 0;
+	virtual FSetBlueprintComponentPropertyResult SetBlueprintComponentProperty(const FString& BlueprintPath, const FString& ComponentName, const FString& PropertyName, const FString& PropertyValue) = 0;
+	virtual FGetBlueprintComponentPropertyResult GetBlueprintComponentProperty(const FString& BlueprintPath, const FString& ComponentName, const FString& PropertyName) = 0;
+
+	// Graph Editing
+	virtual FAddGraphNodeResult AddGraphNode(const FString& BlueprintPath, const FString& GraphName, const FString& NodeType, const FString* MemberName, const FString* Target, const int32* PosX, const int32* PosY) = 0;
+	virtual FConnectGraphPinsResult ConnectGraphPins(const FString& BlueprintPath, const FString& GraphName, const FString& SourceNodeId, const FString& SourcePinName, const FString& TargetNodeId, const FString& TargetPinName) = 0;
+	virtual FSetPinDefaultValueResult SetPinDefaultValue(const FString& BlueprintPath, const FString& GraphName, const FString& NodeId, const FString& PinName, const FString& DefaultValue) = 0;
 };

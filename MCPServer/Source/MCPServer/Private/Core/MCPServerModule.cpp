@@ -79,6 +79,14 @@
 #include "Tools/Impl/AddCommentBoxImplTool.h"
 #include "Tools/Impl/DeleteCommentBoxImplTool.h"
 #include "Tools/Impl/SetCommentBoxPropertiesImplTool.h"
+#include "Tools/Impl/AddBlueprintComponentImplTool.h"
+#include "Tools/Impl/RemoveBlueprintComponentImplTool.h"
+#include "Tools/Impl/GetBlueprintComponentsImplTool.h"
+#include "Tools/Impl/SetBlueprintComponentPropertyImplTool.h"
+#include "Tools/Impl/GetBlueprintComponentPropertyImplTool.h"
+#include "Tools/Impl/AddGraphNodeImplTool.h"
+#include "Tools/Impl/ConnectGraphPinsImplTool.h"
+#include "Tools/Impl/SetPinDefaultValueImplTool.h"
 #include "Tools/Impl/CreateMaterialExpressionImplTool.h"
 #include "Tools/Impl/DeleteMaterialExpressionImplTool.h"
 #include "Tools/Impl/ConnectMaterialExpressionsImplTool.h"
@@ -358,6 +366,18 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FAddCommentBoxImplTool>(*BlueprintModule));
 	ToolRegistry->RegisterTool(MakeShared<FDeleteCommentBoxImplTool>(*BlueprintModule));
 	ToolRegistry->RegisterTool(MakeShared<FSetCommentBoxPropertiesImplTool>(*BlueprintModule));
+
+	// Blueprint component tools
+	ToolRegistry->RegisterTool(MakeShared<FAddBlueprintComponentImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FRemoveBlueprintComponentImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetBlueprintComponentsImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetBlueprintComponentPropertyImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetBlueprintComponentPropertyImplTool>(*BlueprintModule));
+
+	// Blueprint graph editing tools
+	ToolRegistry->RegisterTool(MakeShared<FAddGraphNodeImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FConnectGraphPinsImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetPinDefaultValueImplTool>(*BlueprintModule));
 
 	// Material tools
 	ToolRegistry->RegisterTool(MakeShared<FCreateMaterialExpressionImplTool>(*MaterialModule));

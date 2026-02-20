@@ -43,4 +43,26 @@ public:
 	virtual FAddCommentBoxResult AddCommentBox(const FString& BlueprintPath, const FString& GraphName, const FString& CommentText, int32 PosX, int32 PosY, int32 Width, int32 Height, const FLinearColor* Color, const TArray<FString>* NodeIds) override { Recorder.RecordCall(TEXT("AddCommentBox")); LastAddCommentBoxText = CommentText; return AddCommentBoxResult; }
 	virtual FDeleteCommentBoxResult DeleteCommentBox(const FString& BlueprintPath, const FString& GraphName, const FString& NodeId) override { Recorder.RecordCall(TEXT("DeleteCommentBox")); return DeleteCommentBoxResult; }
 	virtual FSetCommentBoxPropertiesResult SetCommentBoxProperties(const FString& BlueprintPath, const FString& GraphName, const FString& NodeId, const FString* CommentText, const FLinearColor* Color, const int32* PosX, const int32* PosY, const int32* Width, const int32* Height) override { Recorder.RecordCall(TEXT("SetCommentBoxProperties")); return SetCommentBoxPropertiesResult; }
+
+	// Blueprint Components
+	FAddBlueprintComponentResult AddBlueprintComponentResult;
+	FRemoveBlueprintComponentResult RemoveBlueprintComponentResult;
+	FGetBlueprintComponentsResult GetBlueprintComponentsResult;
+	FSetBlueprintComponentPropertyResult SetBlueprintComponentPropertyResult;
+	FGetBlueprintComponentPropertyResult GetBlueprintComponentPropertyResult;
+
+	virtual FAddBlueprintComponentResult AddBlueprintComponent(const FString& BlueprintPath, const FString& ComponentClass, const FString* ComponentName, const FString* ParentComponent) override { Recorder.RecordCall(TEXT("AddBlueprintComponent")); return AddBlueprintComponentResult; }
+	virtual FRemoveBlueprintComponentResult RemoveBlueprintComponent(const FString& BlueprintPath, const FString& ComponentName) override { Recorder.RecordCall(TEXT("RemoveBlueprintComponent")); return RemoveBlueprintComponentResult; }
+	virtual FGetBlueprintComponentsResult GetBlueprintComponents(const FString& BlueprintPath) override { Recorder.RecordCall(TEXT("GetBlueprintComponents")); return GetBlueprintComponentsResult; }
+	virtual FSetBlueprintComponentPropertyResult SetBlueprintComponentProperty(const FString& BlueprintPath, const FString& ComponentName, const FString& PropertyName, const FString& PropertyValue) override { Recorder.RecordCall(TEXT("SetBlueprintComponentProperty")); return SetBlueprintComponentPropertyResult; }
+	virtual FGetBlueprintComponentPropertyResult GetBlueprintComponentProperty(const FString& BlueprintPath, const FString& ComponentName, const FString& PropertyName) override { Recorder.RecordCall(TEXT("GetBlueprintComponentProperty")); return GetBlueprintComponentPropertyResult; }
+
+	// Graph Editing
+	FAddGraphNodeResult AddGraphNodeResult;
+	FConnectGraphPinsResult ConnectGraphPinsResult;
+	FSetPinDefaultValueResult SetPinDefaultValueResult;
+
+	virtual FAddGraphNodeResult AddGraphNode(const FString& BlueprintPath, const FString& GraphName, const FString& NodeType, const FString* MemberName, const FString* Target, const int32* PosX, const int32* PosY) override { Recorder.RecordCall(TEXT("AddGraphNode")); return AddGraphNodeResult; }
+	virtual FConnectGraphPinsResult ConnectGraphPins(const FString& BlueprintPath, const FString& GraphName, const FString& SourceNodeId, const FString& SourcePinName, const FString& TargetNodeId, const FString& TargetPinName) override { Recorder.RecordCall(TEXT("ConnectGraphPins")); return ConnectGraphPinsResult; }
+	virtual FSetPinDefaultValueResult SetPinDefaultValue(const FString& BlueprintPath, const FString& GraphName, const FString& NodeId, const FString& PinName, const FString& DefaultValue) override { Recorder.RecordCall(TEXT("SetPinDefaultValue")); return SetPinDefaultValueResult; }
 };

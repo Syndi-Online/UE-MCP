@@ -3,6 +3,8 @@
 #include "Modules/Impl/BlueprintImplModule.h"
 #include "Modules/Interfaces/IActorModule.h"
 #include "Engine/Blueprint.h"
+#include "Engine/SCS_Node.h"
+#include "Engine/SimpleConstructionScript.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "Kismet2/BlueprintEditorUtils.h"
 #include "KismetCompilerModule.h"
@@ -13,6 +15,13 @@
 #include "EdGraph/EdGraphNode.h"
 #include "EdGraphNode_Comment.h"
 #include "EdGraphSchema_K2.h"
+#include "K2Node_CallFunction.h"
+#include "K2Node_Event.h"
+#include "K2Node_ComponentBoundEvent.h"
+#include "K2Node_VariableGet.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Kismet/KismetStringLibrary.h"
 #include "Editor.h"
 #include "GameFramework/Actor.h"
 
@@ -818,6 +827,596 @@ FSetCommentBoxPropertiesResult FBlueprintImplModule::SetCommentBoxProperties(con
 	{
 		CommentNode->NodeHeight = *Height;
 	}
+
+	FBlueprintEditorUtils::MarkBlueprintAsModified(Blueprint);
+
+	Result.bSuccess = true;
+	return Result;
+}
+
+// ============================================================
+// Blueprint Components
+// ============================================================
+
+FAddBlueprintComponentResult FBlueprintImplModule::AddBlueprintComponent(const FString& BlueprintPath, const FString& ComponentClass, const FString* ComponentName, const FString* ParentComponent)
+{
+	FAddBlueprintComponentResult Result;
+
+	UBlueprint* Blueprint = LoadObject<UBlueprint>(nullptr, *BlueprintPath);
+	if (!Blueprint)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Blueprint not found: %s"), *BlueprintPath);
+		return Result;
+	}
+
+	USimpleConstructionScript* SCS = Blueprint->SimpleConstructionScript;
+	if (!SCS)
+	{
+		Result.ErrorMessage = TEXT("Blueprint has no SimpleConstructionScript");
+		return Result;
+	}
+
+	// Find component class
+	FString FullClassName = ComponentClass;
+	if (!FullClassName.StartsWith(TEXT("U")))
+	{
+		FullClassName = TEXT("U") + FullClassName;
+	}
+
+	UClass* CompClass = FindFirstObject<UClass>(*FullClassName, EFindFirstObjectOptions::ExactClass);
+	if (!CompClass)
+	{
+		CompClass = FindFirstObject<UClass>(*ComponentClass, EFindFirstObjectOptions::ExactClass);
+	}
+	if (!CompClass)
+	{
+		CompClass = LoadObject<UClass>(nullptr, *ComponentClass);
+	}
+	if (!CompClass || !CompClass->IsChildOf(UActorComponent::StaticClass()))
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Component class not found or not a component: %s"), *ComponentClass);
+		return Result;
+	}
+
+	// Create the SCS node
+	USCS_Node* NewNode = SCS->CreateNode(CompClass, ComponentName ? FName(**ComponentName) : NAME_None);
+	if (!NewNode)
+	{
+		Result.ErrorMessage = TEXT("Failed to create SCS node");
+		return Result;
+	}
+
+	// Attach to parent or root
+	if (ParentComponent && !ParentComponent->IsEmpty())
+	{
+		USCS_Node* ParentNode = nullptr;
+		for (USCS_Node* Node : SCS->GetAllNodes())
+		{
+			if (Node && Node->GetVariableName().ToString() == *ParentComponent)
+			{
+				ParentNode = Node;
+				break;
+			}
+		}
+		if (!ParentNode)
+		{
+			Result.ErrorMessage = FString::Printf(TEXT("Parent component not found: %s"), **ParentComponent);
+			return Result;
+		}
+		ParentNode->AddChildNode(NewNode);
+	}
+	else
+	{
+		SCS->AddNode(NewNode);
+	}
+
+	FBlueprintEditorUtils::MarkBlueprintAsModified(Blueprint);
+
+	Result.bSuccess = true;
+	Result.ComponentName = NewNode->GetVariableName().ToString();
+	Result.ComponentClass = CompClass->GetName();
+	Result.ParentComponent = ParentComponent ? *ParentComponent : TEXT("(root)");
+	return Result;
+}
+
+FRemoveBlueprintComponentResult FBlueprintImplModule::RemoveBlueprintComponent(const FString& BlueprintPath, const FString& ComponentName)
+{
+	FRemoveBlueprintComponentResult Result;
+
+	UBlueprint* Blueprint = LoadObject<UBlueprint>(nullptr, *BlueprintPath);
+	if (!Blueprint)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Blueprint not found: %s"), *BlueprintPath);
+		return Result;
+	}
+
+	USimpleConstructionScript* SCS = Blueprint->SimpleConstructionScript;
+	if (!SCS)
+	{
+		Result.ErrorMessage = TEXT("Blueprint has no SimpleConstructionScript");
+		return Result;
+	}
+
+	USCS_Node* TargetNode = nullptr;
+	for (USCS_Node* Node : SCS->GetAllNodes())
+	{
+		if (Node && Node->GetVariableName().ToString() == ComponentName)
+		{
+			TargetNode = Node;
+			break;
+		}
+	}
+
+	if (!TargetNode)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Component not found: %s"), *ComponentName);
+		return Result;
+	}
+
+	SCS->RemoveNodeAndPromoteChildren(TargetNode);
+	FBlueprintEditorUtils::MarkBlueprintAsModified(Blueprint);
+
+	Result.bSuccess = true;
+	return Result;
+}
+
+FGetBlueprintComponentsResult FBlueprintImplModule::GetBlueprintComponents(const FString& BlueprintPath)
+{
+	FGetBlueprintComponentsResult Result;
+
+	UBlueprint* Blueprint = LoadObject<UBlueprint>(nullptr, *BlueprintPath);
+	if (!Blueprint)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Blueprint not found: %s"), *BlueprintPath);
+		return Result;
+	}
+
+	USimpleConstructionScript* SCS = Blueprint->SimpleConstructionScript;
+	if (!SCS)
+	{
+		Result.ErrorMessage = TEXT("Blueprint has no SimpleConstructionScript");
+		return Result;
+	}
+
+	TArray<USCS_Node*> RootNodes = SCS->GetRootNodes();
+	TArray<USCS_Node*> AllNodes = SCS->GetAllNodes();
+
+	for (USCS_Node* Node : AllNodes)
+	{
+		if (!Node) continue;
+
+		FBlueprintComponentInfo Info;
+		Info.ComponentName = Node->GetVariableName().ToString();
+		Info.ComponentClass = Node->ComponentClass ? Node->ComponentClass->GetName() : TEXT("Unknown");
+		Info.bIsRoot = RootNodes.Contains(Node);
+
+		// Find parent
+		for (USCS_Node* PotentialParent : AllNodes)
+		{
+			if (PotentialParent && PotentialParent->GetChildNodes().Contains(Node))
+			{
+				Info.ParentComponent = PotentialParent->GetVariableName().ToString();
+				break;
+			}
+		}
+
+		Result.Components.Add(Info);
+	}
+
+	Result.bSuccess = true;
+	return Result;
+}
+
+FSetBlueprintComponentPropertyResult FBlueprintImplModule::SetBlueprintComponentProperty(const FString& BlueprintPath, const FString& ComponentName, const FString& PropertyName, const FString& PropertyValue)
+{
+	FSetBlueprintComponentPropertyResult Result;
+
+	UBlueprint* Blueprint = LoadObject<UBlueprint>(nullptr, *BlueprintPath);
+	if (!Blueprint)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Blueprint not found: %s"), *BlueprintPath);
+		return Result;
+	}
+
+	USimpleConstructionScript* SCS = Blueprint->SimpleConstructionScript;
+	if (!SCS)
+	{
+		Result.ErrorMessage = TEXT("Blueprint has no SimpleConstructionScript");
+		return Result;
+	}
+
+	USCS_Node* TargetNode = nullptr;
+	for (USCS_Node* Node : SCS->GetAllNodes())
+	{
+		if (Node && Node->GetVariableName().ToString() == ComponentName)
+		{
+			TargetNode = Node;
+			break;
+		}
+	}
+
+	if (!TargetNode)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Component not found: %s"), *ComponentName);
+		return Result;
+	}
+
+	UActorComponent* ComponentTemplate = TargetNode->ComponentTemplate;
+	if (!ComponentTemplate)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Component template not found for: %s"), *ComponentName);
+		return Result;
+	}
+
+	FProperty* Property = ComponentTemplate->GetClass()->FindPropertyByName(FName(*PropertyName));
+	if (!Property)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Property not found: %s"), *PropertyName);
+		return Result;
+	}
+
+	const TCHAR* ImportResult = Property->ImportText_Direct(*PropertyValue, Property->ContainerPtrToValuePtr<void>(ComponentTemplate), ComponentTemplate, PPF_None);
+	if (!ImportResult)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Failed to set property '%s' to '%s'"), *PropertyName, *PropertyValue);
+		return Result;
+	}
+
+	FBlueprintEditorUtils::MarkBlueprintAsModified(Blueprint);
+
+	Result.bSuccess = true;
+	return Result;
+}
+
+FGetBlueprintComponentPropertyResult FBlueprintImplModule::GetBlueprintComponentProperty(const FString& BlueprintPath, const FString& ComponentName, const FString& PropertyName)
+{
+	FGetBlueprintComponentPropertyResult Result;
+
+	UBlueprint* Blueprint = LoadObject<UBlueprint>(nullptr, *BlueprintPath);
+	if (!Blueprint)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Blueprint not found: %s"), *BlueprintPath);
+		return Result;
+	}
+
+	USimpleConstructionScript* SCS = Blueprint->SimpleConstructionScript;
+	if (!SCS)
+	{
+		Result.ErrorMessage = TEXT("Blueprint has no SimpleConstructionScript");
+		return Result;
+	}
+
+	USCS_Node* TargetNode = nullptr;
+	for (USCS_Node* Node : SCS->GetAllNodes())
+	{
+		if (Node && Node->GetVariableName().ToString() == ComponentName)
+		{
+			TargetNode = Node;
+			break;
+		}
+	}
+
+	if (!TargetNode)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Component not found: %s"), *ComponentName);
+		return Result;
+	}
+
+	UActorComponent* ComponentTemplate = TargetNode->ComponentTemplate;
+	if (!ComponentTemplate)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Component template not found for: %s"), *ComponentName);
+		return Result;
+	}
+
+	FProperty* Property = ComponentTemplate->GetClass()->FindPropertyByName(FName(*PropertyName));
+	if (!Property)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Property not found: %s"), *PropertyName);
+		return Result;
+	}
+
+	FString ValueStr;
+	Property->ExportTextItem_Direct(ValueStr, Property->ContainerPtrToValuePtr<void>(ComponentTemplate), nullptr, ComponentTemplate, PPF_None);
+
+	Result.bSuccess = true;
+	Result.PropertyValue = ValueStr;
+	return Result;
+}
+
+// ============================================================
+// Graph Editing
+// ============================================================
+
+FAddGraphNodeResult FBlueprintImplModule::AddGraphNode(const FString& BlueprintPath, const FString& GraphName, const FString& NodeType, const FString* MemberName, const FString* Target, const int32* PosX, const int32* PosY)
+{
+	FAddGraphNodeResult Result;
+
+	UBlueprint* Blueprint = LoadObject<UBlueprint>(nullptr, *BlueprintPath);
+	if (!Blueprint)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Blueprint not found: %s"), *BlueprintPath);
+		return Result;
+	}
+
+	UEdGraph* Graph = FindGraph(Blueprint, GraphName);
+	if (!Graph)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Graph not found: %s"), *GraphName);
+		return Result;
+	}
+
+	const UEdGraphSchema_K2* K2Schema = Cast<UEdGraphSchema_K2>(Graph->GetSchema());
+	if (!K2Schema)
+	{
+		Result.ErrorMessage = TEXT("Graph schema is not K2");
+		return Result;
+	}
+
+	UEdGraphNode* NewNode = nullptr;
+
+	if (NodeType.Equals(TEXT("CallFunction"), ESearchCase::IgnoreCase))
+	{
+		if (!MemberName)
+		{
+			Result.ErrorMessage = TEXT("member_name is required for CallFunction nodes");
+			return Result;
+		}
+
+		// Find the function
+		UClass* TargetClass = nullptr;
+		if (Target)
+		{
+			TargetClass = FindFirstObject<UClass>(**Target, EFindFirstObjectOptions::ExactClass);
+			if (!TargetClass)
+			{
+				FString FullTargetName = TEXT("U") + *Target;
+				TargetClass = FindFirstObject<UClass>(*FullTargetName, EFindFirstObjectOptions::ExactClass);
+			}
+			if (!TargetClass)
+			{
+				TargetClass = LoadObject<UClass>(nullptr, **Target);
+			}
+		}
+
+		UFunction* Function = nullptr;
+		if (TargetClass)
+		{
+			Function = TargetClass->FindFunctionByName(FName(**MemberName));
+		}
+		else
+		{
+			// Search in common engine libraries
+			TArray<UClass*> SearchClasses = {
+				UKismetSystemLibrary::StaticClass(),
+				UKismetMathLibrary::StaticClass(),
+				UKismetStringLibrary::StaticClass(),
+				AActor::StaticClass(),
+				Blueprint->GeneratedClass
+			};
+			for (UClass* SearchClass : SearchClasses)
+			{
+				if (SearchClass)
+				{
+					Function = SearchClass->FindFunctionByName(FName(**MemberName));
+					if (Function)
+					{
+						TargetClass = SearchClass;
+						break;
+					}
+				}
+			}
+		}
+
+		if (!Function)
+		{
+			Result.ErrorMessage = FString::Printf(TEXT("Function not found: %s"), **MemberName);
+			return Result;
+		}
+
+		UK2Node_CallFunction* CallNode = NewObject<UK2Node_CallFunction>(Graph);
+		CallNode->SetFromFunction(Function);
+		CallNode->NodePosX = PosX ? *PosX : 0;
+		CallNode->NodePosY = PosY ? *PosY : 0;
+		CallNode->AllocateDefaultPins();
+		Graph->AddNode(CallNode, false, false);
+		CallNode->PostPlacedNewNode();
+		NewNode = CallNode;
+	}
+	else if (NodeType.Equals(TEXT("Event"), ESearchCase::IgnoreCase))
+	{
+		if (!MemberName)
+		{
+			Result.ErrorMessage = TEXT("member_name is required for Event nodes");
+			return Result;
+		}
+
+		UK2Node_Event* EventNode = NewObject<UK2Node_Event>(Graph);
+		EventNode->EventReference.SetExternalMember(FName(**MemberName), AActor::StaticClass());
+		EventNode->bOverrideFunction = true;
+		EventNode->NodePosX = PosX ? *PosX : 0;
+		EventNode->NodePosY = PosY ? *PosY : 0;
+		EventNode->AllocateDefaultPins();
+		Graph->AddNode(EventNode, false, false);
+		EventNode->PostPlacedNewNode();
+		NewNode = EventNode;
+	}
+	else if (NodeType.Equals(TEXT("VariableGet"), ESearchCase::IgnoreCase))
+	{
+		if (!MemberName)
+		{
+			Result.ErrorMessage = TEXT("member_name is required for VariableGet nodes");
+			return Result;
+		}
+
+		UK2Node_VariableGet* GetNode = NewObject<UK2Node_VariableGet>(Graph);
+		GetNode->VariableReference.SetSelfMember(FName(**MemberName));
+		GetNode->NodePosX = PosX ? *PosX : 0;
+		GetNode->NodePosY = PosY ? *PosY : 0;
+		GetNode->AllocateDefaultPins();
+		Graph->AddNode(GetNode, false, false);
+		GetNode->PostPlacedNewNode();
+		NewNode = GetNode;
+	}
+	else
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Unsupported node type: %s. Supported: CallFunction, Event, VariableGet"), *NodeType);
+		return Result;
+	}
+
+	if (!NewNode)
+	{
+		Result.ErrorMessage = TEXT("Failed to create node");
+		return Result;
+	}
+
+	FBlueprintEditorUtils::MarkBlueprintAsModified(Blueprint);
+
+	Result.bSuccess = true;
+	Result.NodeId = NewNode->NodeGuid.ToString();
+
+	// Collect pin info
+	for (UEdGraphPin* Pin : NewNode->Pins)
+	{
+		if (!Pin) continue;
+
+		FGraphNodePinInfo PinInfo;
+		PinInfo.PinId = Pin->PinId.ToString();
+		PinInfo.PinName = Pin->PinName.ToString();
+		PinInfo.PinType = Pin->PinType.PinCategory.ToString();
+		PinInfo.Direction = (Pin->Direction == EGPD_Input) ? TEXT("Input") : TEXT("Output");
+		Result.Pins.Add(PinInfo);
+	}
+
+	return Result;
+}
+
+FConnectGraphPinsResult FBlueprintImplModule::ConnectGraphPins(const FString& BlueprintPath, const FString& GraphName, const FString& SourceNodeId, const FString& SourcePinName, const FString& TargetNodeId, const FString& TargetPinName)
+{
+	FConnectGraphPinsResult Result;
+
+	UBlueprint* Blueprint = LoadObject<UBlueprint>(nullptr, *BlueprintPath);
+	if (!Blueprint)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Blueprint not found: %s"), *BlueprintPath);
+		return Result;
+	}
+
+	UEdGraph* Graph = FindGraph(Blueprint, GraphName);
+	if (!Graph)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Graph not found: %s"), *GraphName);
+		return Result;
+	}
+
+	UEdGraphNode* SourceNode = FindNodeById(Graph, SourceNodeId);
+	if (!SourceNode)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Source node not found: %s"), *SourceNodeId);
+		return Result;
+	}
+
+	UEdGraphNode* TargetNode = FindNodeById(Graph, TargetNodeId);
+	if (!TargetNode)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Target node not found: %s"), *TargetNodeId);
+		return Result;
+	}
+
+	// Find source pin
+	UEdGraphPin* SourcePin = nullptr;
+	for (UEdGraphPin* Pin : SourceNode->Pins)
+	{
+		if (Pin && Pin->PinName.ToString() == SourcePinName)
+		{
+			SourcePin = Pin;
+			break;
+		}
+	}
+	if (!SourcePin)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Source pin not found: %s on node %s"), *SourcePinName, *SourceNodeId);
+		return Result;
+	}
+
+	// Find target pin
+	UEdGraphPin* TargetPin = nullptr;
+	for (UEdGraphPin* Pin : TargetNode->Pins)
+	{
+		if (Pin && Pin->PinName.ToString() == TargetPinName)
+		{
+			TargetPin = Pin;
+			break;
+		}
+	}
+	if (!TargetPin)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Target pin not found: %s on node %s"), *TargetPinName, *TargetNodeId);
+		return Result;
+	}
+
+	const UEdGraphSchema* Schema = Graph->GetSchema();
+	if (!Schema->TryCreateConnection(SourcePin, TargetPin))
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Cannot connect %s.%s to %s.%s — incompatible types or directions"),
+			*SourceNodeId, *SourcePinName, *TargetNodeId, *TargetPinName);
+		return Result;
+	}
+
+	FBlueprintEditorUtils::MarkBlueprintAsModified(Blueprint);
+
+	Result.bSuccess = true;
+	return Result;
+}
+
+FSetPinDefaultValueResult FBlueprintImplModule::SetPinDefaultValue(const FString& BlueprintPath, const FString& GraphName, const FString& NodeId, const FString& PinName, const FString& DefaultValue)
+{
+	FSetPinDefaultValueResult Result;
+
+	UBlueprint* Blueprint = LoadObject<UBlueprint>(nullptr, *BlueprintPath);
+	if (!Blueprint)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Blueprint not found: %s"), *BlueprintPath);
+		return Result;
+	}
+
+	UEdGraph* Graph = FindGraph(Blueprint, GraphName);
+	if (!Graph)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Graph not found: %s"), *GraphName);
+		return Result;
+	}
+
+	UEdGraphNode* Node = FindNodeById(Graph, NodeId);
+	if (!Node)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Node not found: %s"), *NodeId);
+		return Result;
+	}
+
+	UEdGraphPin* Pin = nullptr;
+	for (UEdGraphPin* P : Node->Pins)
+	{
+		if (P && P->PinName.ToString() == PinName)
+		{
+			Pin = P;
+			break;
+		}
+	}
+	if (!Pin)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Pin not found: %s on node %s"), *PinName, *NodeId);
+		return Result;
+	}
+
+	if (Pin->Direction != EGPD_Input)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Pin '%s' is not an input pin"), *PinName);
+		return Result;
+	}
+
+	const UEdGraphSchema* Schema = Graph->GetSchema();
+	Schema->TrySetDefaultValue(*Pin, DefaultValue);
 
 	FBlueprintEditorUtils::MarkBlueprintAsModified(Blueprint);
 
