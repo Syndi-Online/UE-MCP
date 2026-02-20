@@ -82,26 +82,45 @@ jobs:
             exit $ExitCode
           }
 
+      - name: Setup test project (UE ${{ matrix.ue_version }})
+        shell: powershell
+        run: |
+          $BuildDir    = "D:\${{ env.REPO_NAME }}-Build-${{ matrix.ue_version }}"
+          $TestProjDir = "D:\${{ env.REPO_NAME }}-TestProject-${{ matrix.ue_version }}"
+          $PluginDir   = "$TestProjDir\Plugins\MCPServer"
+
+          if (Test-Path $TestProjDir) { Remove-Item $TestProjDir -Recurse -Force }
+          New-Item -ItemType Directory -Path $PluginDir -Force | Out-Null
+
+          # Copy built plugin into test project
+          Copy-Item "$BuildDir\*" "$PluginDir\" -Recurse -Force
+
+          # Create minimal .uproject
+          $ProjectJson = @{
+            FileVersion = 3
+            EngineAssociation = "${{ matrix.ue_version }}"
+            Plugins = @(@{ Name = "MCPServer"; Enabled = $true })
+          } | ConvertTo-Json -Depth 3
+          [System.IO.File]::WriteAllText("$TestProjDir\TestProject.uproject", $ProjectJson)
+
+          Write-Host "Test project created at $TestProjDir"
+          Write-Host "Plugin at $PluginDir"
+          Get-ChildItem $PluginDir -Depth 1
+
       - name: Run Unit Tests (UE ${{ matrix.ue_version }})
         shell: powershell
         timeout-minutes: 10
         run: |
-          $BuildDir   = "D:\${{ env.REPO_NAME }}-Build-${{ matrix.ue_version }}"
-          $ResultDir  = "D:\${{ env.REPO_NAME }}-TestResults-${{ matrix.ue_version }}"
-          $ProjectFile = "$BuildDir\HostProject\HostProject.uproject"
+          $TestProjDir = "D:\${{ env.REPO_NAME }}-TestProject-${{ matrix.ue_version }}"
+          $ResultDir   = "D:\${{ env.REPO_NAME }}-TestResults-${{ matrix.ue_version }}"
+          $ProjectFile = "$TestProjDir\TestProject.uproject"
           $EditorExe   = "D:\UE_${{ matrix.ue_version }}\Engine\Binaries\Win64\UnrealEditor-Cmd.exe"
-          $LogDir      = "$BuildDir\HostProject\Saved\Logs"
+          $LogDir      = "$TestProjDir\Saved\Logs"
 
           if (Test-Path $ResultDir) { Remove-Item $ResultDir -Recurse -Force }
           New-Item -ItemType Directory -Path "$ResultDir\UnitTests" -Force | Out-Null
 
-          if (!(Test-Path $ProjectFile)) {
-            Write-Host "ERROR: HostProject not found at $ProjectFile"
-            Get-ChildItem $BuildDir -Depth 2 -ErrorAction SilentlyContinue
-            exit 1
-          }
-          Write-Host "Project file: $ProjectFile"
-
+          Write-Host "Running: $EditorExe $ProjectFile"
           $proc = Start-Process -FilePath $EditorExe -ArgumentList @(
             "`"$ProjectFile`"",
             '-ExecCmds="Automation RunTests MCPServer.Unit"',
@@ -124,7 +143,6 @@ jobs:
 
           if ($ExitCode -ne 0) {
             Write-Host "========== UNIT TESTS FAILED (exit code $ExitCode) =========="
-            # Show last 80 lines of editor log
             $EdLog = Get-ChildItem $LogDir -Filter "*.log" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
             if ($EdLog) {
               Write-Host "=== Editor Log (last 80 lines) ==="
@@ -138,11 +156,11 @@ jobs:
         shell: powershell
         timeout-minutes: 10
         run: |
-          $BuildDir   = "D:\${{ env.REPO_NAME }}-Build-${{ matrix.ue_version }}"
-          $ResultDir  = "D:\${{ env.REPO_NAME }}-TestResults-${{ matrix.ue_version }}"
-          $ProjectFile = "$BuildDir\HostProject\HostProject.uproject"
+          $TestProjDir = "D:\${{ env.REPO_NAME }}-TestProject-${{ matrix.ue_version }}"
+          $ResultDir   = "D:\${{ env.REPO_NAME }}-TestResults-${{ matrix.ue_version }}"
+          $ProjectFile = "$TestProjDir\TestProject.uproject"
           $EditorExe   = "D:\UE_${{ matrix.ue_version }}\Engine\Binaries\Win64\UnrealEditor-Cmd.exe"
-          $LogDir      = "$BuildDir\HostProject\Saved\Logs"
+          $LogDir      = "$TestProjDir\Saved\Logs"
 
           New-Item -ItemType Directory -Path "$ResultDir\IntegrationTests" -Force | Out-Null
 
