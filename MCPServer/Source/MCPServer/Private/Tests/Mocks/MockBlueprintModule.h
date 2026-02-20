@@ -69,4 +69,9 @@ public:
 	FDeleteGraphNodeResult DeleteGraphNodeResult;
 
 	virtual FDeleteGraphNodeResult DeleteGraphNode(const FString& BlueprintPath, const FString& GraphName, const FString& NodeId) override { Recorder.RecordCall(TEXT("DeleteGraphNode")); return DeleteGraphNodeResult; }
+
+	// Event Dispatchers
+	FAddEventDispatcherResult AddEventDispatcherResult;
+
+	virtual FAddEventDispatcherResult AddEventDispatcher(const FString& BlueprintPath, const FString& DispatcherName, const TArray<FEventDispatcherParamInfo>* Parameters) override { Recorder.RecordCall(TEXT("AddEventDispatcher")); return AddEventDispatcherResult; }
 };

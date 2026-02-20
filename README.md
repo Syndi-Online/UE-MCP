@@ -81,7 +81,7 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] get_blueprint_graphs — список графов
 - [x] reparent_blueprint — смена родительского класса
 - [x] open_blueprint_editor — открытие в редакторе
-- [ ] add_event_dispatcher — создание Event Dispatcher с опциональными параметрами
+- [x] add_event_dispatcher — создание Event Dispatcher с опциональными параметрами
 
 ### 6. Материалы
 - [x] create_material_expression — создание ноды

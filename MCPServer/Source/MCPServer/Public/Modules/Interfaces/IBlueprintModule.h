@@ -203,6 +203,20 @@ struct FDeleteGraphNodeResult
 	FString ErrorMessage;
 };
 
+struct FEventDispatcherParamInfo
+{
+	FString ParamName;
+	FString ParamType;
+};
+
+struct FAddEventDispatcherResult
+{
+	bool bSuccess = false;
+	FString DispatcherName;
+	FString GraphName;
+	FString ErrorMessage;
+};
+
 /**
  * Module interface for Blueprint operations.
  */
@@ -240,4 +254,7 @@ public:
 	virtual FConnectGraphPinsResult ConnectGraphPins(const FString& BlueprintPath, const FString& GraphName, const FString& SourceNodeId, const FString& SourcePinName, const FString& TargetNodeId, const FString& TargetPinName) = 0;
 	virtual FSetPinDefaultValueResult SetPinDefaultValue(const FString& BlueprintPath, const FString& GraphName, const FString& NodeId, const FString& PinName, const FString& DefaultValue) = 0;
 	virtual FDeleteGraphNodeResult DeleteGraphNode(const FString& BlueprintPath, const FString& GraphName, const FString& NodeId) = 0;
+
+	// Event Dispatchers
+	virtual FAddEventDispatcherResult AddEventDispatcher(const FString& BlueprintPath, const FString& DispatcherName, const TArray<FEventDispatcherParamInfo>* Parameters) = 0;
 };

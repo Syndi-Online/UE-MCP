@@ -88,6 +88,7 @@
 #include "Tools/Impl/ConnectGraphPinsImplTool.h"
 #include "Tools/Impl/SetPinDefaultValueImplTool.h"
 #include "Tools/Impl/DeleteGraphNodeImplTool.h"
+#include "Tools/Impl/AddEventDispatcherImplTool.h"
 #include "Tools/Impl/CreateMaterialExpressionImplTool.h"
 #include "Tools/Impl/DeleteMaterialExpressionImplTool.h"
 #include "Tools/Impl/ConnectMaterialExpressionsImplTool.h"
@@ -380,6 +381,7 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FConnectGraphPinsImplTool>(*BlueprintModule));
 	ToolRegistry->RegisterTool(MakeShared<FSetPinDefaultValueImplTool>(*BlueprintModule));
 	ToolRegistry->RegisterTool(MakeShared<FDeleteGraphNodeImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FAddEventDispatcherImplTool>(*BlueprintModule));
 
 	// Material tools
 	ToolRegistry->RegisterTool(MakeShared<FCreateMaterialExpressionImplTool>(*MaterialModule));

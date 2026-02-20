@@ -40,6 +40,8 @@ public:
 	virtual FSetPinDefaultValueResult SetPinDefaultValue(const FString& BlueprintPath, const FString& GraphName, const FString& NodeId, const FString& PinName, const FString& DefaultValue) override;
 	virtual FDeleteGraphNodeResult DeleteGraphNode(const FString& BlueprintPath, const FString& GraphName, const FString& NodeId) override;
 
+	virtual FAddEventDispatcherResult AddEventDispatcher(const FString& BlueprintPath, const FString& DispatcherName, const TArray<FEventDispatcherParamInfo>* Parameters) override;
+
 private:
 	UEdGraph* FindGraph(UBlueprint* Blueprint, const FString& GraphName);
 	UEdGraphNode* FindNodeById(UEdGraph* Graph, const FString& NodeId);

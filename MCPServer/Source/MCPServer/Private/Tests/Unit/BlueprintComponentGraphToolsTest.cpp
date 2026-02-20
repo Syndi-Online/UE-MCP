@@ -10,6 +10,7 @@
 #include "Tools/Impl/ConnectGraphPinsImplTool.h"
 #include "Tools/Impl/SetPinDefaultValueImplTool.h"
 #include "Tools/Impl/DeleteGraphNodeImplTool.h"
+#include "Tools/Impl/AddEventDispatcherImplTool.h"
 #include "Tests/Mocks/MockBlueprintModule.h"
 #include "Tests/Integration/IntegrationTestUtils.h"
 
@@ -770,6 +771,120 @@ bool FDeleteGraphNodeModuleFailureTest::RunTest(const FString& Parameters)
 }
 
 // ===========================================================================
+// AddEventDispatcher
+// ===========================================================================
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FAddEventDispatcherMetadataTest,
+	"MCPServer.Unit.BlueprintComponentGraph.AddEventDispatcher.Metadata",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FAddEventDispatcherMetadataTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	FAddEventDispatcherImplTool Tool(Mock);
+	TestEqual(TEXT("Name"), Tool.GetName(), TEXT("add_event_dispatcher"));
+	TestTrue(TEXT("Description not empty"), !Tool.GetDescription().IsEmpty());
+	TestTrue(TEXT("Schema valid"), Tool.GetInputSchema().IsValid());
+	TestTrue(TEXT("Schema has type"), Tool.GetInputSchema()->HasField(TEXT("type")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FAddEventDispatcherSuccessTest,
+	"MCPServer.Unit.BlueprintComponentGraph.AddEventDispatcher.Success",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FAddEventDispatcherSuccessTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.AddEventDispatcherResult.bSuccess = true;
+	Mock.AddEventDispatcherResult.DispatcherName = TEXT("OnDamageReceived");
+	Mock.AddEventDispatcherResult.GraphName = TEXT("OnDamageReceived");
+	FAddEventDispatcherImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("dispatcher_name"), TEXT("OnDamageReceived"));
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("Success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Contains dispatcher_name"), MCPTestUtils::GetResultText(Result).Contains(TEXT("OnDamageReceived")));
+	TestTrue(TEXT("Contains graph_name"), MCPTestUtils::GetResultText(Result).Contains(TEXT("graph_name")));
+	TestEqual(TEXT("AddEventDispatcher called"), Mock.Recorder.GetCallCount(TEXT("AddEventDispatcher")), 1);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FAddEventDispatcherWithParamsTest,
+	"MCPServer.Unit.BlueprintComponentGraph.AddEventDispatcher.WithParams",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FAddEventDispatcherWithParamsTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.AddEventDispatcherResult.bSuccess = true;
+	Mock.AddEventDispatcherResult.DispatcherName = TEXT("OnHealthChanged");
+	Mock.AddEventDispatcherResult.GraphName = TEXT("OnHealthChanged");
+	FAddEventDispatcherImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("dispatcher_name"), TEXT("OnHealthChanged"));
+
+	TArray<TSharedPtr<FJsonValue>> ParamsArray;
+	auto Param1 = MakeShared<FJsonObject>();
+	Param1->SetStringField(TEXT("name"), TEXT("NewHealth"));
+	Param1->SetStringField(TEXT("type"), TEXT("Float"));
+	ParamsArray.Add(MakeShared<FJsonValueObject>(Param1));
+
+	auto Param2 = MakeShared<FJsonObject>();
+	Param2->SetStringField(TEXT("name"), TEXT("DamageCauser"));
+	Param2->SetStringField(TEXT("type"), TEXT("String"));
+	ParamsArray.Add(MakeShared<FJsonValueObject>(Param2));
+
+	Args->SetArrayField(TEXT("parameters"), ParamsArray);
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("Success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Contains OnHealthChanged"), MCPTestUtils::GetResultText(Result).Contains(TEXT("OnHealthChanged")));
+	TestEqual(TEXT("AddEventDispatcher called"), Mock.Recorder.GetCallCount(TEXT("AddEventDispatcher")), 1);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FAddEventDispatcherMissingArgsTest,
+	"MCPServer.Unit.BlueprintComponentGraph.AddEventDispatcher.MissingArgs",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FAddEventDispatcherMissingArgsTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	FAddEventDispatcherImplTool Tool(Mock);
+	auto Result = Tool.Execute(MakeShared<FJsonObject>());
+	TestTrue(TEXT("Error"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Mentions blueprint_path"), MCPTestUtils::GetResultText(Result).Contains(TEXT("blueprint_path")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FAddEventDispatcherModuleFailureTest,
+	"MCPServer.Unit.BlueprintComponentGraph.AddEventDispatcher.ModuleFailure",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FAddEventDispatcherModuleFailureTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.AddEventDispatcherResult.bSuccess = false;
+	Mock.AddEventDispatcherResult.ErrorMessage = TEXT("Blueprint not found");
+	FAddEventDispatcherImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Missing"));
+	Args->SetStringField(TEXT("dispatcher_name"), TEXT("OnTest"));
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("isError"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Contains error"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Blueprint not found")));
+	return true;
+}
+
+// ===========================================================================
 // Integration: Blueprint Components + Graph Editing full workflow
 // ===========================================================================
 
@@ -928,6 +1043,24 @@ bool FBlueprintComponentGraphIntegrationTest::RunTest(const FString& Parameters)
 	TestTrue(TEXT("Step10: DeleteNode success"), MCPTestUtils::IsSuccess(Result));
 	TestTrue(TEXT("Step10: Contains deleted"), MCPTestUtils::GetResultText(Result).Contains(TEXT("deleted")));
 
+	// Step 11: Add event dispatcher with parameters
+	Mock.AddEventDispatcherResult.bSuccess = true;
+	Mock.AddEventDispatcherResult.DispatcherName = TEXT("OnDamageReceived");
+	Mock.AddEventDispatcherResult.GraphName = TEXT("OnDamageReceived");
+	FAddEventDispatcherImplTool AddDispatcherTool(Mock);
+	Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("dispatcher_name"), TEXT("OnDamageReceived"));
+	TArray<TSharedPtr<FJsonValue>> DispParams;
+	auto DParam = MakeShared<FJsonObject>();
+	DParam->SetStringField(TEXT("name"), TEXT("DamageAmount"));
+	DParam->SetStringField(TEXT("type"), TEXT("Float"));
+	DispParams.Add(MakeShared<FJsonValueObject>(DParam));
+	Args->SetArrayField(TEXT("parameters"), DispParams);
+	Result = AddDispatcherTool.Execute(Args);
+	TestTrue(TEXT("Step11: AddEventDispatcher success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Step11: Contains OnDamageReceived"), MCPTestUtils::GetResultText(Result).Contains(TEXT("OnDamageReceived")));
+
 	// Verify call counts
 	TestEqual(TEXT("GetBlueprintComponents total"), Mock.Recorder.GetCallCount(TEXT("GetBlueprintComponents")), 1);
 	TestEqual(TEXT("AddBlueprintComponent total"), Mock.Recorder.GetCallCount(TEXT("AddBlueprintComponent")), 2);
@@ -938,6 +1071,7 @@ bool FBlueprintComponentGraphIntegrationTest::RunTest(const FString& Parameters)
 	TestEqual(TEXT("ConnectGraphPins total"), Mock.Recorder.GetCallCount(TEXT("ConnectGraphPins")), 1);
 	TestEqual(TEXT("SetPinDefaultValue total"), Mock.Recorder.GetCallCount(TEXT("SetPinDefaultValue")), 1);
 	TestEqual(TEXT("DeleteGraphNode total"), Mock.Recorder.GetCallCount(TEXT("DeleteGraphNode")), 1);
+	TestEqual(TEXT("AddEventDispatcher total"), Mock.Recorder.GetCallCount(TEXT("AddEventDispatcher")), 1);
 
 	return true;
 }

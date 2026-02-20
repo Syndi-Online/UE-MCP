@@ -19,6 +19,7 @@
 #include "K2Node_Event.h"
 #include "K2Node_ComponentBoundEvent.h"
 #include "K2Node_VariableGet.h"
+#include "K2Node_EditablePinBase.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetStringLibrary.h"
@@ -1527,5 +1528,151 @@ FDeleteGraphNodeResult FBlueprintImplModule::DeleteGraphNode(const FString& Blue
 	FBlueprintEditorUtils::MarkBlueprintAsModified(Blueprint);
 
 	Result.bSuccess = true;
+	return Result;
+}
+
+// ============================================================
+// Event Dispatchers
+// ============================================================
+
+FAddEventDispatcherResult FBlueprintImplModule::AddEventDispatcher(const FString& BlueprintPath, const FString& DispatcherName, const TArray<FEventDispatcherParamInfo>* Parameters)
+{
+	FAddEventDispatcherResult Result;
+
+	UBlueprint* Blueprint = LoadObject<UBlueprint>(nullptr, *BlueprintPath);
+	if (!Blueprint)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Blueprint not found: %s"), *BlueprintPath);
+		return Result;
+	}
+
+	// Step 1: Create the MC delegate member variable
+	FEdGraphPinType DelegatePinType;
+	DelegatePinType.PinCategory = UEdGraphSchema_K2::PC_MCDelegate;
+
+	bool bAdded = FBlueprintEditorUtils::AddMemberVariable(Blueprint, FName(*DispatcherName), DelegatePinType, TEXT(""));
+	if (!bAdded)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Failed to add event dispatcher '%s' to Blueprint"), *DispatcherName);
+		return Result;
+	}
+
+	// Step 2: Create the delegate signature graph (same as BlueprintEditor.cpp pattern)
+	const UEdGraphSchema_K2* K2Schema = GetDefault<UEdGraphSchema_K2>();
+
+	UEdGraph* NewGraph = FBlueprintEditorUtils::CreateNewGraph(Blueprint, FName(*DispatcherName), UEdGraph::StaticClass(), UEdGraphSchema_K2::StaticClass());
+	if (!NewGraph)
+	{
+		FBlueprintEditorUtils::RemoveMemberVariable(Blueprint, FName(*DispatcherName));
+		Result.ErrorMessage = FString::Printf(TEXT("Failed to create delegate signature graph for '%s'"), *DispatcherName);
+		return Result;
+	}
+
+	NewGraph->bEditable = false;
+	K2Schema->CreateDefaultNodesForGraph(*NewGraph);
+	K2Schema->CreateFunctionGraphTerminators(*NewGraph, static_cast<UClass*>(nullptr));
+	K2Schema->AddExtraFunctionFlags(NewGraph, FUNC_BlueprintCallable | FUNC_BlueprintEvent | FUNC_Public);
+	K2Schema->MarkFunctionEntryAsEditable(NewGraph, true);
+
+	Blueprint->DelegateSignatureGraphs.Add(NewGraph);
+
+	// Step 3: Add parameters to the delegate signature entry node
+	if (Parameters && Parameters->Num() > 0)
+	{
+		// Find the function entry node
+		UK2Node_EditablePinBase* EntryNode = nullptr;
+		for (UEdGraphNode* Node : NewGraph->Nodes)
+		{
+			EntryNode = Cast<UK2Node_EditablePinBase>(Node);
+			if (EntryNode)
+			{
+				break;
+			}
+		}
+
+		if (EntryNode)
+		{
+			for (const FEventDispatcherParamInfo& Param : *Parameters)
+			{
+				FEdGraphPinType ParamPinType;
+				const FString& ParamType = Param.ParamType;
+
+				if (ParamType.Equals(TEXT("Boolean"), ESearchCase::IgnoreCase) || ParamType.Equals(TEXT("bool"), ESearchCase::IgnoreCase))
+				{
+					ParamPinType.PinCategory = UEdGraphSchema_K2::PC_Boolean;
+				}
+				else if (ParamType.Equals(TEXT("Integer"), ESearchCase::IgnoreCase) || ParamType.Equals(TEXT("int"), ESearchCase::IgnoreCase) || ParamType.Equals(TEXT("int32"), ESearchCase::IgnoreCase))
+				{
+					ParamPinType.PinCategory = UEdGraphSchema_K2::PC_Int;
+				}
+				else if (ParamType.Equals(TEXT("Int64"), ESearchCase::IgnoreCase) || ParamType.Equals(TEXT("Integer64"), ESearchCase::IgnoreCase))
+				{
+					ParamPinType.PinCategory = UEdGraphSchema_K2::PC_Int64;
+				}
+				else if (ParamType.Equals(TEXT("Float"), ESearchCase::IgnoreCase) || ParamType.Equals(TEXT("Double"), ESearchCase::IgnoreCase) || ParamType.Equals(TEXT("Real"), ESearchCase::IgnoreCase))
+				{
+					ParamPinType.PinCategory = UEdGraphSchema_K2::PC_Real;
+					ParamPinType.PinSubCategory = UEdGraphSchema_K2::PC_Double;
+				}
+				else if (ParamType.Equals(TEXT("String"), ESearchCase::IgnoreCase) || ParamType.Equals(TEXT("FString"), ESearchCase::IgnoreCase))
+				{
+					ParamPinType.PinCategory = UEdGraphSchema_K2::PC_String;
+				}
+				else if (ParamType.Equals(TEXT("Name"), ESearchCase::IgnoreCase) || ParamType.Equals(TEXT("FName"), ESearchCase::IgnoreCase))
+				{
+					ParamPinType.PinCategory = UEdGraphSchema_K2::PC_Name;
+				}
+				else if (ParamType.Equals(TEXT("Text"), ESearchCase::IgnoreCase) || ParamType.Equals(TEXT("FText"), ESearchCase::IgnoreCase))
+				{
+					ParamPinType.PinCategory = UEdGraphSchema_K2::PC_Text;
+				}
+				else if (ParamType.Equals(TEXT("Vector"), ESearchCase::IgnoreCase) || ParamType.Equals(TEXT("FVector"), ESearchCase::IgnoreCase))
+				{
+					ParamPinType.PinCategory = UEdGraphSchema_K2::PC_Struct;
+					ParamPinType.PinSubCategoryObject = TBaseStructure<FVector>::Get();
+				}
+				else if (ParamType.Equals(TEXT("Rotator"), ESearchCase::IgnoreCase) || ParamType.Equals(TEXT("FRotator"), ESearchCase::IgnoreCase))
+				{
+					ParamPinType.PinCategory = UEdGraphSchema_K2::PC_Struct;
+					ParamPinType.PinSubCategoryObject = TBaseStructure<FRotator>::Get();
+				}
+				else if (ParamType.Equals(TEXT("Transform"), ESearchCase::IgnoreCase) || ParamType.Equals(TEXT("FTransform"), ESearchCase::IgnoreCase))
+				{
+					ParamPinType.PinCategory = UEdGraphSchema_K2::PC_Struct;
+					ParamPinType.PinSubCategoryObject = TBaseStructure<FTransform>::Get();
+				}
+				else if (ParamType.Equals(TEXT("Byte"), ESearchCase::IgnoreCase) || ParamType.Equals(TEXT("uint8"), ESearchCase::IgnoreCase))
+				{
+					ParamPinType.PinCategory = UEdGraphSchema_K2::PC_Byte;
+				}
+				else
+				{
+					UClass* VarClass = LoadObject<UClass>(nullptr, *ParamType);
+					if (!VarClass)
+					{
+						VarClass = Cast<UClass>(StaticFindFirstObject(UClass::StaticClass(), *ParamType));
+					}
+					if (VarClass)
+					{
+						ParamPinType.PinCategory = UEdGraphSchema_K2::PC_Object;
+						ParamPinType.PinSubCategoryObject = VarClass;
+					}
+					else
+					{
+						Result.ErrorMessage = FString::Printf(TEXT("Unknown parameter type: %s for parameter '%s'"), *ParamType, *Param.ParamName);
+						return Result;
+					}
+				}
+
+				EntryNode->CreateUserDefinedPin(FName(*Param.ParamName), ParamPinType, EGPD_Output);
+			}
+		}
+	}
+
+	FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(Blueprint);
+
+	Result.bSuccess = true;
+	Result.DispatcherName = DispatcherName;
+	Result.GraphName = NewGraph->GetName();
 	return Result;
 }
