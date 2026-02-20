@@ -65,4 +65,8 @@ public:
 	virtual FAddGraphNodeResult AddGraphNode(const FString& BlueprintPath, const FString& GraphName, const FString& NodeType, const FString* MemberName, const FString* Target, const int32* PosX, const int32* PosY) override { Recorder.RecordCall(TEXT("AddGraphNode")); return AddGraphNodeResult; }
 	virtual FConnectGraphPinsResult ConnectGraphPins(const FString& BlueprintPath, const FString& GraphName, const FString& SourceNodeId, const FString& SourcePinName, const FString& TargetNodeId, const FString& TargetPinName) override { Recorder.RecordCall(TEXT("ConnectGraphPins")); return ConnectGraphPinsResult; }
 	virtual FSetPinDefaultValueResult SetPinDefaultValue(const FString& BlueprintPath, const FString& GraphName, const FString& NodeId, const FString& PinName, const FString& DefaultValue) override { Recorder.RecordCall(TEXT("SetPinDefaultValue")); return SetPinDefaultValueResult; }
+
+	FDeleteGraphNodeResult DeleteGraphNodeResult;
+
+	virtual FDeleteGraphNodeResult DeleteGraphNode(const FString& BlueprintPath, const FString& GraphName, const FString& NodeId) override { Recorder.RecordCall(TEXT("DeleteGraphNode")); return DeleteGraphNodeResult; }
 };

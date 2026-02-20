@@ -1215,6 +1215,7 @@ FAddGraphNodeResult FBlueprintImplModule::AddGraphNode(const FString& BlueprintP
 		}
 
 		UK2Node_CallFunction* CallNode = NewObject<UK2Node_CallFunction>(Graph);
+		CallNode->CreateNewGuid();
 		CallNode->SetFromFunction(Function);
 		CallNode->NodePosX = PosX ? *PosX : 0;
 		CallNode->NodePosY = PosY ? *PosY : 0;
@@ -1232,6 +1233,7 @@ FAddGraphNodeResult FBlueprintImplModule::AddGraphNode(const FString& BlueprintP
 		}
 
 		UK2Node_Event* EventNode = NewObject<UK2Node_Event>(Graph);
+		EventNode->CreateNewGuid();
 		EventNode->EventReference.SetExternalMember(FName(**MemberName), AActor::StaticClass());
 		EventNode->bOverrideFunction = true;
 		EventNode->NodePosX = PosX ? *PosX : 0;
@@ -1240,6 +1242,77 @@ FAddGraphNodeResult FBlueprintImplModule::AddGraphNode(const FString& BlueprintP
 		Graph->AddNode(EventNode, false, false);
 		EventNode->PostPlacedNewNode();
 		NewNode = EventNode;
+	}
+	else if (NodeType.Equals(TEXT("ComponentBoundEvent"), ESearchCase::IgnoreCase))
+	{
+		if (!MemberName)
+		{
+			Result.ErrorMessage = TEXT("member_name is required for ComponentBoundEvent nodes (delegate name, e.g. OnComponentBeginOverlap)");
+			return Result;
+		}
+		if (!Target)
+		{
+			Result.ErrorMessage = TEXT("target is required for ComponentBoundEvent nodes (component variable name, e.g. CollisionComp)");
+			return Result;
+		}
+
+		// Find component in SCS
+		USimpleConstructionScript* SCS = Blueprint->SimpleConstructionScript;
+		if (!SCS)
+		{
+			Result.ErrorMessage = TEXT("Blueprint has no SimpleConstructionScript");
+			return Result;
+		}
+
+		USCS_Node* CompNode = nullptr;
+		for (USCS_Node* Node : SCS->GetAllNodes())
+		{
+			if (Node && Node->GetVariableName().ToString() == *Target)
+			{
+				CompNode = Node;
+				break;
+			}
+		}
+		if (!CompNode || !CompNode->ComponentClass)
+		{
+			Result.ErrorMessage = FString::Printf(TEXT("Component variable not found in SCS: %s"), **Target);
+			return Result;
+		}
+
+		// Find the FObjectProperty on the blueprint's skeleton class
+		UClass* SkeletonClass = Blueprint->SkeletonGeneratedClass;
+		if (!SkeletonClass)
+		{
+			SkeletonClass = Blueprint->GeneratedClass;
+		}
+		FObjectProperty* ComponentProperty = nullptr;
+		if (SkeletonClass)
+		{
+			ComponentProperty = FindFProperty<FObjectProperty>(SkeletonClass, CompNode->GetVariableName());
+		}
+		if (!ComponentProperty)
+		{
+			Result.ErrorMessage = FString::Printf(TEXT("Component property not found on blueprint class: %s"), **Target);
+			return Result;
+		}
+
+		// Find the multicast delegate property on the component class
+		FMulticastDelegateProperty* DelegateProperty = FindFProperty<FMulticastDelegateProperty>(CompNode->ComponentClass, FName(**MemberName));
+		if (!DelegateProperty)
+		{
+			Result.ErrorMessage = FString::Printf(TEXT("Delegate not found on component class %s: %s"), *CompNode->ComponentClass->GetName(), **MemberName);
+			return Result;
+		}
+
+		UK2Node_ComponentBoundEvent* BoundEventNode = NewObject<UK2Node_ComponentBoundEvent>(Graph);
+		BoundEventNode->CreateNewGuid();
+		BoundEventNode->InitializeComponentBoundEventParams(ComponentProperty, DelegateProperty);
+		BoundEventNode->NodePosX = PosX ? *PosX : 0;
+		BoundEventNode->NodePosY = PosY ? *PosY : 0;
+		BoundEventNode->AllocateDefaultPins();
+		Graph->AddNode(BoundEventNode, false, false);
+		BoundEventNode->ReconstructNode();
+		NewNode = BoundEventNode;
 	}
 	else if (NodeType.Equals(TEXT("VariableGet"), ESearchCase::IgnoreCase))
 	{
@@ -1250,6 +1323,7 @@ FAddGraphNodeResult FBlueprintImplModule::AddGraphNode(const FString& BlueprintP
 		}
 
 		UK2Node_VariableGet* GetNode = NewObject<UK2Node_VariableGet>(Graph);
+		GetNode->CreateNewGuid();
 		GetNode->VariableReference.SetSelfMember(FName(**MemberName));
 		GetNode->NodePosX = PosX ? *PosX : 0;
 		GetNode->NodePosY = PosY ? *PosY : 0;
@@ -1260,7 +1334,7 @@ FAddGraphNodeResult FBlueprintImplModule::AddGraphNode(const FString& BlueprintP
 	}
 	else
 	{
-		Result.ErrorMessage = FString::Printf(TEXT("Unsupported node type: %s. Supported: CallFunction, Event, VariableGet"), *NodeType);
+		Result.ErrorMessage = FString::Printf(TEXT("Unsupported node type: %s. Supported: CallFunction, Event, ComponentBoundEvent, VariableGet"), *NodeType);
 		return Result;
 	}
 
@@ -1418,6 +1492,38 @@ FSetPinDefaultValueResult FBlueprintImplModule::SetPinDefaultValue(const FString
 	const UEdGraphSchema* Schema = Graph->GetSchema();
 	Schema->TrySetDefaultValue(*Pin, DefaultValue);
 
+	FBlueprintEditorUtils::MarkBlueprintAsModified(Blueprint);
+
+	Result.bSuccess = true;
+	return Result;
+}
+
+FDeleteGraphNodeResult FBlueprintImplModule::DeleteGraphNode(const FString& BlueprintPath, const FString& GraphName, const FString& NodeId)
+{
+	FDeleteGraphNodeResult Result;
+
+	UBlueprint* Blueprint = LoadObject<UBlueprint>(nullptr, *BlueprintPath);
+	if (!Blueprint)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Blueprint not found: %s"), *BlueprintPath);
+		return Result;
+	}
+
+	UEdGraph* Graph = FindGraph(Blueprint, GraphName);
+	if (!Graph)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Graph not found: %s"), *GraphName);
+		return Result;
+	}
+
+	UEdGraphNode* Node = FindNodeById(Graph, NodeId);
+	if (!Node)
+	{
+		Result.ErrorMessage = FString::Printf(TEXT("Node not found: %s"), *NodeId);
+		return Result;
+	}
+
+	Graph->RemoveNode(Node);
 	FBlueprintEditorUtils::MarkBlueprintAsModified(Blueprint);
 
 	Result.bSuccess = true;

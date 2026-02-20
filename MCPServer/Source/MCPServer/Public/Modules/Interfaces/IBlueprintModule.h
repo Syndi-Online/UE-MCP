@@ -197,6 +197,12 @@ struct FSetPinDefaultValueResult
 	FString ErrorMessage;
 };
 
+struct FDeleteGraphNodeResult
+{
+	bool bSuccess = false;
+	FString ErrorMessage;
+};
+
 /**
  * Module interface for Blueprint operations.
  */
@@ -233,4 +239,5 @@ public:
 	virtual FAddGraphNodeResult AddGraphNode(const FString& BlueprintPath, const FString& GraphName, const FString& NodeType, const FString* MemberName, const FString* Target, const int32* PosX, const int32* PosY) = 0;
 	virtual FConnectGraphPinsResult ConnectGraphPins(const FString& BlueprintPath, const FString& GraphName, const FString& SourceNodeId, const FString& SourcePinName, const FString& TargetNodeId, const FString& TargetPinName) = 0;
 	virtual FSetPinDefaultValueResult SetPinDefaultValue(const FString& BlueprintPath, const FString& GraphName, const FString& NodeId, const FString& PinName, const FString& DefaultValue) = 0;
+	virtual FDeleteGraphNodeResult DeleteGraphNode(const FString& BlueprintPath, const FString& GraphName, const FString& NodeId) = 0;
 };

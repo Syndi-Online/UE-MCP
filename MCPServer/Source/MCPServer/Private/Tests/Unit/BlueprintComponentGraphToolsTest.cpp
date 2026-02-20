@@ -9,6 +9,7 @@
 #include "Tools/Impl/AddGraphNodeImplTool.h"
 #include "Tools/Impl/ConnectGraphPinsImplTool.h"
 #include "Tools/Impl/SetPinDefaultValueImplTool.h"
+#include "Tools/Impl/DeleteGraphNodeImplTool.h"
 #include "Tests/Mocks/MockBlueprintModule.h"
 #include "Tests/Integration/IntegrationTestUtils.h"
 
@@ -693,6 +694,82 @@ bool FSetPinDefaultValueModuleFailureTest::RunTest(const FString& Parameters)
 }
 
 // ===========================================================================
+// DeleteGraphNode
+// ===========================================================================
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDeleteGraphNodeMetadataTest,
+	"MCPServer.Unit.BlueprintComponentGraph.DeleteGraphNode.Metadata",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FDeleteGraphNodeMetadataTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	FDeleteGraphNodeImplTool Tool(Mock);
+	TestEqual(TEXT("Name"), Tool.GetName(), TEXT("delete_graph_node"));
+	TestTrue(TEXT("Description not empty"), !Tool.GetDescription().IsEmpty());
+	TestTrue(TEXT("Schema valid"), Tool.GetInputSchema().IsValid());
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDeleteGraphNodeSuccessTest,
+	"MCPServer.Unit.BlueprintComponentGraph.DeleteGraphNode.Success",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FDeleteGraphNodeSuccessTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.DeleteGraphNodeResult.bSuccess = true;
+	FDeleteGraphNodeImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+	Args->SetStringField(TEXT("node_id"), TEXT("GUID-001"));
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("Success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Contains deleted"), MCPTestUtils::GetResultText(Result).Contains(TEXT("deleted")));
+	TestEqual(TEXT("DeleteGraphNode called"), Mock.Recorder.GetCallCount(TEXT("DeleteGraphNode")), 1);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDeleteGraphNodeMissingArgsTest,
+	"MCPServer.Unit.BlueprintComponentGraph.DeleteGraphNode.MissingArgs",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FDeleteGraphNodeMissingArgsTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	FDeleteGraphNodeImplTool Tool(Mock);
+	auto Result = Tool.Execute(MakeShared<FJsonObject>());
+	TestTrue(TEXT("Error"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Mentions blueprint_path"), MCPTestUtils::GetResultText(Result).Contains(TEXT("blueprint_path")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FDeleteGraphNodeModuleFailureTest,
+	"MCPServer.Unit.BlueprintComponentGraph.DeleteGraphNode.ModuleFailure",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FDeleteGraphNodeModuleFailureTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.DeleteGraphNodeResult.bSuccess = false;
+	Mock.DeleteGraphNodeResult.ErrorMessage = TEXT("Node not found");
+	FDeleteGraphNodeImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+	Args->SetStringField(TEXT("node_id"), TEXT("BAD-NODE"));
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("isError"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Contains error"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Node not found")));
+	return true;
+}
+
+// ===========================================================================
 // Integration: Blueprint Components + Graph Editing full workflow
 // ===========================================================================
 
@@ -840,6 +917,17 @@ bool FBlueprintComponentGraphIntegrationTest::RunTest(const FString& Parameters)
 	TestTrue(TEXT("Step9: SetPinDefault success"), MCPTestUtils::IsSuccess(Result));
 	TestTrue(TEXT("Step9: Contains Hello from MCP"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Hello from MCP")));
 
+	// Step 10: Delete graph node
+	Mock.DeleteGraphNodeResult.bSuccess = true;
+	FDeleteGraphNodeImplTool DeleteNodeTool(Mock);
+	Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+	Args->SetStringField(TEXT("node_id"), TEXT("GUID-PRINT"));
+	Result = DeleteNodeTool.Execute(Args);
+	TestTrue(TEXT("Step10: DeleteNode success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Step10: Contains deleted"), MCPTestUtils::GetResultText(Result).Contains(TEXT("deleted")));
+
 	// Verify call counts
 	TestEqual(TEXT("GetBlueprintComponents total"), Mock.Recorder.GetCallCount(TEXT("GetBlueprintComponents")), 1);
 	TestEqual(TEXT("AddBlueprintComponent total"), Mock.Recorder.GetCallCount(TEXT("AddBlueprintComponent")), 2);
@@ -849,6 +937,7 @@ bool FBlueprintComponentGraphIntegrationTest::RunTest(const FString& Parameters)
 	TestEqual(TEXT("AddGraphNode total"), Mock.Recorder.GetCallCount(TEXT("AddGraphNode")), 1);
 	TestEqual(TEXT("ConnectGraphPins total"), Mock.Recorder.GetCallCount(TEXT("ConnectGraphPins")), 1);
 	TestEqual(TEXT("SetPinDefaultValue total"), Mock.Recorder.GetCallCount(TEXT("SetPinDefaultValue")), 1);
+	TestEqual(TEXT("DeleteGraphNode total"), Mock.Recorder.GetCallCount(TEXT("DeleteGraphNode")), 1);
 
 	return true;
 }
