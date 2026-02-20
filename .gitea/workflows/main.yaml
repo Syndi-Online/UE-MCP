@@ -59,8 +59,8 @@ jobs:
             -Package="D:\${{ env.REPO_NAME }}-Build-${{ matrix.ue_version }}" `
             -TargetPlatforms=Win64 `
             -Rocket `
-            -MaxParallelActions=4 `
-            -DisableUnity
+            -NoPCH `
+            -MaxParallelActions=4
           $ExitCode = $LASTEXITCODE
           if ($ExitCode -ne 0) {
             Write-Host "========== BUILD FAILED (exit code $ExitCode) =========="
