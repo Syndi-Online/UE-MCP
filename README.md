@@ -220,3 +220,15 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] set_comment_box_properties — изменение свойств Comment Box (текст, цвет, позиция, размер)
 - [x] get_graph_nodes_summary — облегчённый список нод графа (id, class, title, connected_node_ids) с опциональным class_filter
 - [x] get_graph_nodes (node_ids filter) — опциональная фильтрация по списку node_ids для получения полных данных только нужных нод
+
+### 23. Blueprint Components
+- [ ] add_blueprint_component — добавление компонента в блупринт (класс, имя, parent)
+- [ ] remove_blueprint_component — удаление компонента из блупринта
+- [ ] get_blueprint_components — список всех компонентов блупринта (name, class, parent, is_root)
+- [ ] set_blueprint_component_property — установка свойства компонента (default value)
+- [ ] get_blueprint_component_property — чтение свойства компонента
+
+### 24. Blueprint Graph Editing
+- [ ] add_graph_node — добавление ноды в граф (CallFunction, ComponentBoundEvent, VariableGet и др.)
+- [ ] connect_graph_pins — соединение пинов между нодами
+- [ ] set_pin_default_value — установка значения по умолчанию на пине
