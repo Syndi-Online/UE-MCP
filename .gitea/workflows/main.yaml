@@ -82,7 +82,63 @@ jobs:
             exit $ExitCode
           }
 
+      - name: Run Unit Tests (UE ${{ matrix.ue_version }})
+        shell: powershell
+        timeout-minutes: 10
+        run: |
+          $TestResultDir = "D:\${{ env.REPO_NAME }}-TestResults-${{ matrix.ue_version }}"
+          if (Test-Path $TestResultDir) { Remove-Item $TestResultDir -Recurse -Force }
+          New-Item -ItemType Directory -Path $TestResultDir -Force | Out-Null
+
+          & "D:\UE_${{ matrix.ue_version }}\Engine\Binaries\Win64\UnrealEditor-Cmd.exe" `
+            "D:\${{ env.REPO_NAME }}-Build-${{ matrix.ue_version }}\HostProject\HostProject.uproject" `
+            -ExecCmds="Automation RunTests MCPServer.Unit" `
+            -TestExit="Automation Test Queue Empty" `
+            -Unattended -NoPause -NullRHI -NoSound `
+            -ReportExportPath="$TestResultDir\UnitTests"
+
+          $ExitCode = $LASTEXITCODE
+          Get-ChildItem "$TestResultDir\UnitTests" -Filter "*.json" -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
+            Write-Host "=== $($_.Name) ==="
+            Get-Content $_.FullName
+          }
+          if ($ExitCode -ne 0) {
+            Write-Host "========== UNIT TESTS FAILED (exit code $ExitCode) =========="
+            exit $ExitCode
+          }
+          Write-Host "Unit tests passed."
+
+      - name: Run Integration Tests (UE ${{ matrix.ue_version }})
+        shell: powershell
+        timeout-minutes: 10
+        run: |
+          $TestResultDir = "D:\${{ env.REPO_NAME }}-TestResults-${{ matrix.ue_version }}"
+
+          & "D:\UE_${{ matrix.ue_version }}\Engine\Binaries\Win64\UnrealEditor-Cmd.exe" `
+            "D:\${{ env.REPO_NAME }}-Build-${{ matrix.ue_version }}\HostProject\HostProject.uproject" `
+            -ExecCmds="Automation RunTests MCPServer.Integration" `
+            -TestExit="Automation Test Queue Empty" `
+            -Unattended -NoPause -NullRHI -NoSound `
+            -ReportExportPath="$TestResultDir\IntegrationTests"
+
+          $ExitCode = $LASTEXITCODE
+          Get-ChildItem "$TestResultDir\IntegrationTests" -Filter "*.json" -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
+            Write-Host "=== $($_.Name) ==="
+            Get-Content $_.FullName
+          }
+          if ($ExitCode -ne 0) {
+            Write-Host "========== INTEGRATION TESTS FAILED (exit code $ExitCode) =========="
+            exit $ExitCode
+          }
+          Write-Host "Integration tests passed."
+
       - uses: actions/upload-artifact@v3
         with:
           name: SyndiOnlineUeMCP_Win_${{ matrix.ue_version }}
           path: D:\${{ env.REPO_NAME }}-Build-${{ matrix.ue_version }}
+
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: TestResults_Win_${{ matrix.ue_version }}
+          path: D:\${{ env.REPO_NAME }}-TestResults-${{ matrix.ue_version }}
