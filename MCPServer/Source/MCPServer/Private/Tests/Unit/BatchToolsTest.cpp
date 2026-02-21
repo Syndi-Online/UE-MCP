@@ -10,6 +10,7 @@
 #include "Tools/Impl/BatchConnectGraphPinsImplTool.h"
 #include "Tools/Impl/BatchSetPinDefaultsImplTool.h"
 #include "Tools/Impl/BatchDeleteGraphNodesImplTool.h"
+#include "Tools/Impl/BatchDisconnectGraphPinsImplTool.h"
 #include "Tests/Mocks/MockActorModule.h"
 #include "Tests/Mocks/MockMaterialModule.h"
 #include "Tests/Mocks/MockBlueprintModule.h"
@@ -891,6 +892,106 @@ bool FBatchDeleteGraphNodesModuleFailureTest::RunTest(const FString& Parameters)
 
 	TestTrue(TEXT("isError when all fail"), MCPTestUtils::IsError(Result));
 	TestTrue(TEXT("Contains error"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Node not found")));
+	return true;
+}
+
+// ===========================================================================
+// BatchDisconnectGraphPins
+// ===========================================================================
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBatchDisconnectGraphPinsMetadataTest,
+	"MCPServer.Unit.Batch.BatchDisconnectGraphPins.Metadata",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FBatchDisconnectGraphPinsMetadataTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	FBatchDisconnectGraphPinsImplTool Tool(Mock);
+	TestEqual(TEXT("Name"), Tool.GetName(), TEXT("batch_disconnect_graph_pins"));
+	TestTrue(TEXT("Description not empty"), !Tool.GetDescription().IsEmpty());
+	TestTrue(TEXT("Schema valid"), Tool.GetInputSchema().IsValid());
+	TestTrue(TEXT("Schema has type"), Tool.GetInputSchema()->HasField(TEXT("type")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBatchDisconnectGraphPinsSuccessTest,
+	"MCPServer.Unit.Batch.BatchDisconnectGraphPins.Success",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FBatchDisconnectGraphPinsSuccessTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.DisconnectGraphPinsResult.bSuccess = true;
+	FBatchDisconnectGraphPinsImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+
+	TArray<TSharedPtr<FJsonValue>> Disconns;
+	auto Disconn1 = MakeShared<FJsonObject>();
+	Disconn1->SetStringField(TEXT("source_node_id"), TEXT("AAAA-BBBB-CCCC-DDDD"));
+	Disconn1->SetStringField(TEXT("source_pin"), TEXT("then"));
+	Disconn1->SetStringField(TEXT("target_node_id"), TEXT("EEEE-FFFF-0000-1111"));
+	Disconn1->SetStringField(TEXT("target_pin"), TEXT("execute"));
+	Disconns.Add(MakeShared<FJsonValueObject>(Disconn1));
+
+	auto Disconn2 = MakeShared<FJsonObject>();
+	Disconn2->SetStringField(TEXT("source_node_id"), TEXT("AAAA-BBBB-CCCC-DDDD"));
+	Disconn2->SetStringField(TEXT("source_pin"), TEXT("ReturnValue"));
+	Disconn2->SetStringField(TEXT("target_node_id"), TEXT("EEEE-FFFF-0000-1111"));
+	Disconn2->SetStringField(TEXT("target_pin"), TEXT("InString"));
+	Disconns.Add(MakeShared<FJsonValueObject>(Disconn2));
+
+	Args->SetArrayField(TEXT("disconnections"), Disconns);
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("Success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Contains 2 succeeded"), MCPTestUtils::GetResultText(Result).Contains(TEXT("2 succeeded")));
+	TestEqual(TEXT("DisconnectGraphPins called twice"), Mock.Recorder.GetCallCount(TEXT("DisconnectGraphPins")), 2);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBatchDisconnectGraphPinsMissingArgsTest,
+	"MCPServer.Unit.Batch.BatchDisconnectGraphPins.MissingArgs",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FBatchDisconnectGraphPinsMissingArgsTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	FBatchDisconnectGraphPinsImplTool Tool(Mock);
+	auto Result = Tool.Execute(MakeShared<FJsonObject>());
+	TestTrue(TEXT("Error"), MCPTestUtils::IsError(Result));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBatchDisconnectGraphPinsModuleFailureTest,
+	"MCPServer.Unit.Batch.BatchDisconnectGraphPins.ModuleFailure",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FBatchDisconnectGraphPinsModuleFailureTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.DisconnectGraphPinsResult.bSuccess = false;
+	Mock.DisconnectGraphPinsResult.ErrorMessage = TEXT("Pins are not connected");
+	FBatchDisconnectGraphPinsImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+
+	TArray<TSharedPtr<FJsonValue>> Disconns;
+	auto Disconn = MakeShared<FJsonObject>();
+	Disconn->SetStringField(TEXT("source_node_id"), TEXT("AAAA-BBBB-CCCC-DDDD"));
+	Disconn->SetStringField(TEXT("source_pin"), TEXT("BadPin"));
+	Disconn->SetStringField(TEXT("target_node_id"), TEXT("EEEE-FFFF-0000-1111"));
+	Disconn->SetStringField(TEXT("target_pin"), TEXT("execute"));
+	Disconns.Add(MakeShared<FJsonValueObject>(Disconn));
+	Args->SetArrayField(TEXT("disconnections"), Disconns);
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("isError when all fail"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Contains error"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Pins are not connected")));
 	return true;
 }
 

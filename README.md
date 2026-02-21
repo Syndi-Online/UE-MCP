@@ -246,7 +246,7 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] [batch_connect_graph_pins](docs/24-blueprint-graph-editing/batch_connect_graph_pins.md) — batch connect pins (up to 100 per call)
 - [x] [batch_set_pin_defaults](docs/24-blueprint-graph-editing/batch_set_pin_defaults.md) — batch set pin defaults (up to 100 per call)
 - [x] [batch_delete_graph_nodes](docs/24-blueprint-graph-editing/batch_delete_graph_nodes.md) — batch delete nodes (up to 100 per call)
-- [ ] [batch_disconnect_graph_pins](docs/24-blueprint-graph-editing/batch_disconnect_graph_pins.md) — batch disconnect pins (up to 100 per call)
+- [x] [batch_disconnect_graph_pins](docs/24-blueprint-graph-editing/batch_disconnect_graph_pins.md) — batch disconnect pins (up to 100 per call)
 
 ### 25. UMG Widgets
 - [x] [create_widget_blueprint](docs/25-umg-widgets/create_widget_blueprint.md) — create Widget Blueprint with root widget

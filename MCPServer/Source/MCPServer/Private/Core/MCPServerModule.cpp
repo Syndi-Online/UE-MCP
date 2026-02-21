@@ -100,6 +100,7 @@
 #include "Tools/Impl/BatchConnectGraphPinsImplTool.h"
 #include "Tools/Impl/BatchSetPinDefaultsImplTool.h"
 #include "Tools/Impl/BatchDeleteGraphNodesImplTool.h"
+#include "Tools/Impl/BatchDisconnectGraphPinsImplTool.h"
 #include "Tools/Impl/CreateMaterialExpressionImplTool.h"
 #include "Tools/Impl/DeleteMaterialExpressionImplTool.h"
 #include "Tools/Impl/ConnectMaterialExpressionsImplTool.h"
@@ -420,6 +421,7 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FBatchConnectGraphPinsImplTool>(*BlueprintModule));
 	ToolRegistry->RegisterTool(MakeShared<FBatchSetPinDefaultsImplTool>(*BlueprintModule));
 	ToolRegistry->RegisterTool(MakeShared<FBatchDeleteGraphNodesImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FBatchDisconnectGraphPinsImplTool>(*BlueprintModule));
 
 	// Material tools
 	ToolRegistry->RegisterTool(MakeShared<FCreateMaterialExpressionImplTool>(*MaterialModule));
