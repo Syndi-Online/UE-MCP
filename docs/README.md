@@ -32,6 +32,7 @@ UE-MCP is an HTTP-based Model Context Protocol (MCP) server running inside Unrea
 22. [Blueprint Graph Nodes](#22-blueprint-graph-nodes)
 23. [Blueprint Components](#23-blueprint-components)
 24. [Blueprint Graph Editing](#24-blueprint-graph-editing)
+25. [UMG Widgets](#25-umg-widgets)
 
 ---
 
@@ -286,3 +287,19 @@ UE-MCP is an HTTP-based Model Context Protocol (MCP) server running inside Unrea
 - [delete_graph_node](24-blueprint-graph-editing/delete_graph_node.md)
 - [disconnect_graph_pins](24-blueprint-graph-editing/disconnect_graph_pins.md)
 - [set_pin_default_value](24-blueprint-graph-editing/set_pin_default_value.md)
+
+## 25 UMG Widgets
+
+- [add_widget](25-umg-widgets/add_widget.md)
+- [create_widget_blueprint](25-umg-widgets/create_widget_blueprint.md)
+- [export_widgets](25-umg-widgets/export_widgets.md)
+- [get_widget_animations](25-umg-widgets/get_widget_animations.md)
+- [get_widget_property](25-umg-widgets/get_widget_property.md)
+- [get_widget_tree](25-umg-widgets/get_widget_tree.md)
+- [import_widgets](25-umg-widgets/import_widgets.md)
+- [move_widget](25-umg-widgets/move_widget.md)
+- [remove_widget](25-umg-widgets/remove_widget.md)
+- [rename_widget](25-umg-widgets/rename_widget.md)
+- [replace_widget](25-umg-widgets/replace_widget.md)
+- [set_widget_property](25-umg-widgets/set_widget_property.md)
+- [set_widget_slot](25-umg-widgets/set_widget_slot.md)
