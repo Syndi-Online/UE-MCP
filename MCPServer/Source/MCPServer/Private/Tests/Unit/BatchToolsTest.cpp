@@ -9,6 +9,7 @@
 #include "Tools/Impl/AddGraphNodesBatchImplTool.h"
 #include "Tools/Impl/BatchConnectGraphPinsImplTool.h"
 #include "Tools/Impl/BatchSetPinDefaultsImplTool.h"
+#include "Tools/Impl/BatchDeleteGraphNodesImplTool.h"
 #include "Tests/Mocks/MockActorModule.h"
 #include "Tests/Mocks/MockMaterialModule.h"
 #include "Tests/Mocks/MockBlueprintModule.h"
@@ -806,6 +807,90 @@ bool FBatchSetPinDefaultsModuleFailureTest::RunTest(const FString& Parameters)
 
 	TestTrue(TEXT("isError when all fail"), MCPTestUtils::IsError(Result));
 	TestTrue(TEXT("Contains error"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Pin not found")));
+	return true;
+}
+
+// ===========================================================================
+// BatchDeleteGraphNodes
+// ===========================================================================
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBatchDeleteGraphNodesMetadataTest,
+	"MCPServer.Unit.Batch.BatchDeleteGraphNodes.Metadata",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FBatchDeleteGraphNodesMetadataTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	FBatchDeleteGraphNodesImplTool Tool(Mock);
+	TestEqual(TEXT("Name"), Tool.GetName(), TEXT("batch_delete_graph_nodes"));
+	TestTrue(TEXT("Description not empty"), !Tool.GetDescription().IsEmpty());
+	TestTrue(TEXT("Schema valid"), Tool.GetInputSchema().IsValid());
+	TestTrue(TEXT("Schema has type"), Tool.GetInputSchema()->HasField(TEXT("type")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBatchDeleteGraphNodesSuccessTest,
+	"MCPServer.Unit.Batch.BatchDeleteGraphNodes.Success",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FBatchDeleteGraphNodesSuccessTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.DeleteGraphNodeResult.bSuccess = true;
+	FBatchDeleteGraphNodesImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+
+	TArray<TSharedPtr<FJsonValue>> NodeIds;
+	NodeIds.Add(MakeShared<FJsonValueString>(TEXT("AAAA-BBBB-CCCC-DDDD")));
+	NodeIds.Add(MakeShared<FJsonValueString>(TEXT("EEEE-FFFF-0000-1111")));
+	NodeIds.Add(MakeShared<FJsonValueString>(TEXT("2222-3333-4444-5555")));
+	Args->SetArrayField(TEXT("node_ids"), NodeIds);
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("Success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Contains 3 succeeded"), MCPTestUtils::GetResultText(Result).Contains(TEXT("3 succeeded")));
+	TestEqual(TEXT("DeleteGraphNode called 3 times"), Mock.Recorder.GetCallCount(TEXT("DeleteGraphNode")), 3);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBatchDeleteGraphNodesMissingArgsTest,
+	"MCPServer.Unit.Batch.BatchDeleteGraphNodes.MissingArgs",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FBatchDeleteGraphNodesMissingArgsTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	FBatchDeleteGraphNodesImplTool Tool(Mock);
+	auto Result = Tool.Execute(MakeShared<FJsonObject>());
+	TestTrue(TEXT("Error"), MCPTestUtils::IsError(Result));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBatchDeleteGraphNodesModuleFailureTest,
+	"MCPServer.Unit.Batch.BatchDeleteGraphNodes.ModuleFailure",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FBatchDeleteGraphNodesModuleFailureTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.DeleteGraphNodeResult.bSuccess = false;
+	Mock.DeleteGraphNodeResult.ErrorMessage = TEXT("Node not found");
+	FBatchDeleteGraphNodesImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+
+	TArray<TSharedPtr<FJsonValue>> NodeIds;
+	NodeIds.Add(MakeShared<FJsonValueString>(TEXT("DEAD-BEEF-0000-0000")));
+	Args->SetArrayField(TEXT("node_ids"), NodeIds);
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("isError when all fail"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Contains error"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Node not found")));
 	return true;
 }
 

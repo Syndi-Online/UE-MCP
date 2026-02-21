@@ -56,11 +56,87 @@ TSharedPtr<FJsonObject> FBatchDeleteGraphNodesImplTool::Execute(const TSharedPtr
 {
 	TSharedPtr<FJsonObject> Result = MakeShared<FJsonObject>();
 	TArray<TSharedPtr<FJsonValue>> ContentArray;
+
+	FString BlueprintPath, GraphName;
+	if (!Arguments.IsValid() ||
+		!Arguments->TryGetStringField(TEXT("blueprint_path"), BlueprintPath) ||
+		!Arguments->TryGetStringField(TEXT("graph_name"), GraphName))
+	{
+		TSharedPtr<FJsonObject> TextContent = MakeShared<FJsonObject>();
+		TextContent->SetStringField(TEXT("type"), TEXT("text"));
+		TextContent->SetStringField(TEXT("text"), TEXT("Missing required parameters: blueprint_path, graph_name, node_ids"));
+		ContentArray.Add(MakeShared<FJsonValueObject>(TextContent));
+		Result->SetArrayField(TEXT("content"), ContentArray);
+		Result->SetBoolField(TEXT("isError"), true);
+		return Result;
+	}
+
+	const TArray<TSharedPtr<FJsonValue>>* NodeIdsArray = nullptr;
+	if (!Arguments->TryGetArrayField(TEXT("node_ids"), NodeIdsArray) || !NodeIdsArray || NodeIdsArray->Num() == 0)
+	{
+		TSharedPtr<FJsonObject> TextContent = MakeShared<FJsonObject>();
+		TextContent->SetStringField(TEXT("type"), TEXT("text"));
+		TextContent->SetStringField(TEXT("text"), TEXT("Missing or empty required parameter: node_ids"));
+		ContentArray.Add(MakeShared<FJsonValueObject>(TextContent));
+		Result->SetArrayField(TEXT("content"), ContentArray);
+		Result->SetBoolField(TEXT("isError"), true);
+		return Result;
+	}
+
+	if (NodeIdsArray->Num() > 100)
+	{
+		TSharedPtr<FJsonObject> TextContent = MakeShared<FJsonObject>();
+		TextContent->SetStringField(TEXT("type"), TEXT("text"));
+		TextContent->SetStringField(TEXT("text"), TEXT("Maximum 100 node_ids per call"));
+		ContentArray.Add(MakeShared<FJsonValueObject>(TextContent));
+		Result->SetArrayField(TEXT("content"), ContentArray);
+		Result->SetBoolField(TEXT("isError"), true);
+		return Result;
+	}
+
+	int32 Succeeded = 0;
+	int32 Failed = 0;
+	TArray<FString> Errors;
+
+	for (int32 i = 0; i < NodeIdsArray->Num(); ++i)
+	{
+		FString NodeId;
+		if (!(*NodeIdsArray)[i].IsValid() || !(*NodeIdsArray)[i]->TryGetString(NodeId) || NodeId.IsEmpty())
+		{
+			++Failed;
+			Errors.Add(FString::Printf(TEXT("[%d] Invalid or empty node_id"), i));
+			continue;
+		}
+
+		FDeleteGraphNodeResult DeleteResult = BlueprintModule.DeleteGraphNode(BlueprintPath, GraphName, NodeId);
+		if (DeleteResult.bSuccess)
+		{
+			++Succeeded;
+		}
+		else
+		{
+			++Failed;
+			Errors.Add(FString::Printf(TEXT("[%d] %s"), i, *DeleteResult.ErrorMessage));
+		}
+	}
+
 	TSharedPtr<FJsonObject> TextContent = MakeShared<FJsonObject>();
 	TextContent->SetStringField(TEXT("type"), TEXT("text"));
-	TextContent->SetStringField(TEXT("text"), TEXT("batch_delete_graph_nodes: not implemented"));
+
+	FString ResponseText = FString::Printf(TEXT("Batch delete: %d succeeded, %d failed"), Succeeded, Failed);
+	if (Errors.Num() > 0)
+	{
+		ResponseText += TEXT("\nErrors:");
+		for (const FString& Err : Errors)
+		{
+			ResponseText += FString::Printf(TEXT("\n- %s"), *Err);
+		}
+	}
+	TextContent->SetStringField(TEXT("text"), ResponseText);
+
+	Result->SetBoolField(TEXT("isError"), Succeeded == 0 && Failed > 0);
+
 	ContentArray.Add(MakeShared<FJsonValueObject>(TextContent));
 	Result->SetArrayField(TEXT("content"), ContentArray);
-	Result->SetBoolField(TEXT("isError"), true);
 	return Result;
 }
