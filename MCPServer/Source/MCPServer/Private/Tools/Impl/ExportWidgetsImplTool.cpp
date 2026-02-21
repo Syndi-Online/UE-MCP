@@ -50,14 +50,60 @@ TSharedPtr<FJsonObject> FExportWidgetsImplTool::GetInputSchema() const
 
 TSharedPtr<FJsonObject> FExportWidgetsImplTool::Execute(const TSharedPtr<FJsonObject>& Arguments)
 {
-	// TODO: implement in commit 2
 	TSharedPtr<FJsonObject> Result = MakeShared<FJsonObject>();
 	TArray<TSharedPtr<FJsonValue>> ContentArray;
+
+	FString BlueprintPath;
+	if (!Arguments.IsValid() || !Arguments->TryGetStringField(TEXT("blueprint_path"), BlueprintPath))
+	{
+		TSharedPtr<FJsonObject> TextContent = MakeShared<FJsonObject>();
+		TextContent->SetStringField(TEXT("type"), TEXT("text"));
+		TextContent->SetStringField(TEXT("text"), TEXT("Missing required parameter: blueprint_path"));
+		ContentArray.Add(MakeShared<FJsonValueObject>(TextContent));
+		Result->SetArrayField(TEXT("content"), ContentArray);
+		Result->SetBoolField(TEXT("isError"), true);
+		return Result;
+	}
+
+	TArray<FString> WidgetNames;
+	const TArray<TSharedPtr<FJsonValue>>* NamesArray;
+	const TArray<FString>* WidgetNamesPtr = nullptr;
+	if (Arguments->TryGetArrayField(TEXT("widget_names"), NamesArray))
+	{
+		for (const auto& Val : *NamesArray)
+		{
+			FString Name;
+			if (Val->TryGetString(Name))
+			{
+				WidgetNames.Add(Name);
+			}
+		}
+		if (WidgetNames.Num() > 0)
+		{
+			WidgetNamesPtr = &WidgetNames;
+		}
+	}
+
+	FExportWidgetsResult ExportResult = UMGModule.ExportWidgets(BlueprintPath, WidgetNamesPtr);
+
 	TSharedPtr<FJsonObject> TextContent = MakeShared<FJsonObject>();
 	TextContent->SetStringField(TEXT("type"), TEXT("text"));
-	TextContent->SetStringField(TEXT("text"), TEXT("export_widgets is not yet implemented"));
+
+	if (ExportResult.bSuccess)
+	{
+		TextContent->SetStringField(TEXT("text"),
+			FString::Printf(TEXT("Exported widget(s).\nExportedText: %s"), *ExportResult.ExportedText));
+		Result->SetBoolField(TEXT("isError"), false);
+	}
+	else
+	{
+		TextContent->SetStringField(TEXT("text"),
+			FString::Printf(TEXT("Failed to export widgets: %s"), *ExportResult.ErrorMessage));
+		Result->SetBoolField(TEXT("isError"), true);
+	}
+
 	ContentArray.Add(MakeShared<FJsonValueObject>(TextContent));
 	Result->SetArrayField(TEXT("content"), ContentArray);
-	Result->SetBoolField(TEXT("isError"), true);
+
 	return Result;
 }

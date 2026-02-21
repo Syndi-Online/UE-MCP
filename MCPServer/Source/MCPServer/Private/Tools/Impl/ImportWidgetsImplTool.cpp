@@ -53,14 +53,50 @@ TSharedPtr<FJsonObject> FImportWidgetsImplTool::GetInputSchema() const
 
 TSharedPtr<FJsonObject> FImportWidgetsImplTool::Execute(const TSharedPtr<FJsonObject>& Arguments)
 {
-	// TODO: implement in commit 2
 	TSharedPtr<FJsonObject> Result = MakeShared<FJsonObject>();
 	TArray<TSharedPtr<FJsonValue>> ContentArray;
+
+	FString BlueprintPath, ExportedText;
+	if (!Arguments.IsValid() ||
+		!Arguments->TryGetStringField(TEXT("blueprint_path"), BlueprintPath) ||
+		!Arguments->TryGetStringField(TEXT("exported_text"), ExportedText))
+	{
+		TSharedPtr<FJsonObject> TextContent = MakeShared<FJsonObject>();
+		TextContent->SetStringField(TEXT("type"), TEXT("text"));
+		TextContent->SetStringField(TEXT("text"), TEXT("Missing required parameters: blueprint_path and exported_text"));
+		ContentArray.Add(MakeShared<FJsonValueObject>(TextContent));
+		Result->SetArrayField(TEXT("content"), ContentArray);
+		Result->SetBoolField(TEXT("isError"), true);
+		return Result;
+	}
+
+	FString ParentName;
+	const FString* ParentNamePtr = nullptr;
+	if (Arguments->TryGetStringField(TEXT("parent_name"), ParentName))
+	{
+		ParentNamePtr = &ParentName;
+	}
+
+	FImportWidgetsResult ImportResult = UMGModule.ImportWidgets(BlueprintPath, ExportedText, ParentNamePtr);
+
 	TSharedPtr<FJsonObject> TextContent = MakeShared<FJsonObject>();
 	TextContent->SetStringField(TEXT("type"), TEXT("text"));
-	TextContent->SetStringField(TEXT("text"), TEXT("import_widgets is not yet implemented"));
+
+	if (ImportResult.bSuccess)
+	{
+		TextContent->SetStringField(TEXT("text"),
+			FString::Printf(TEXT("Imported %d widget(s)."), ImportResult.WidgetsImported));
+		Result->SetBoolField(TEXT("isError"), false);
+	}
+	else
+	{
+		TextContent->SetStringField(TEXT("text"),
+			FString::Printf(TEXT("Failed to import widgets: %s"), *ImportResult.ErrorMessage));
+		Result->SetBoolField(TEXT("isError"), true);
+	}
+
 	ContentArray.Add(MakeShared<FJsonValueObject>(TextContent));
 	Result->SetArrayField(TEXT("content"), ContentArray);
-	Result->SetBoolField(TEXT("isError"), true);
+
 	return Result;
 }

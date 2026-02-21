@@ -60,14 +60,45 @@ TSharedPtr<FJsonObject> FSetWidgetPropertyImplTool::GetInputSchema() const
 
 TSharedPtr<FJsonObject> FSetWidgetPropertyImplTool::Execute(const TSharedPtr<FJsonObject>& Arguments)
 {
-	// TODO: implement in commit 2
 	TSharedPtr<FJsonObject> Result = MakeShared<FJsonObject>();
 	TArray<TSharedPtr<FJsonValue>> ContentArray;
+
+	FString BlueprintPath, WidgetName, PropertyName, PropertyValue;
+	if (!Arguments.IsValid() ||
+		!Arguments->TryGetStringField(TEXT("blueprint_path"), BlueprintPath) ||
+		!Arguments->TryGetStringField(TEXT("widget_name"), WidgetName) ||
+		!Arguments->TryGetStringField(TEXT("property_name"), PropertyName) ||
+		!Arguments->TryGetStringField(TEXT("property_value"), PropertyValue))
+	{
+		TSharedPtr<FJsonObject> TextContent = MakeShared<FJsonObject>();
+		TextContent->SetStringField(TEXT("type"), TEXT("text"));
+		TextContent->SetStringField(TEXT("text"), TEXT("Missing required parameters: blueprint_path, widget_name, property_name, and property_value"));
+		ContentArray.Add(MakeShared<FJsonValueObject>(TextContent));
+		Result->SetArrayField(TEXT("content"), ContentArray);
+		Result->SetBoolField(TEXT("isError"), true);
+		return Result;
+	}
+
+	FSetWidgetPropertyResult SetResult = UMGModule.SetWidgetProperty(BlueprintPath, WidgetName, PropertyName, PropertyValue);
+
 	TSharedPtr<FJsonObject> TextContent = MakeShared<FJsonObject>();
 	TextContent->SetStringField(TEXT("type"), TEXT("text"));
-	TextContent->SetStringField(TEXT("text"), TEXT("set_widget_property is not yet implemented"));
+
+	if (SetResult.bSuccess)
+	{
+		TextContent->SetStringField(TEXT("text"),
+			FString::Printf(TEXT("Widget property set successfully: %s.%s"), *WidgetName, *PropertyName));
+		Result->SetBoolField(TEXT("isError"), false);
+	}
+	else
+	{
+		TextContent->SetStringField(TEXT("text"),
+			FString::Printf(TEXT("Failed to set widget property: %s"), *SetResult.ErrorMessage));
+		Result->SetBoolField(TEXT("isError"), true);
+	}
+
 	ContentArray.Add(MakeShared<FJsonValueObject>(TextContent));
 	Result->SetArrayField(TEXT("content"), ContentArray);
-	Result->SetBoolField(TEXT("isError"), true);
+
 	return Result;
 }

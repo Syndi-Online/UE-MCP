@@ -244,16 +244,16 @@ MCP (Model Context Protocol) Server plugin for Unreal Engine 5.7. Runs an HTTP s
 - [x] [add_graph_nodes_batch](docs/24-blueprint-graph-editing/add_graph_nodes_batch.md) — массовое создание нод + соединений за один вызов
 
 ### 25. UMG Widgets
-- [ ] [create_widget_blueprint](docs/25-umg-widgets/create_widget_blueprint.md) — создание Widget Blueprint с корневым виджетом
-- [ ] [get_widget_tree](docs/25-umg-widgets/get_widget_tree.md) — получение дерева виджетов
-- [ ] [add_widget](docs/25-umg-widgets/add_widget.md) — добавление виджета в панель
-- [ ] [remove_widget](docs/25-umg-widgets/remove_widget.md) — удаление виджета из дерева
-- [ ] [move_widget](docs/25-umg-widgets/move_widget.md) — перемещение виджета в другой контейнер
-- [ ] [rename_widget](docs/25-umg-widgets/rename_widget.md) — переименование виджета
-- [ ] [replace_widget](docs/25-umg-widgets/replace_widget.md) — замена типа виджета с сохранением детей
-- [ ] [set_widget_property](docs/25-umg-widgets/set_widget_property.md) — установка свойства виджета (Text, Color, Visibility и т.д.)
-- [ ] [get_widget_property](docs/25-umg-widgets/get_widget_property.md) — чтение свойства виджета
-- [ ] [set_widget_slot](docs/25-umg-widgets/set_widget_slot.md) — настройка слота (anchors, padding, alignment, size)
-- [ ] [get_widget_animations](docs/25-umg-widgets/get_widget_animations.md) — список анимаций Widget Blueprint
-- [ ] [export_widgets](docs/25-umg-widgets/export_widgets.md) — экспорт виджетов в текст
-- [ ] [import_widgets](docs/25-umg-widgets/import_widgets.md) — импорт виджетов из текста
+- [x] [create_widget_blueprint](docs/25-umg-widgets/create_widget_blueprint.md) — создание Widget Blueprint с корневым виджетом
+- [x] [get_widget_tree](docs/25-umg-widgets/get_widget_tree.md) — получение дерева виджетов
+- [x] [add_widget](docs/25-umg-widgets/add_widget.md) — добавление виджета в панель
+- [x] [remove_widget](docs/25-umg-widgets/remove_widget.md) — удаление виджета из дерева
+- [x] [move_widget](docs/25-umg-widgets/move_widget.md) — перемещение виджета в другой контейнер
+- [x] [rename_widget](docs/25-umg-widgets/rename_widget.md) — переименование виджета
+- [x] [replace_widget](docs/25-umg-widgets/replace_widget.md) — замена типа виджета с сохранением детей
+- [x] [set_widget_property](docs/25-umg-widgets/set_widget_property.md) — установка свойства виджета (Text, Color, Visibility и т.д.)
+- [x] [get_widget_property](docs/25-umg-widgets/get_widget_property.md) — чтение свойства виджета
+- [x] [set_widget_slot](docs/25-umg-widgets/set_widget_slot.md) — настройка слота (anchors, padding, alignment, size)
+- [x] [get_widget_animations](docs/25-umg-widgets/get_widget_animations.md) — список анимаций Widget Blueprint
+- [x] [export_widgets](docs/25-umg-widgets/export_widgets.md) — экспорт виджетов в текст
+- [x] [import_widgets](docs/25-umg-widgets/import_widgets.md) — импорт виджетов из текста

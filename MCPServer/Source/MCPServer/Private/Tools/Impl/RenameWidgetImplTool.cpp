@@ -54,14 +54,68 @@ TSharedPtr<FJsonObject> FRenameWidgetImplTool::GetInputSchema() const
 
 TSharedPtr<FJsonObject> FRenameWidgetImplTool::Execute(const TSharedPtr<FJsonObject>& Arguments)
 {
-	// TODO: implement in commit 2
 	TSharedPtr<FJsonObject> Result = MakeShared<FJsonObject>();
 	TArray<TSharedPtr<FJsonValue>> ContentArray;
+
+	FString BlueprintPath;
+	if (!Arguments.IsValid() || !Arguments->TryGetStringField(TEXT("blueprint_path"), BlueprintPath))
+	{
+		TSharedPtr<FJsonObject> TextContent = MakeShared<FJsonObject>();
+		TextContent->SetStringField(TEXT("type"), TEXT("text"));
+		TextContent->SetStringField(TEXT("text"), TEXT("Missing required parameter: blueprint_path"));
+		ContentArray.Add(MakeShared<FJsonValueObject>(TextContent));
+		Result->SetArrayField(TEXT("content"), ContentArray);
+		Result->SetBoolField(TEXT("isError"), true);
+		return Result;
+	}
+
+	FString WidgetName;
+	if (!Arguments->TryGetStringField(TEXT("widget_name"), WidgetName))
+	{
+		TSharedPtr<FJsonObject> TextContent = MakeShared<FJsonObject>();
+		TextContent->SetStringField(TEXT("type"), TEXT("text"));
+		TextContent->SetStringField(TEXT("text"), TEXT("Missing required parameter: widget_name"));
+		ContentArray.Add(MakeShared<FJsonValueObject>(TextContent));
+		Result->SetArrayField(TEXT("content"), ContentArray);
+		Result->SetBoolField(TEXT("isError"), true);
+		return Result;
+	}
+
+	FString NewName;
+	if (!Arguments->TryGetStringField(TEXT("new_name"), NewName))
+	{
+		TSharedPtr<FJsonObject> TextContent = MakeShared<FJsonObject>();
+		TextContent->SetStringField(TEXT("type"), TEXT("text"));
+		TextContent->SetStringField(TEXT("text"), TEXT("Missing required parameter: new_name"));
+		ContentArray.Add(MakeShared<FJsonValueObject>(TextContent));
+		Result->SetArrayField(TEXT("content"), ContentArray);
+		Result->SetBoolField(TEXT("isError"), true);
+		return Result;
+	}
+
+	FRenameWidgetResult RenameResult = UMGModule.RenameWidget(BlueprintPath, WidgetName, NewName);
+
 	TSharedPtr<FJsonObject> TextContent = MakeShared<FJsonObject>();
 	TextContent->SetStringField(TEXT("type"), TEXT("text"));
-	TextContent->SetStringField(TEXT("text"), TEXT("rename_widget is not yet implemented"));
+
+	if (RenameResult.bSuccess)
+	{
+		FString ResponseText = FString::Printf(
+			TEXT("Widget renamed successfully.\nOldName: %s\nNewName: %s"),
+			*RenameResult.OldName,
+			*RenameResult.NewName);
+		TextContent->SetStringField(TEXT("text"), ResponseText);
+		Result->SetBoolField(TEXT("isError"), false);
+	}
+	else
+	{
+		TextContent->SetStringField(TEXT("text"),
+			FString::Printf(TEXT("Failed to rename widget: %s"), *RenameResult.ErrorMessage));
+		Result->SetBoolField(TEXT("isError"), true);
+	}
+
 	ContentArray.Add(MakeShared<FJsonValueObject>(TextContent));
 	Result->SetArrayField(TEXT("content"), ContentArray);
-	Result->SetBoolField(TEXT("isError"), true);
+
 	return Result;
 }

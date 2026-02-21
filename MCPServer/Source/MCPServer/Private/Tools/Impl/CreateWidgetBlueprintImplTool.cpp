@@ -47,14 +47,52 @@ TSharedPtr<FJsonObject> FCreateWidgetBlueprintImplTool::GetInputSchema() const
 
 TSharedPtr<FJsonObject> FCreateWidgetBlueprintImplTool::Execute(const TSharedPtr<FJsonObject>& Arguments)
 {
-	// TODO: implement in commit 2
 	TSharedPtr<FJsonObject> Result = MakeShared<FJsonObject>();
 	TArray<TSharedPtr<FJsonValue>> ContentArray;
+
+	FString BlueprintPath;
+	if (!Arguments.IsValid() || !Arguments->TryGetStringField(TEXT("blueprint_path"), BlueprintPath))
+	{
+		TSharedPtr<FJsonObject> TextContent = MakeShared<FJsonObject>();
+		TextContent->SetStringField(TEXT("type"), TEXT("text"));
+		TextContent->SetStringField(TEXT("text"), TEXT("Missing required parameter: blueprint_path"));
+		ContentArray.Add(MakeShared<FJsonValueObject>(TextContent));
+		Result->SetArrayField(TEXT("content"), ContentArray);
+		Result->SetBoolField(TEXT("isError"), true);
+		return Result;
+	}
+
+	FString RootWidgetClass;
+	const FString* RootWidgetClassPtr = nullptr;
+	if (Arguments->TryGetStringField(TEXT("root_widget_class"), RootWidgetClass))
+	{
+		RootWidgetClassPtr = &RootWidgetClass;
+	}
+
+	FCreateWidgetBlueprintResult CreateResult = UMGModule.CreateWidgetBlueprint(BlueprintPath, RootWidgetClassPtr);
+
 	TSharedPtr<FJsonObject> TextContent = MakeShared<FJsonObject>();
 	TextContent->SetStringField(TEXT("type"), TEXT("text"));
-	TextContent->SetStringField(TEXT("text"), TEXT("create_widget_blueprint is not yet implemented"));
+
+	if (CreateResult.bSuccess)
+	{
+		FString ResponseText = FString::Printf(
+			TEXT("Widget Blueprint created successfully.\nBlueprintName: %s\nBlueprintPath: %s\nRootWidgetClass: %s"),
+			*CreateResult.BlueprintName,
+			*CreateResult.BlueprintPath,
+			*CreateResult.RootWidgetClass);
+		TextContent->SetStringField(TEXT("text"), ResponseText);
+		Result->SetBoolField(TEXT("isError"), false);
+	}
+	else
+	{
+		TextContent->SetStringField(TEXT("text"),
+			FString::Printf(TEXT("Failed to create Widget Blueprint: %s"), *CreateResult.ErrorMessage));
+		Result->SetBoolField(TEXT("isError"), true);
+	}
+
 	ContentArray.Add(MakeShared<FJsonValueObject>(TextContent));
 	Result->SetArrayField(TEXT("content"), ContentArray);
-	Result->SetBoolField(TEXT("isError"), true);
+
 	return Result;
 }

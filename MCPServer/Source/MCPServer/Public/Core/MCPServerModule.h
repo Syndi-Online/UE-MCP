@@ -28,6 +28,7 @@ class ISCCModule;
 class IUIModule;
 class IWorldPartitionModule;
 class IPIEModule;
+class IUMGModule;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogMCPServer, Log, All);
 
@@ -73,6 +74,7 @@ private:
 	TUniquePtr<IUIModule> UIModule;
 	TUniquePtr<IWorldPartitionModule> WorldPartitionModule;
 	TUniquePtr<IPIEModule> PIEModule;
+	TUniquePtr<IUMGModule> UMGModule;
 
 	// Tools layer
 	TUniquePtr<FMCPToolRegistry> ToolRegistry;

@@ -188,6 +188,19 @@
 #include "Tools/Impl/StopPieImplTool.h"
 #include "Tools/Impl/SimulateInEditorImplTool.h"
 #include "Tools/Impl/IsPlayingImplTool.h"
+#include "Tools/Impl/CreateWidgetBlueprintImplTool.h"
+#include "Tools/Impl/GetWidgetTreeImplTool.h"
+#include "Tools/Impl/AddWidgetImplTool.h"
+#include "Tools/Impl/RemoveWidgetImplTool.h"
+#include "Tools/Impl/MoveWidgetImplTool.h"
+#include "Tools/Impl/RenameWidgetImplTool.h"
+#include "Tools/Impl/ReplaceWidgetImplTool.h"
+#include "Tools/Impl/SetWidgetPropertyImplTool.h"
+#include "Tools/Impl/GetWidgetPropertyImplTool.h"
+#include "Tools/Impl/SetWidgetSlotImplTool.h"
+#include "Tools/Impl/GetWidgetAnimationsImplTool.h"
+#include "Tools/Impl/ExportWidgetsImplTool.h"
+#include "Tools/Impl/ImportWidgetsImplTool.h"
 
 // Modules
 #include "Modules/Impl/ActorImplModule.h"
@@ -210,6 +223,7 @@
 #include "Modules/Impl/UIImplModule.h"
 #include "Modules/Impl/WorldPartitionImplModule.h"
 #include "Modules/Impl/PIEImplModule.h"
+#include "Modules/Impl/UMGImplModule.h"
 
 DEFINE_LOG_CATEGORY(LogMCPServer);
 
@@ -243,6 +257,7 @@ void FMCPServerModule::StartupModule()
 	UIModule = MakeUnique<FUIImplModule>();
 	WorldPartitionModule = MakeUnique<FWorldPartitionImplModule>();
 	PIEModule = MakeUnique<FPIEImplModule>();
+	UMGModule = MakeUnique<FUMGImplModule>();
 
 	ToolRegistry = MakeUnique<FMCPToolRegistry>();
 	RegisterBuiltinTools();
@@ -267,6 +282,7 @@ void FMCPServerModule::ShutdownModule()
 	JsonRpc.Reset();
 	SessionManager.Reset();
 	ToolRegistry.Reset();
+	UMGModule.Reset();
 	PIEModule.Reset();
 	WorldPartitionModule.Reset();
 	UIModule.Reset();
@@ -518,6 +534,21 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FStopPieImplTool>(*PIEModule));
 	ToolRegistry->RegisterTool(MakeShared<FSimulateInEditorImplTool>(*PIEModule));
 	ToolRegistry->RegisterTool(MakeShared<FIsPlayingImplTool>(*PIEModule));
+
+	// UMG Widget tools
+	ToolRegistry->RegisterTool(MakeShared<FCreateWidgetBlueprintImplTool>(*UMGModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetWidgetTreeImplTool>(*UMGModule));
+	ToolRegistry->RegisterTool(MakeShared<FAddWidgetImplTool>(*UMGModule));
+	ToolRegistry->RegisterTool(MakeShared<FRemoveWidgetImplTool>(*UMGModule));
+	ToolRegistry->RegisterTool(MakeShared<FMoveWidgetImplTool>(*UMGModule));
+	ToolRegistry->RegisterTool(MakeShared<FRenameWidgetImplTool>(*UMGModule));
+	ToolRegistry->RegisterTool(MakeShared<FReplaceWidgetImplTool>(*UMGModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetWidgetPropertyImplTool>(*UMGModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetWidgetPropertyImplTool>(*UMGModule));
+	ToolRegistry->RegisterTool(MakeShared<FSetWidgetSlotImplTool>(*UMGModule));
+	ToolRegistry->RegisterTool(MakeShared<FGetWidgetAnimationsImplTool>(*UMGModule));
+	ToolRegistry->RegisterTool(MakeShared<FExportWidgetsImplTool>(*UMGModule));
+	ToolRegistry->RegisterTool(MakeShared<FImportWidgetsImplTool>(*UMGModule));
 
 	// Batch tools
 	ToolRegistry->RegisterTool(MakeShared<FBatchSetActorTransformsImplTool>(*ActorModule));

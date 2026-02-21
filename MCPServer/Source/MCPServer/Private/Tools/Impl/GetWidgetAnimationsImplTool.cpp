@@ -42,14 +42,55 @@ TSharedPtr<FJsonObject> FGetWidgetAnimationsImplTool::GetInputSchema() const
 
 TSharedPtr<FJsonObject> FGetWidgetAnimationsImplTool::Execute(const TSharedPtr<FJsonObject>& Arguments)
 {
-	// TODO: implement in commit 2
 	TSharedPtr<FJsonObject> Result = MakeShared<FJsonObject>();
 	TArray<TSharedPtr<FJsonValue>> ContentArray;
+
+	FString BlueprintPath;
+	if (!Arguments.IsValid() || !Arguments->TryGetStringField(TEXT("blueprint_path"), BlueprintPath))
+	{
+		TSharedPtr<FJsonObject> TextContent = MakeShared<FJsonObject>();
+		TextContent->SetStringField(TEXT("type"), TEXT("text"));
+		TextContent->SetStringField(TEXT("text"), TEXT("Missing required parameter: blueprint_path"));
+		ContentArray.Add(MakeShared<FJsonValueObject>(TextContent));
+		Result->SetArrayField(TEXT("content"), ContentArray);
+		Result->SetBoolField(TEXT("isError"), true);
+		return Result;
+	}
+
+	FGetWidgetAnimationsResult AnimResult = UMGModule.GetWidgetAnimations(BlueprintPath);
+
 	TSharedPtr<FJsonObject> TextContent = MakeShared<FJsonObject>();
 	TextContent->SetStringField(TEXT("type"), TEXT("text"));
-	TextContent->SetStringField(TEXT("text"), TEXT("get_widget_animations is not yet implemented"));
+
+	if (AnimResult.bSuccess)
+	{
+		if (AnimResult.Animations.Num() == 0)
+		{
+			TextContent->SetStringField(TEXT("text"),
+				FString::Printf(TEXT("No animations found in %s."), *BlueprintPath));
+		}
+		else
+		{
+			FString ResponseText = FString::Printf(TEXT("Animations in %s:\n"), *BlueprintPath);
+			for (const FWidgetAnimationInfo& Anim : AnimResult.Animations)
+			{
+				ResponseText += FString::Printf(TEXT("  %s: %.2fs - %.2fs\n"),
+					*Anim.AnimationName, Anim.StartTime, Anim.EndTime);
+			}
+			ResponseText += FString::Printf(TEXT("TotalAnimations: %d"), AnimResult.Animations.Num());
+			TextContent->SetStringField(TEXT("text"), ResponseText);
+		}
+		Result->SetBoolField(TEXT("isError"), false);
+	}
+	else
+	{
+		TextContent->SetStringField(TEXT("text"),
+			FString::Printf(TEXT("Failed to get widget animations: %s"), *AnimResult.ErrorMessage));
+		Result->SetBoolField(TEXT("isError"), true);
+	}
+
 	ContentArray.Add(MakeShared<FJsonValueObject>(TextContent));
 	Result->SetArrayField(TEXT("content"), ContentArray);
-	Result->SetBoolField(TEXT("isError"), true);
+
 	return Result;
 }

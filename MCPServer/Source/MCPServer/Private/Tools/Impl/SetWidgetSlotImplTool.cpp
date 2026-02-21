@@ -57,14 +57,76 @@ TSharedPtr<FJsonObject> FSetWidgetSlotImplTool::GetInputSchema() const
 
 TSharedPtr<FJsonObject> FSetWidgetSlotImplTool::Execute(const TSharedPtr<FJsonObject>& Arguments)
 {
-	// TODO: implement in commit 2
 	TSharedPtr<FJsonObject> Result = MakeShared<FJsonObject>();
 	TArray<TSharedPtr<FJsonValue>> ContentArray;
+
+	FString BlueprintPath, WidgetName;
+	if (!Arguments.IsValid() ||
+		!Arguments->TryGetStringField(TEXT("blueprint_path"), BlueprintPath) ||
+		!Arguments->TryGetStringField(TEXT("widget_name"), WidgetName))
+	{
+		TSharedPtr<FJsonObject> TextContent = MakeShared<FJsonObject>();
+		TextContent->SetStringField(TEXT("type"), TEXT("text"));
+		TextContent->SetStringField(TEXT("text"), TEXT("Missing required parameters: blueprint_path and widget_name"));
+		ContentArray.Add(MakeShared<FJsonValueObject>(TextContent));
+		Result->SetArrayField(TEXT("content"), ContentArray);
+		Result->SetBoolField(TEXT("isError"), true);
+		return Result;
+	}
+
+	TMap<FString, FString> SlotProps;
+	const TSharedPtr<FJsonObject>* SlotPropsObj;
+	if (Arguments->TryGetObjectField(TEXT("slot_properties"), SlotPropsObj))
+	{
+		for (const auto& Pair : (*SlotPropsObj)->Values)
+		{
+			FString Value;
+			if (Pair.Value->TryGetString(Value))
+			{
+				SlotProps.Add(Pair.Key, Value);
+			}
+			else
+			{
+				// Try number
+				double NumVal;
+				if (Pair.Value->TryGetNumber(NumVal))
+				{
+					SlotProps.Add(Pair.Key, FString::SanitizeFloat(NumVal));
+				}
+			}
+		}
+	}
+	else
+	{
+		TSharedPtr<FJsonObject> TextContent = MakeShared<FJsonObject>();
+		TextContent->SetStringField(TEXT("type"), TEXT("text"));
+		TextContent->SetStringField(TEXT("text"), TEXT("Missing required parameter: slot_properties"));
+		ContentArray.Add(MakeShared<FJsonValueObject>(TextContent));
+		Result->SetArrayField(TEXT("content"), ContentArray);
+		Result->SetBoolField(TEXT("isError"), true);
+		return Result;
+	}
+
+	FSetWidgetSlotResult SlotResult = UMGModule.SetWidgetSlot(BlueprintPath, WidgetName, SlotProps);
+
 	TSharedPtr<FJsonObject> TextContent = MakeShared<FJsonObject>();
 	TextContent->SetStringField(TEXT("type"), TEXT("text"));
-	TextContent->SetStringField(TEXT("text"), TEXT("set_widget_slot is not yet implemented"));
+
+	if (SlotResult.bSuccess)
+	{
+		TextContent->SetStringField(TEXT("text"),
+			FString::Printf(TEXT("Widget slot properties set successfully: %s"), *WidgetName));
+		Result->SetBoolField(TEXT("isError"), false);
+	}
+	else
+	{
+		TextContent->SetStringField(TEXT("text"),
+			FString::Printf(TEXT("Failed to set widget slot: %s"), *SlotResult.ErrorMessage));
+		Result->SetBoolField(TEXT("isError"), true);
+	}
+
 	ContentArray.Add(MakeShared<FJsonValueObject>(TextContent));
 	Result->SetArrayField(TEXT("content"), ContentArray);
-	Result->SetBoolField(TEXT("isError"), true);
+
 	return Result;
 }

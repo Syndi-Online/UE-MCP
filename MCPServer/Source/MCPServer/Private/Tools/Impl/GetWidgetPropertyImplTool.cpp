@@ -54,14 +54,44 @@ TSharedPtr<FJsonObject> FGetWidgetPropertyImplTool::GetInputSchema() const
 
 TSharedPtr<FJsonObject> FGetWidgetPropertyImplTool::Execute(const TSharedPtr<FJsonObject>& Arguments)
 {
-	// TODO: implement in commit 2
 	TSharedPtr<FJsonObject> Result = MakeShared<FJsonObject>();
 	TArray<TSharedPtr<FJsonValue>> ContentArray;
+
+	FString BlueprintPath, WidgetName, PropertyName;
+	if (!Arguments.IsValid() ||
+		!Arguments->TryGetStringField(TEXT("blueprint_path"), BlueprintPath) ||
+		!Arguments->TryGetStringField(TEXT("widget_name"), WidgetName) ||
+		!Arguments->TryGetStringField(TEXT("property_name"), PropertyName))
+	{
+		TSharedPtr<FJsonObject> TextContent = MakeShared<FJsonObject>();
+		TextContent->SetStringField(TEXT("type"), TEXT("text"));
+		TextContent->SetStringField(TEXT("text"), TEXT("Missing required parameters: blueprint_path, widget_name, and property_name"));
+		ContentArray.Add(MakeShared<FJsonValueObject>(TextContent));
+		Result->SetArrayField(TEXT("content"), ContentArray);
+		Result->SetBoolField(TEXT("isError"), true);
+		return Result;
+	}
+
+	FGetWidgetPropertyResult GetResult = UMGModule.GetWidgetProperty(BlueprintPath, WidgetName, PropertyName);
+
 	TSharedPtr<FJsonObject> TextContent = MakeShared<FJsonObject>();
 	TextContent->SetStringField(TEXT("type"), TEXT("text"));
-	TextContent->SetStringField(TEXT("text"), TEXT("get_widget_property is not yet implemented"));
+
+	if (GetResult.bSuccess)
+	{
+		TextContent->SetStringField(TEXT("text"),
+			FString::Printf(TEXT("%s.%s = %s"), *WidgetName, *PropertyName, *GetResult.PropertyValue));
+		Result->SetBoolField(TEXT("isError"), false);
+	}
+	else
+	{
+		TextContent->SetStringField(TEXT("text"),
+			FString::Printf(TEXT("Failed to get widget property: %s"), *GetResult.ErrorMessage));
+		Result->SetBoolField(TEXT("isError"), true);
+	}
+
 	ContentArray.Add(MakeShared<FJsonValueObject>(TextContent));
 	Result->SetArrayField(TEXT("content"), ContentArray);
-	Result->SetBoolField(TEXT("isError"), true);
+
 	return Result;
 }

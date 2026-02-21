@@ -47,7 +47,10 @@ public class MCPServer : ModuleRules
 			"Slate",
 			"ContentBrowser",
 			"EditorFramework",
-			"WorldPartitionEditor"
+			"WorldPartitionEditor",
+			"UMG",
+			"UMGEditor",
+			"SlateCore"
 		});
 	}
 }
