@@ -8,6 +8,7 @@
 #include "Tools/Impl/BatchConnectMaterialExpressionsImplTool.h"
 #include "Tools/Impl/AddGraphNodesBatchImplTool.h"
 #include "Tools/Impl/BatchConnectGraphPinsImplTool.h"
+#include "Tools/Impl/BatchSetPinDefaultsImplTool.h"
 #include "Tests/Mocks/MockActorModule.h"
 #include "Tests/Mocks/MockMaterialModule.h"
 #include "Tests/Mocks/MockBlueprintModule.h"
@@ -704,6 +705,103 @@ bool FBatchConnectGraphPinsModuleFailureTest::RunTest(const FString& Parameters)
 	Conn->SetStringField(TEXT("target_pin"), TEXT("execute"));
 	Conns.Add(MakeShared<FJsonValueObject>(Conn));
 	Args->SetArrayField(TEXT("connections"), Conns);
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("isError when all fail"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Contains error"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Pin not found")));
+	return true;
+}
+
+// ===========================================================================
+// BatchSetPinDefaults
+// ===========================================================================
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBatchSetPinDefaultsMetadataTest,
+	"MCPServer.Unit.Batch.BatchSetPinDefaults.Metadata",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FBatchSetPinDefaultsMetadataTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	FBatchSetPinDefaultsImplTool Tool(Mock);
+	TestEqual(TEXT("Name"), Tool.GetName(), TEXT("batch_set_pin_defaults"));
+	TestTrue(TEXT("Description not empty"), !Tool.GetDescription().IsEmpty());
+	TestTrue(TEXT("Schema valid"), Tool.GetInputSchema().IsValid());
+	TestTrue(TEXT("Schema has type"), Tool.GetInputSchema()->HasField(TEXT("type")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBatchSetPinDefaultsSuccessTest,
+	"MCPServer.Unit.Batch.BatchSetPinDefaults.Success",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FBatchSetPinDefaultsSuccessTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.SetPinDefaultValueResult.bSuccess = true;
+	FBatchSetPinDefaultsImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+
+	TArray<TSharedPtr<FJsonValue>> Ops;
+	auto Op1 = MakeShared<FJsonObject>();
+	Op1->SetStringField(TEXT("node_id"), TEXT("AAAA-BBBB-CCCC-DDDD"));
+	Op1->SetStringField(TEXT("pin_name"), TEXT("InString"));
+	Op1->SetStringField(TEXT("value"), TEXT("Hello"));
+	Ops.Add(MakeShared<FJsonValueObject>(Op1));
+
+	auto Op2 = MakeShared<FJsonObject>();
+	Op2->SetStringField(TEXT("node_id"), TEXT("AAAA-BBBB-CCCC-DDDD"));
+	Op2->SetStringField(TEXT("pin_name"), TEXT("Duration"));
+	Op2->SetStringField(TEXT("value"), TEXT("2.0"));
+	Ops.Add(MakeShared<FJsonValueObject>(Op2));
+
+	Args->SetArrayField(TEXT("operations"), Ops);
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("Success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Contains 2 succeeded"), MCPTestUtils::GetResultText(Result).Contains(TEXT("2 succeeded")));
+	TestEqual(TEXT("SetPinDefaultValue called twice"), Mock.Recorder.GetCallCount(TEXT("SetPinDefaultValue")), 2);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBatchSetPinDefaultsMissingArgsTest,
+	"MCPServer.Unit.Batch.BatchSetPinDefaults.MissingArgs",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FBatchSetPinDefaultsMissingArgsTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	FBatchSetPinDefaultsImplTool Tool(Mock);
+	auto Result = Tool.Execute(MakeShared<FJsonObject>());
+	TestTrue(TEXT("Error"), MCPTestUtils::IsError(Result));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBatchSetPinDefaultsModuleFailureTest,
+	"MCPServer.Unit.Batch.BatchSetPinDefaults.ModuleFailure",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FBatchSetPinDefaultsModuleFailureTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.SetPinDefaultValueResult.bSuccess = false;
+	Mock.SetPinDefaultValueResult.ErrorMessage = TEXT("Pin not found");
+	FBatchSetPinDefaultsImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+
+	TArray<TSharedPtr<FJsonValue>> Ops;
+	auto Op = MakeShared<FJsonObject>();
+	Op->SetStringField(TEXT("node_id"), TEXT("AAAA-BBBB-CCCC-DDDD"));
+	Op->SetStringField(TEXT("pin_name"), TEXT("BadPin"));
+	Op->SetStringField(TEXT("value"), TEXT("val"));
+	Ops.Add(MakeShared<FJsonValueObject>(Op));
+	Args->SetArrayField(TEXT("operations"), Ops);
 	auto Result = Tool.Execute(Args);
 
 	TestTrue(TEXT("isError when all fail"), MCPTestUtils::IsError(Result));
