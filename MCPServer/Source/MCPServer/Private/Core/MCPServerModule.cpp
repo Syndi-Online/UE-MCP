@@ -97,6 +97,7 @@
 #include "Tools/Impl/GetGraphNodesInAreaImplTool.h"
 #include "Tools/Impl/DisconnectGraphPinsImplTool.h"
 #include "Tools/Impl/FindFunctionImplTool.h"
+#include "Tools/Impl/BatchConnectGraphPinsImplTool.h"
 #include "Tools/Impl/CreateMaterialExpressionImplTool.h"
 #include "Tools/Impl/DeleteMaterialExpressionImplTool.h"
 #include "Tools/Impl/ConnectMaterialExpressionsImplTool.h"
@@ -414,6 +415,7 @@ void FMCPServerModule::RegisterBuiltinTools()
 	ToolRegistry->RegisterTool(MakeShared<FGetGraphNodesInAreaImplTool>(*BlueprintModule));
 	ToolRegistry->RegisterTool(MakeShared<FDisconnectGraphPinsImplTool>(*BlueprintModule));
 	ToolRegistry->RegisterTool(MakeShared<FFindFunctionImplTool>(*BlueprintModule));
+	ToolRegistry->RegisterTool(MakeShared<FBatchConnectGraphPinsImplTool>(*BlueprintModule));
 
 	// Material tools
 	ToolRegistry->RegisterTool(MakeShared<FCreateMaterialExpressionImplTool>(*MaterialModule));

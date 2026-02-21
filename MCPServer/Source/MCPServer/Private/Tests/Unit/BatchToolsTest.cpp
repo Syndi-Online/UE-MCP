@@ -7,6 +7,7 @@
 #include "Tools/Impl/BatchSetMaterialExpressionPropertiesImplTool.h"
 #include "Tools/Impl/BatchConnectMaterialExpressionsImplTool.h"
 #include "Tools/Impl/AddGraphNodesBatchImplTool.h"
+#include "Tools/Impl/BatchConnectGraphPinsImplTool.h"
 #include "Tests/Mocks/MockActorModule.h"
 #include "Tests/Mocks/MockMaterialModule.h"
 #include "Tests/Mocks/MockBlueprintModule.h"
@@ -607,6 +608,106 @@ bool FAddGraphNodesBatchRollbackTest::RunTest(const FString& Parameters)
 	auto Result = Tool.Execute(Args);
 	TestTrue(TEXT("IsError"), MCPTestUtils::IsError(Result));
 	TestTrue(TEXT("Contains rollback"), MCPTestUtils::GetResultText(Result).Contains(TEXT("rolled back")));
+	return true;
+}
+
+// ===========================================================================
+// BatchConnectGraphPins
+// ===========================================================================
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBatchConnectGraphPinsMetadataTest,
+	"MCPServer.Unit.Batch.BatchConnectGraphPins.Metadata",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FBatchConnectGraphPinsMetadataTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	FBatchConnectGraphPinsImplTool Tool(Mock);
+	TestEqual(TEXT("Name"), Tool.GetName(), TEXT("batch_connect_graph_pins"));
+	TestTrue(TEXT("Description not empty"), !Tool.GetDescription().IsEmpty());
+	TestTrue(TEXT("Schema valid"), Tool.GetInputSchema().IsValid());
+	TestTrue(TEXT("Schema has type"), Tool.GetInputSchema()->HasField(TEXT("type")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBatchConnectGraphPinsSuccessTest,
+	"MCPServer.Unit.Batch.BatchConnectGraphPins.Success",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FBatchConnectGraphPinsSuccessTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.ConnectGraphPinsResult.bSuccess = true;
+	FBatchConnectGraphPinsImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+
+	TArray<TSharedPtr<FJsonValue>> Conns;
+	auto Conn1 = MakeShared<FJsonObject>();
+	Conn1->SetStringField(TEXT("source_node_id"), TEXT("AAAA-BBBB-CCCC-DDDD"));
+	Conn1->SetStringField(TEXT("source_pin"), TEXT("then"));
+	Conn1->SetStringField(TEXT("target_node_id"), TEXT("EEEE-FFFF-0000-1111"));
+	Conn1->SetStringField(TEXT("target_pin"), TEXT("execute"));
+	Conns.Add(MakeShared<FJsonValueObject>(Conn1));
+
+	auto Conn2 = MakeShared<FJsonObject>();
+	Conn2->SetStringField(TEXT("source_node_id"), TEXT("AAAA-BBBB-CCCC-DDDD"));
+	Conn2->SetStringField(TEXT("source_pin"), TEXT("ReturnValue"));
+	Conn2->SetStringField(TEXT("target_node_id"), TEXT("EEEE-FFFF-0000-1111"));
+	Conn2->SetStringField(TEXT("target_pin"), TEXT("InString"));
+	Conns.Add(MakeShared<FJsonValueObject>(Conn2));
+
+	Args->SetArrayField(TEXT("connections"), Conns);
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("Success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Contains 2 succeeded"), MCPTestUtils::GetResultText(Result).Contains(TEXT("2 succeeded")));
+	TestEqual(TEXT("ConnectGraphPins called twice"), Mock.Recorder.GetCallCount(TEXT("ConnectGraphPins")), 2);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBatchConnectGraphPinsMissingArgsTest,
+	"MCPServer.Unit.Batch.BatchConnectGraphPins.MissingArgs",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FBatchConnectGraphPinsMissingArgsTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	FBatchConnectGraphPinsImplTool Tool(Mock);
+	auto Result = Tool.Execute(MakeShared<FJsonObject>());
+	TestTrue(TEXT("Error"), MCPTestUtils::IsError(Result));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBatchConnectGraphPinsModuleFailureTest,
+	"MCPServer.Unit.Batch.BatchConnectGraphPins.ModuleFailure",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FBatchConnectGraphPinsModuleFailureTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.ConnectGraphPinsResult.bSuccess = false;
+	Mock.ConnectGraphPinsResult.ErrorMessage = TEXT("Pin not found");
+	FBatchConnectGraphPinsImplTool Tool(Mock);
+
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+
+	TArray<TSharedPtr<FJsonValue>> Conns;
+	auto Conn = MakeShared<FJsonObject>();
+	Conn->SetStringField(TEXT("source_node_id"), TEXT("AAAA-BBBB-CCCC-DDDD"));
+	Conn->SetStringField(TEXT("source_pin"), TEXT("BadPin"));
+	Conn->SetStringField(TEXT("target_node_id"), TEXT("EEEE-FFFF-0000-1111"));
+	Conn->SetStringField(TEXT("target_pin"), TEXT("execute"));
+	Conns.Add(MakeShared<FJsonValueObject>(Conn));
+	Args->SetArrayField(TEXT("connections"), Conns);
+	auto Result = Tool.Execute(Args);
+
+	TestTrue(TEXT("isError when all fail"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Contains error"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Pin not found")));
 	return true;
 }
 
