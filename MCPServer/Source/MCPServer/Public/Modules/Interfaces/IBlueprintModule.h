@@ -281,6 +281,27 @@ struct FAddEventDispatcherResult
 	FString ErrorMessage;
 };
 
+// Function search
+struct FFindFunctionParamInfo
+{
+	FString ParamName;
+};
+
+struct FFindFunctionInfo
+{
+	FString FunctionName;
+	FString ClassName;
+	FString DisplayName;
+	TArray<FFindFunctionParamInfo> Params;
+};
+
+struct FFindFunctionResult
+{
+	bool bSuccess = false;
+	TArray<FFindFunctionInfo> Functions;
+	FString ErrorMessage;
+};
+
 /**
  * Module interface for Blueprint operations.
  */
@@ -331,4 +352,7 @@ public:
 	// Spatial queries
 	virtual FDisconnectGraphPinsResult DisconnectGraphPins(const FString& BlueprintPath, const FString& GraphName, const FString& SourceNodeId, const FString& SourcePinName, const FString& TargetNodeId, const FString& TargetPinName) = 0;
 	virtual FGetGraphNodesInAreaResult GetGraphNodesInArea(const FString& BlueprintPath, const FString& GraphName, int32 MinX, int32 MinY, int32 MaxX, int32 MaxY) = 0;
+
+	// Function search
+	virtual FFindFunctionResult FindFunction(const FString& Search, const FString* ClassName, int32 Limit, bool bBlueprintCallableOnly) = 0;
 };

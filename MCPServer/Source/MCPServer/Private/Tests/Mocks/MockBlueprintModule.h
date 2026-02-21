@@ -94,4 +94,9 @@ public:
 	FGetGraphNodesInAreaResult GetGraphNodesInAreaResult;
 
 	virtual FGetGraphNodesInAreaResult GetGraphNodesInArea(const FString& BlueprintPath, const FString& GraphName, int32 MinX, int32 MinY, int32 MaxX, int32 MaxY) override { Recorder.RecordCall(TEXT("GetGraphNodesInArea")); return GetGraphNodesInAreaResult; }
+
+	// Function search
+	FFindFunctionResult FindFunctionResult;
+
+	virtual FFindFunctionResult FindFunction(const FString& Search, const FString* ClassName, int32 Limit, bool bBlueprintCallableOnly) override { Recorder.RecordCall(TEXT("FindFunction")); return FindFunctionResult; }
 };

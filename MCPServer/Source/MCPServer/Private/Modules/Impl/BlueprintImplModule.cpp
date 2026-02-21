@@ -2166,3 +2166,10 @@ FGetGraphNodesInAreaResult FBlueprintImplModule::GetGraphNodesInArea(const FStri
 	Result.bSuccess = true;
 	return Result;
 }
+
+FFindFunctionResult FBlueprintImplModule::FindFunction(const FString& Search, const FString* ClassName, int32 Limit, bool bBlueprintCallableOnly)
+{
+	FFindFunctionResult Result;
+	Result.ErrorMessage = TEXT("find_function: not implemented");
+	return Result;
+}

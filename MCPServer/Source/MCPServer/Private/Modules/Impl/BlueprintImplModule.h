@@ -49,6 +49,8 @@ public:
 	virtual FDisconnectGraphPinsResult DisconnectGraphPins(const FString& BlueprintPath, const FString& GraphName, const FString& SourceNodeId, const FString& SourcePinName, const FString& TargetNodeId, const FString& TargetPinName) override;
 	virtual FGetGraphNodesInAreaResult GetGraphNodesInArea(const FString& BlueprintPath, const FString& GraphName, int32 MinX, int32 MinY, int32 MaxX, int32 MaxY) override;
 
+	virtual FFindFunctionResult FindFunction(const FString& Search, const FString* ClassName, int32 Limit, bool bBlueprintCallableOnly) override;
+
 private:
 	UEdGraph* FindGraph(UBlueprint* Blueprint, const FString& GraphName);
 	UEdGraphNode* FindNodeById(UEdGraph* Graph, const FString& NodeId);
