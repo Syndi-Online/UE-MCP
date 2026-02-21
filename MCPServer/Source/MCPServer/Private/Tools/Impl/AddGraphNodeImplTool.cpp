@@ -40,7 +40,7 @@ TSharedPtr<FJsonObject> FAddGraphNodeImplTool::GetInputSchema() const
 
 	TSharedPtr<FJsonObject> NodeTypeProp = MakeShared<FJsonObject>();
 	NodeTypeProp->SetStringField(TEXT("type"), TEXT("string"));
-	NodeTypeProp->SetStringField(TEXT("description"), TEXT("Type of node: CallFunction, Event, ComponentBoundEvent, VariableGet, VariableSet, DynamicCast, IfThenElse/Branch, MacroInstance, SwitchEnum"));
+	NodeTypeProp->SetStringField(TEXT("description"), TEXT("Type of node: CallFunction, Event, ComponentBoundEvent, VariableGet, VariableSet, DynamicCast, IfThenElse/Branch, MacroInstance, SwitchEnum, MapForEach, FormatText, EnumToString/GetEnumeratorNameAsString"));
 	Properties->SetObjectField(TEXT("node_type"), NodeTypeProp);
 
 	TSharedPtr<FJsonObject> MemberNameProp = MakeShared<FJsonObject>();

@@ -1520,7 +1520,7 @@ FAddGraphNodeResult FBlueprintImplModule::AddGraphNode(const FString& BlueprintP
 	}
 	else
 	{
-		Result.ErrorMessage = FString::Printf(TEXT("Unsupported node type: %s. Supported: CallFunction, Event, ComponentBoundEvent, VariableGet, VariableSet, DynamicCast, IfThenElse/Branch, MacroInstance, SwitchEnum"), *NodeType);
+		Result.ErrorMessage = FString::Printf(TEXT("Unsupported node type: %s. Supported: CallFunction, Event, ComponentBoundEvent, VariableGet, VariableSet, DynamicCast, IfThenElse/Branch, MacroInstance, SwitchEnum, MapForEach, FormatText, EnumToString/GetEnumeratorNameAsString"), *NodeType);
 		return Result;
 	}
 

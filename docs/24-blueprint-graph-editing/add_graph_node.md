@@ -8,7 +8,7 @@ Add a node to a Blueprint graph.
 |-----------|------|----------|-------------|
 | blueprint_path | string | Yes | Asset path of the Blueprint |
 | graph_name | string | Yes | Name of the graph (e.g. EventGraph) |
-| node_type | string | Yes | Type of node: CallFunction, Event, ComponentBoundEvent, VariableGet, VariableSet, DynamicCast, IfThenElse/Branch, MacroInstance, SwitchEnum |
+| node_type | string | Yes | Type of node: CallFunction, Event, ComponentBoundEvent, VariableGet, VariableSet, DynamicCast, IfThenElse/Branch, MacroInstance, SwitchEnum, MapForEach, FormatText, EnumToString/GetEnumeratorNameAsString |
 | member_name | string | No | Function/variable/macro name. Required for: CallFunction, Event, VariableGet, VariableSet, MacroInstance. E.g. PrintString, ForEachLoop |
 | target | string | No | Target class/type. For CallFunction: class name. For DynamicCast: class to cast to. For SwitchEnum: enum path. For ComponentBoundEvent: component variable name |
 | position | object | No | Optional position of the node `{x, y}` |
@@ -65,11 +65,15 @@ Failed to add graph node: Blueprint not found: /Game/Blueprints/BP_Missing
 
 ## Notes
 
-- The `member_name` parameter is required for most node types (CallFunction, Event, VariableGet, VariableSet, MacroInstance) but not for IfThenElse/Branch or DynamicCast.
+- The `member_name` parameter is required for most node types (CallFunction, Event, VariableGet, VariableSet, MacroInstance) but not for IfThenElse/Branch, DynamicCast, MapForEach, or EnumToString.
+- For **FormatText**, `member_name` is optional — if provided it sets the format string (e.g. `"{Name}: {Amount}"`).
 - The `target` parameter meaning varies by node type:
   - **CallFunction**: the owning class name (e.g. `KismetSystemLibrary`, `Actor`)
   - **DynamicCast**: the class to cast to
   - **SwitchEnum**: the enum asset path
   - **ComponentBoundEvent**: the component variable name
+- **MapForEach** iterates a `TMap`, providing Key, Value, loop body, and Completed exec pins.
+- **FormatText** creates a Format Text node for `FText::Format`-style string building.
+- **EnumToString** (alias **GetEnumeratorNameAsString**) converts an enum value to its display string.
 - If `position` is omitted, the node is placed at (0, 0).
 - The response includes all pins on the newly created node, which is useful for immediately connecting them.
