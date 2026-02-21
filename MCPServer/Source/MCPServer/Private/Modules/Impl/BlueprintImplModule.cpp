@@ -24,6 +24,9 @@
 #include "K2Node_IfThenElse.h"
 #include "K2Node_MacroInstance.h"
 #include "K2Node_SwitchEnum.h"
+#include "K2Node_MapForEach.h"
+#include "K2Node_FormatText.h"
+#include "K2Node_GetEnumeratorNameAsString.h"
 #include "K2Node_EditablePinBase.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -1517,6 +1520,51 @@ FAddGraphNodeResult FBlueprintImplModule::AddGraphNode(const FString& BlueprintP
 		Graph->AddNode(SwitchNode, false, false);
 		SwitchNode->PostPlacedNewNode();
 		NewNode = SwitchNode;
+	}
+	else if (NodeType.Equals(TEXT("MapForEach"), ESearchCase::IgnoreCase))
+	{
+		UK2Node_MapForEach* MapForEachNode = NewObject<UK2Node_MapForEach>(Graph);
+		MapForEachNode->CreateNewGuid();
+		MapForEachNode->NodePosX = PosX ? *PosX : 0;
+		MapForEachNode->NodePosY = PosY ? *PosY : 0;
+		MapForEachNode->AllocateDefaultPins();
+		Graph->AddNode(MapForEachNode, false, false);
+		MapForEachNode->PostPlacedNewNode();
+		NewNode = MapForEachNode;
+	}
+	else if (NodeType.Equals(TEXT("FormatText"), ESearchCase::IgnoreCase))
+	{
+		UK2Node_FormatText* FormatTextNode = NewObject<UK2Node_FormatText>(Graph);
+		FormatTextNode->CreateNewGuid();
+		FormatTextNode->NodePosX = PosX ? *PosX : 0;
+		FormatTextNode->NodePosY = PosY ? *PosY : 0;
+		FormatTextNode->AllocateDefaultPins();
+		Graph->AddNode(FormatTextNode, false, false);
+		FormatTextNode->PostPlacedNewNode();
+
+		// If member_name is provided, use it as the format string
+		if (MemberName)
+		{
+			UEdGraphPin* FormatPin = FormatTextNode->GetFormatPin();
+			if (FormatPin)
+			{
+				const UEdGraphSchema* Schema = Graph->GetSchema();
+				Schema->TrySetDefaultValue(*FormatPin, *MemberName);
+			}
+		}
+
+		NewNode = FormatTextNode;
+	}
+	else if (NodeType.Equals(TEXT("GetEnumeratorNameAsString"), ESearchCase::IgnoreCase) || NodeType.Equals(TEXT("EnumToString"), ESearchCase::IgnoreCase))
+	{
+		UK2Node_GetEnumeratorNameAsString* EnumToStringNode = NewObject<UK2Node_GetEnumeratorNameAsString>(Graph);
+		EnumToStringNode->CreateNewGuid();
+		EnumToStringNode->NodePosX = PosX ? *PosX : 0;
+		EnumToStringNode->NodePosY = PosY ? *PosY : 0;
+		EnumToStringNode->AllocateDefaultPins();
+		Graph->AddNode(EnumToStringNode, false, false);
+		EnumToStringNode->PostPlacedNewNode();
+		NewNode = EnumToStringNode;
 	}
 	else
 	{
