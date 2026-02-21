@@ -1349,7 +1349,36 @@ FAddGraphNodeResult FBlueprintImplModule::AddGraphNode(const FString& BlueprintP
 
 		UK2Node_VariableGet* GetNode = NewObject<UK2Node_VariableGet>(Graph);
 		GetNode->CreateNewGuid();
-		GetNode->VariableReference.SetSelfMember(FName(**MemberName));
+
+		if (Target)
+		{
+			UClass* MemberClass = FindFirstObject<UClass>(**Target, EFindFirstObjectOptions::ExactClass);
+			if (!MemberClass)
+			{
+				FString WithU = TEXT("U") + *Target;
+				MemberClass = FindFirstObject<UClass>(*WithU, EFindFirstObjectOptions::ExactClass);
+			}
+			if (!MemberClass)
+			{
+				FString WithA = TEXT("A") + *Target;
+				MemberClass = FindFirstObject<UClass>(*WithA, EFindFirstObjectOptions::ExactClass);
+			}
+			if (!MemberClass)
+			{
+				MemberClass = LoadObject<UClass>(nullptr, **Target);
+			}
+			if (!MemberClass)
+			{
+				Result.ErrorMessage = FString::Printf(TEXT("Target class not found: %s"), **Target);
+				return Result;
+			}
+			GetNode->VariableReference.SetExternalMember(FName(**MemberName), MemberClass);
+		}
+		else
+		{
+			GetNode->VariableReference.SetSelfMember(FName(**MemberName));
+		}
+
 		GetNode->NodePosX = PosX ? *PosX : 0;
 		GetNode->NodePosY = PosY ? *PosY : 0;
 		GetNode->AllocateDefaultPins();
