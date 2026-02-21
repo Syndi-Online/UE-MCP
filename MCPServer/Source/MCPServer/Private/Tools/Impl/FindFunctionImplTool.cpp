@@ -59,11 +59,84 @@ TSharedPtr<FJsonObject> FFindFunctionImplTool::Execute(const TSharedPtr<FJsonObj
 {
 	TSharedPtr<FJsonObject> Result = MakeShared<FJsonObject>();
 	TArray<TSharedPtr<FJsonValue>> ContentArray;
+
+	FString Search;
+	if (!Arguments.IsValid() || !Arguments->TryGetStringField(TEXT("search"), Search) || Search.IsEmpty())
+	{
+		TSharedPtr<FJsonObject> TextContent = MakeShared<FJsonObject>();
+		TextContent->SetStringField(TEXT("type"), TEXT("text"));
+		TextContent->SetStringField(TEXT("text"), TEXT("Missing required parameter: search"));
+		ContentArray.Add(MakeShared<FJsonValueObject>(TextContent));
+		Result->SetArrayField(TEXT("content"), ContentArray);
+		Result->SetBoolField(TEXT("isError"), true);
+		return Result;
+	}
+
+	FString ClassName;
+	const FString* ClassNamePtr = nullptr;
+	if (Arguments->TryGetStringField(TEXT("class_name"), ClassName) && !ClassName.IsEmpty())
+	{
+		ClassNamePtr = &ClassName;
+	}
+
+	int32 Limit = 10;
+	double LimitD = 0;
+	if (Arguments->TryGetNumberField(TEXT("limit"), LimitD) && LimitD > 0)
+	{
+		Limit = static_cast<int32>(LimitD);
+	}
+
+	bool bBlueprintCallableOnly = true;
+	Arguments->TryGetBoolField(TEXT("blueprint_callable_only"), bBlueprintCallableOnly);
+
+	FFindFunctionResult FindResult = BlueprintModule.FindFunction(Search, ClassNamePtr, Limit, bBlueprintCallableOnly);
+
 	TSharedPtr<FJsonObject> TextContent = MakeShared<FJsonObject>();
 	TextContent->SetStringField(TEXT("type"), TEXT("text"));
-	TextContent->SetStringField(TEXT("text"), TEXT("find_function: not implemented"));
+
+	if (FindResult.bSuccess)
+	{
+		if (FindResult.Functions.Num() == 0)
+		{
+			TextContent->SetStringField(TEXT("text"),
+				FString::Printf(TEXT("No functions found matching \"%s\""), *Search));
+			Result->SetBoolField(TEXT("isError"), false);
+		}
+		else
+		{
+			FString ResponseText = FString::Printf(TEXT("Found %d functions matching \"%s\":\n"),
+				FindResult.Functions.Num(), *Search);
+			for (const FFindFunctionInfo& Info : FindResult.Functions)
+			{
+				ResponseText += FString::Printf(TEXT("- %s (%s)"),
+					*Info.FunctionName, *Info.ClassName);
+				if (!Info.DisplayName.IsEmpty())
+				{
+					ResponseText += FString::Printf(TEXT(" [%s]"), *Info.DisplayName);
+				}
+				if (Info.Params.Num() > 0)
+				{
+					ResponseText += TEXT(" params: ");
+					for (int32 i = 0; i < Info.Params.Num(); ++i)
+					{
+						if (i > 0) ResponseText += TEXT(", ");
+						ResponseText += Info.Params[i].ParamName;
+					}
+				}
+				ResponseText += TEXT("\n");
+			}
+			TextContent->SetStringField(TEXT("text"), ResponseText);
+			Result->SetBoolField(TEXT("isError"), false);
+		}
+	}
+	else
+	{
+		TextContent->SetStringField(TEXT("text"),
+			FString::Printf(TEXT("find_function failed: %s"), *FindResult.ErrorMessage));
+		Result->SetBoolField(TEXT("isError"), true);
+	}
+
 	ContentArray.Add(MakeShared<FJsonValueObject>(TextContent));
 	Result->SetArrayField(TEXT("content"), ContentArray);
-	Result->SetBoolField(TEXT("isError"), true);
 	return Result;
 }

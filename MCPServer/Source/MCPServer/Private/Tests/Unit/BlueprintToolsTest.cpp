@@ -11,6 +11,7 @@
 #include "Tools/Impl/GetBlueprintGraphsImplTool.h"
 #include "Tools/Impl/ReparentBlueprintImplTool.h"
 #include "Tools/Impl/OpenBlueprintEditorImplTool.h"
+#include "Tools/Impl/FindFunctionImplTool.h"
 #include "Tests/Mocks/MockBlueprintModule.h"
 #include "Tests/Integration/IntegrationTestUtils.h"
 
@@ -763,6 +764,110 @@ bool FOpenBlueprintEditorModuleFailureTest::RunTest(const FString& Parameters)
 	auto Result = Tool.Execute(Args);
 	TestTrue(TEXT("IsError"), MCPTestUtils::IsError(Result));
 	TestTrue(TEXT("Contains error"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Open editor failed")));
+	return true;
+}
+
+// ============================================================================
+// FindFunction
+// ============================================================================
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFindFunctionMetadataTest,
+	"MCPServer.Unit.Blueprints.FindFunction.Metadata",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FFindFunctionMetadataTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	FFindFunctionImplTool Tool(Mock);
+	TestEqual(TEXT("Name"), Tool.GetName(), TEXT("find_function"));
+	TestTrue(TEXT("Description not empty"), !Tool.GetDescription().IsEmpty());
+	TestTrue(TEXT("Schema valid"), Tool.GetInputSchema().IsValid());
+	TestTrue(TEXT("Schema has type"), Tool.GetInputSchema()->HasField(TEXT("type")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFindFunctionSuccessTest,
+	"MCPServer.Unit.Blueprints.FindFunction.Success",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FFindFunctionSuccessTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.FindFunctionResult.bSuccess = true;
+	FFindFunctionInfo FuncInfo;
+	FuncInfo.FunctionName = TEXT("K2_PrintString");
+	FuncInfo.ClassName = TEXT("KismetSystemLibrary");
+	FuncInfo.DisplayName = TEXT("Print String");
+	FFindFunctionParamInfo Param;
+	Param.ParamName = TEXT("InString");
+	FuncInfo.Params.Add(Param);
+	Mock.FindFunctionResult.Functions.Add(FuncInfo);
+
+	FFindFunctionImplTool Tool(Mock);
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("search"), TEXT("PrintString"));
+
+	auto Result = Tool.Execute(Args);
+	TestTrue(TEXT("Success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Contains func name"), MCPTestUtils::GetResultText(Result).Contains(TEXT("K2_PrintString")));
+	TestTrue(TEXT("Contains class"), MCPTestUtils::GetResultText(Result).Contains(TEXT("KismetSystemLibrary")));
+	TestTrue(TEXT("Contains param"), MCPTestUtils::GetResultText(Result).Contains(TEXT("InString")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFindFunctionMissingSearchTest,
+	"MCPServer.Unit.Blueprints.FindFunction.MissingSearch",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FFindFunctionMissingSearchTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	FFindFunctionImplTool Tool(Mock);
+	auto Result = Tool.Execute(MakeShared<FJsonObject>());
+	TestTrue(TEXT("IsError"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Mentions search"), MCPTestUtils::GetResultText(Result).Contains(TEXT("search")));
+	TestEqual(TEXT("Mock not called"), Mock.Recorder.GetCallCount(TEXT("FindFunction")), 0);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFindFunctionModuleFailureTest,
+	"MCPServer.Unit.Blueprints.FindFunction.ModuleFailure",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FFindFunctionModuleFailureTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.FindFunctionResult.bSuccess = false;
+	Mock.FindFunctionResult.ErrorMessage = TEXT("Class not found: BadClass");
+
+	FFindFunctionImplTool Tool(Mock);
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("search"), TEXT("SomeFunc"));
+	Args->SetStringField(TEXT("class_name"), TEXT("BadClass"));
+
+	auto Result = Tool.Execute(Args);
+	TestTrue(TEXT("IsError"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Contains error"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Class not found")));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FFindFunctionEmptyResultTest,
+	"MCPServer.Unit.Blueprints.FindFunction.EmptyResult",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FFindFunctionEmptyResultTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.FindFunctionResult.bSuccess = true;
+	// No functions added — empty result
+
+	FFindFunctionImplTool Tool(Mock);
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("search"), TEXT("NonExistentFunc"));
+
+	auto Result = Tool.Execute(Args);
+	TestTrue(TEXT("Success (not error)"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Contains no match msg"), MCPTestUtils::GetResultText(Result).Contains(TEXT("No functions found")));
 	return true;
 }
 

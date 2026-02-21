@@ -11,6 +11,7 @@
 #include "Tools/Impl/CompileBlueprintImplTool.h"
 #include "Tools/Impl/ReparentBlueprintImplTool.h"
 #include "Tools/Impl/OpenBlueprintEditorImplTool.h"
+#include "Tools/Impl/FindFunctionImplTool.h"
 #include "Dom/JsonValue.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
@@ -129,6 +130,24 @@ bool FBlueprintIntegrationTest::RunTest(const FString& Parameters)
 	Args->SetStringField(TEXT("blueprint_path"), BPPath);
 	TestTrue(TEXT("OpenBlueprintEditor success"), MCPTestUtils::IsSuccess(OpenEditorTool.Execute(Args)));
 
+	// Step 10: FindFunction
+	FFindFunctionInfo FuncInfo;
+	FuncInfo.FunctionName = TEXT("K2_SetActorLocation");
+	FuncInfo.ClassName = TEXT("Actor");
+	FuncInfo.DisplayName = TEXT("Set Actor Location");
+	FFindFunctionParamInfo Param;
+	Param.ParamName = TEXT("NewLocation");
+	FuncInfo.Params.Add(Param);
+	Mock.FindFunctionResult.bSuccess = true;
+	Mock.FindFunctionResult.Functions.Add(FuncInfo);
+
+	FFindFunctionImplTool FindFuncTool(Mock);
+	Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("search"), TEXT("SetActorLocation"));
+	Result = FindFuncTool.Execute(Args);
+	TestTrue(TEXT("FindFunction success"), MCPTestUtils::IsSuccess(Result));
+	TestTrue(TEXT("Contains K2_SetActorLocation"), MCPTestUtils::GetResultText(Result).Contains(TEXT("K2_SetActorLocation")));
+
 	// Verify all calls were made
 	TestEqual(TEXT("CreateBlueprint called"), Mock.Recorder.GetCallCount(TEXT("CreateBlueprint")), 1);
 	TestEqual(TEXT("AddBlueprintVariable called"), Mock.Recorder.GetCallCount(TEXT("AddBlueprintVariable")), 2);
@@ -138,7 +157,8 @@ bool FBlueprintIntegrationTest::RunTest(const FString& Parameters)
 	TestEqual(TEXT("CompileBlueprint called"), Mock.Recorder.GetCallCount(TEXT("CompileBlueprint")), 1);
 	TestEqual(TEXT("ReparentBlueprint called"), Mock.Recorder.GetCallCount(TEXT("ReparentBlueprint")), 1);
 	TestEqual(TEXT("OpenBlueprintEditor called"), Mock.Recorder.GetCallCount(TEXT("OpenBlueprintEditor")), 1);
-	TestEqual(TEXT("Total calls"), Mock.Recorder.GetTotalCallCount(), 9);
+	TestEqual(TEXT("FindFunction called"), Mock.Recorder.GetCallCount(TEXT("FindFunction")), 1);
+	TestEqual(TEXT("Total calls"), Mock.Recorder.GetTotalCallCount(), 10);
 
 	return true;
 }

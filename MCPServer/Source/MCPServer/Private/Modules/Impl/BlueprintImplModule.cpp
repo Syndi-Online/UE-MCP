@@ -33,6 +33,11 @@
 #include "Kismet/KismetStringLibrary.h"
 #include "Editor.h"
 #include "GameFramework/Actor.h"
+#include "GameFramework/Pawn.h"
+#include "GameFramework/Character.h"
+#include "Components/ActorComponent.h"
+#include "Components/SceneComponent.h"
+#include "Components/PrimitiveComponent.h"
 
 FBlueprintImplModule::FBlueprintImplModule(IActorModule& InActorModule)
 	: ActorModule(InActorModule)
@@ -2170,6 +2175,115 @@ FGetGraphNodesInAreaResult FBlueprintImplModule::GetGraphNodesInArea(const FStri
 FFindFunctionResult FBlueprintImplModule::FindFunction(const FString& Search, const FString* ClassName, int32 Limit, bool bBlueprintCallableOnly)
 {
 	FFindFunctionResult Result;
-	Result.ErrorMessage = TEXT("find_function: not implemented");
+
+	if (Search.IsEmpty())
+	{
+		Result.ErrorMessage = TEXT("Search string is empty");
+		return Result;
+	}
+
+	TArray<UClass*> SearchClasses;
+
+	if (ClassName && !ClassName->IsEmpty())
+	{
+		// Resolve the specified class (4-step: exact → U-prefix → A-prefix → LoadObject)
+		UClass* FoundClass = FindFirstObject<UClass>(**ClassName, EFindFirstObjectOptions::ExactClass);
+		if (!FoundClass)
+		{
+			FString UPrefixed = TEXT("U") + *ClassName;
+			FoundClass = FindFirstObject<UClass>(*UPrefixed, EFindFirstObjectOptions::ExactClass);
+		}
+		if (!FoundClass)
+		{
+			FString APrefixed = TEXT("A") + *ClassName;
+			FoundClass = FindFirstObject<UClass>(*APrefixed, EFindFirstObjectOptions::ExactClass);
+		}
+		if (!FoundClass)
+		{
+			FoundClass = LoadObject<UClass>(nullptr, **ClassName);
+		}
+		if (!FoundClass)
+		{
+			Result.ErrorMessage = FString::Printf(TEXT("Class not found: %s"), **ClassName);
+			return Result;
+		}
+		SearchClasses.Add(FoundClass);
+	}
+	else
+	{
+		// Default classes to search
+		SearchClasses = {
+			UKismetSystemLibrary::StaticClass(),
+			UKismetMathLibrary::StaticClass(),
+			UKismetStringLibrary::StaticClass(),
+			AActor::StaticClass(),
+			APawn::StaticClass(),
+			ACharacter::StaticClass(),
+			UActorComponent::StaticClass(),
+			USceneComponent::StaticClass(),
+			UPrimitiveComponent::StaticClass()
+		};
+	}
+
+	TSet<FName> SeenFunctions;
+
+	for (UClass* SearchClass : SearchClasses)
+	{
+		if (!SearchClass) continue;
+
+		for (TFieldIterator<UFunction> It(SearchClass, EFieldIterationFlags::IncludeSuper); It; ++It)
+		{
+			UFunction* Func = *It;
+			if (!Func) continue;
+
+			if (bBlueprintCallableOnly && !Func->HasAnyFunctionFlags(FUNC_BlueprintCallable))
+			{
+				continue;
+			}
+
+			FString FuncName = Func->GetName();
+			FString DisplayName = Func->GetMetaData(TEXT("DisplayName"));
+
+			bool bMatches = FuncName.Contains(Search, ESearchCase::IgnoreCase)
+				|| (!DisplayName.IsEmpty() && DisplayName.Contains(Search, ESearchCase::IgnoreCase));
+
+			if (!bMatches) continue;
+
+			// Deduplicate
+			FName FuncFName = Func->GetFName();
+			if (SeenFunctions.Contains(FuncFName)) continue;
+			SeenFunctions.Add(FuncFName);
+
+			FFindFunctionInfo Info;
+			Info.FunctionName = FuncName;
+			Info.ClassName = Func->GetOuterUClass()->GetName();
+			Info.DisplayName = DisplayName;
+
+			// Collect params
+			for (TFieldIterator<FProperty> ParamIt(Func); ParamIt; ++ParamIt)
+			{
+				FProperty* Prop = *ParamIt;
+				if (Prop->HasAnyPropertyFlags(CPF_ReturnParm)) continue;
+
+				FFindFunctionParamInfo ParamInfo;
+				ParamInfo.ParamName = Prop->GetName();
+				Info.Params.Add(ParamInfo);
+			}
+
+			Result.Functions.Add(Info);
+
+			if (Result.Functions.Num() >= Limit)
+			{
+				break;
+			}
+		}
+
+		if (Result.Functions.Num() >= Limit)
+		{
+			break;
+		}
+	}
+
+	Result.bSuccess = true;
 	return Result;
 }
