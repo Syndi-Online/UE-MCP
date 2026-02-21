@@ -6,8 +6,10 @@
 #include "Tools/Impl/BatchSetActorPropertiesImplTool.h"
 #include "Tools/Impl/BatchSetMaterialExpressionPropertiesImplTool.h"
 #include "Tools/Impl/BatchConnectMaterialExpressionsImplTool.h"
+#include "Tools/Impl/AddGraphNodesBatchImplTool.h"
 #include "Tests/Mocks/MockActorModule.h"
 #include "Tests/Mocks/MockMaterialModule.h"
+#include "Tests/Mocks/MockBlueprintModule.h"
 #include "Tests/Integration/IntegrationTestUtils.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
@@ -532,6 +534,79 @@ bool FBatchConnectMatExprsModuleFailureTest::RunTest(const FString& Parameters)
 
 	TestTrue(TEXT("isError"), MCPTestUtils::IsError(Result));
 	TestTrue(TEXT("Contains error"), MCPTestUtils::GetResultText(Result).Contains(TEXT("Invalid expression index")));
+	return true;
+}
+
+// ===========================================================================
+// AddGraphNodesBatch — pin_defaults parsing
+// ===========================================================================
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FAddGraphNodesBatchPinDefaultsTest,
+	"MCPServer.Unit.Batch.AddGraphNodesBatch.PinDefaults",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FAddGraphNodesBatchPinDefaultsTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	FAddGraphNodesBatchResultNode ResNode;
+	ResNode.LocalId = TEXT("print");
+	ResNode.NodeId = TEXT("AAAA-BBBB-CCCC-DDDD");
+	Mock.AddGraphNodesBatchResult.bSuccess = true;
+	Mock.AddGraphNodesBatchResult.Nodes.Add(ResNode);
+	Mock.AddGraphNodesBatchResult.ConnectionsMade = 0;
+
+	FAddGraphNodesBatchImplTool Tool(Mock);
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+
+	TArray<TSharedPtr<FJsonValue>> NodesArr;
+	auto NodeObj = MakeShared<FJsonObject>();
+	NodeObj->SetStringField(TEXT("local_id"), TEXT("print"));
+	NodeObj->SetStringField(TEXT("node_type"), TEXT("CallFunction"));
+	NodeObj->SetStringField(TEXT("member_name"), TEXT("PrintString"));
+
+	// Add pin_defaults
+	auto PinDefaults = MakeShared<FJsonObject>();
+	PinDefaults->SetStringField(TEXT("InString"), TEXT("Hello"));
+	PinDefaults->SetStringField(TEXT("bPrintToScreen"), TEXT("true"));
+	NodeObj->SetObjectField(TEXT("pin_defaults"), PinDefaults);
+
+	NodesArr.Add(MakeShared<FJsonValueObject>(NodeObj));
+	Args->SetArrayField(TEXT("nodes"), NodesArr);
+
+	auto Result = Tool.Execute(Args);
+	TestTrue(TEXT("Success"), MCPTestUtils::IsSuccess(Result));
+	TestEqual(TEXT("AddGraphNodesBatch called"), Mock.Recorder.GetCallCount(TEXT("AddGraphNodesBatch")), 1);
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FAddGraphNodesBatchRollbackTest,
+	"MCPServer.Unit.Batch.AddGraphNodesBatch.Rollback",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter)
+
+bool FAddGraphNodesBatchRollbackTest::RunTest(const FString& Parameters)
+{
+	FMockBlueprintModule Mock;
+	Mock.AddGraphNodesBatchResult.bSuccess = false;
+	Mock.AddGraphNodesBatchResult.ErrorMessage = TEXT("Node creation failed, rolled back 2 nodes");
+
+	FAddGraphNodesBatchImplTool Tool(Mock);
+	auto Args = MakeShared<FJsonObject>();
+	Args->SetStringField(TEXT("blueprint_path"), TEXT("/Game/BP_Test"));
+	Args->SetStringField(TEXT("graph_name"), TEXT("EventGraph"));
+
+	TArray<TSharedPtr<FJsonValue>> NodesArr;
+	auto NodeObj = MakeShared<FJsonObject>();
+	NodeObj->SetStringField(TEXT("local_id"), TEXT("node1"));
+	NodeObj->SetStringField(TEXT("node_type"), TEXT("CallFunction"));
+	NodeObj->SetStringField(TEXT("member_name"), TEXT("BadFunc"));
+	NodesArr.Add(MakeShared<FJsonValueObject>(NodeObj));
+	Args->SetArrayField(TEXT("nodes"), NodesArr);
+
+	auto Result = Tool.Execute(Args);
+	TestTrue(TEXT("IsError"), MCPTestUtils::IsError(Result));
+	TestTrue(TEXT("Contains rollback"), MCPTestUtils::GetResultText(Result).Contains(TEXT("rolled back")));
 	return true;
 }
 

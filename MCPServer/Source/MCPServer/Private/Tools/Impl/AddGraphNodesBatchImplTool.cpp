@@ -107,6 +107,20 @@ TSharedPtr<FJsonObject> FAddGraphNodesBatchImplTool::Execute(const TSharedPtr<FJ
 		if ((*NodeObj)->TryGetNumberField(TEXT("pos_x"), PosXD)) Info.PosX = static_cast<int32>(PosXD);
 		if ((*NodeObj)->TryGetNumberField(TEXT("pos_y"), PosYD)) Info.PosY = static_cast<int32>(PosYD);
 
+		// Parse pin_defaults object
+		const TSharedPtr<FJsonObject>* PinDefaultsObj = nullptr;
+		if ((*NodeObj)->TryGetObjectField(TEXT("pin_defaults"), PinDefaultsObj) && PinDefaultsObj)
+		{
+			for (const auto& Pair : (*PinDefaultsObj)->Values)
+			{
+				FString Value;
+				if (Pair.Value->TryGetString(Value))
+				{
+					Info.PinDefaults.Add(Pair.Key, Value);
+				}
+			}
+		}
+
 		if (!Info.LocalId.IsEmpty() && !Info.NodeType.IsEmpty())
 		{
 			Nodes.Add(Info);

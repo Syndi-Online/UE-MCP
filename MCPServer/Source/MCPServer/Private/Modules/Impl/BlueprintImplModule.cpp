@@ -1984,13 +1984,39 @@ FGetBlueprintParentClassResult FBlueprintImplModule::GetBlueprintParentClass(con
 // Batch Graph Node Creation
 // ============================================================
 
+static FString ResolveNodeId(const FString& IdOrGuid, const TMap<FString, FString>& LocalIdMap)
+{
+	// First check local_id map
+	const FString* Found = LocalIdMap.Find(IdOrGuid);
+	if (Found)
+	{
+		return *Found;
+	}
+	// If it looks like a GUID (contains '-' and len >= 32), treat as existing node ID
+	if (IdOrGuid.Contains(TEXT("-")) && IdOrGuid.Len() >= 32)
+	{
+		return IdOrGuid;
+	}
+	return FString();
+}
+
 FAddGraphNodesBatchResult FBlueprintImplModule::AddGraphNodesBatch(const FString& BlueprintPath, const FString& GraphName, const TArray<FAddGraphNodesBatchNodeInfo>& Nodes, const TArray<FAddGraphNodesBatchConnection>* Connections)
 {
 	FAddGraphNodesBatchResult Result;
 
-	// Create each node using AddGraphNode
+	// Track created node IDs for rollback
+	TArray<FString> CreatedNodeIds;
 	TMap<FString, FString> LocalIdToNodeId; // local_id -> actual node GUID
 
+	auto RollbackCreatedNodes = [&]()
+	{
+		for (int32 i = CreatedNodeIds.Num() - 1; i >= 0; --i)
+		{
+			DeleteGraphNode(BlueprintPath, GraphName, CreatedNodeIds[i]);
+		}
+	};
+
+	// Create each node using AddGraphNode
 	for (const FAddGraphNodesBatchNodeInfo& NodeInfo : Nodes)
 	{
 		const FString* MemberNamePtr = NodeInfo.MemberName.IsEmpty() ? nullptr : &NodeInfo.MemberName;
@@ -2001,11 +2027,25 @@ FAddGraphNodesBatchResult FBlueprintImplModule::AddGraphNodesBatch(const FString
 		FAddGraphNodeResult NodeResult = AddGraphNode(BlueprintPath, GraphName, NodeInfo.NodeType, MemberNamePtr, TargetPtr, &PosX, &PosY);
 		if (!NodeResult.bSuccess)
 		{
+			RollbackCreatedNodes();
 			Result.ErrorMessage = FString::Printf(TEXT("Failed to create node '%s': %s"), *NodeInfo.LocalId, *NodeResult.ErrorMessage);
 			return Result;
 		}
 
+		CreatedNodeIds.Add(NodeResult.NodeId);
 		LocalIdToNodeId.Add(NodeInfo.LocalId, NodeResult.NodeId);
+
+		// Apply pin defaults
+		for (const auto& PinDefault : NodeInfo.PinDefaults)
+		{
+			FSetPinDefaultValueResult PinResult = SetPinDefaultValue(BlueprintPath, GraphName, NodeResult.NodeId, PinDefault.Key, PinDefault.Value);
+			if (!PinResult.bSuccess)
+			{
+				RollbackCreatedNodes();
+				Result.ErrorMessage = FString::Printf(TEXT("Failed to set pin default '%s' on node '%s': %s"), *PinDefault.Key, *NodeInfo.LocalId, *PinResult.ErrorMessage);
+				return Result;
+			}
+		}
 
 		FAddGraphNodesBatchResultNode ResNode;
 		ResNode.LocalId = NodeInfo.LocalId;
@@ -2019,15 +2059,26 @@ FAddGraphNodesBatchResult FBlueprintImplModule::AddGraphNodesBatch(const FString
 	{
 		for (const FAddGraphNodesBatchConnection& Conn : *Connections)
 		{
-			FString* SourceNodeId = LocalIdToNodeId.Find(Conn.SourceLocalId);
-			FString* TargetNodeId = LocalIdToNodeId.Find(Conn.TargetLocalId);
+			FString SourceNodeId = ResolveNodeId(Conn.SourceLocalId, LocalIdToNodeId);
+			FString TargetNodeId = ResolveNodeId(Conn.TargetLocalId, LocalIdToNodeId);
 
-			if (!SourceNodeId) { Result.ErrorMessage = FString::Printf(TEXT("Source local_id not found: %s"), *Conn.SourceLocalId); return Result; }
-			if (!TargetNodeId) { Result.ErrorMessage = FString::Printf(TEXT("Target local_id not found: %s"), *Conn.TargetLocalId); return Result; }
+			if (SourceNodeId.IsEmpty())
+			{
+				RollbackCreatedNodes();
+				Result.ErrorMessage = FString::Printf(TEXT("Source id not found: %s"), *Conn.SourceLocalId);
+				return Result;
+			}
+			if (TargetNodeId.IsEmpty())
+			{
+				RollbackCreatedNodes();
+				Result.ErrorMessage = FString::Printf(TEXT("Target id not found: %s"), *Conn.TargetLocalId);
+				return Result;
+			}
 
-			FConnectGraphPinsResult ConnResult = ConnectGraphPins(BlueprintPath, GraphName, *SourceNodeId, Conn.SourcePinName, *TargetNodeId, Conn.TargetPinName);
+			FConnectGraphPinsResult ConnResult = ConnectGraphPins(BlueprintPath, GraphName, SourceNodeId, Conn.SourcePinName, TargetNodeId, Conn.TargetPinName);
 			if (!ConnResult.bSuccess)
 			{
+				RollbackCreatedNodes();
 				Result.ErrorMessage = FString::Printf(TEXT("Failed to connect %s.%s -> %s.%s: %s"), *Conn.SourceLocalId, *Conn.SourcePinName, *Conn.TargetLocalId, *Conn.TargetPinName, *ConnResult.ErrorMessage);
 				return Result;
 			}
