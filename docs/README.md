@@ -284,6 +284,7 @@ UE-MCP is an HTTP-based Model Context Protocol (MCP) server running inside Unrea
 
 - [add_graph_node](24-blueprint-graph-editing/add_graph_node.md)
 - [add_graph_nodes_batch](24-blueprint-graph-editing/add_graph_nodes_batch.md)
+- [batch_connect_graph_pins](24-blueprint-graph-editing/batch_connect_graph_pins.md)
 - [connect_graph_pins](24-blueprint-graph-editing/connect_graph_pins.md)
 - [delete_graph_node](24-blueprint-graph-editing/delete_graph_node.md)
 - [disconnect_graph_pins](24-blueprint-graph-editing/disconnect_graph_pins.md)
