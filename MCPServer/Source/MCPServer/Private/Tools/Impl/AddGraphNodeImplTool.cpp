@@ -50,7 +50,7 @@ TSharedPtr<FJsonObject> FAddGraphNodeImplTool::GetInputSchema() const
 
 	TSharedPtr<FJsonObject> TargetProp = MakeShared<FJsonObject>();
 	TargetProp->SetStringField(TEXT("type"), TEXT("string"));
-	TargetProp->SetStringField(TEXT("description"), TEXT("Target class/type. For CallFunction: class name. For DynamicCast: class to cast to. For SwitchEnum: enum path. For ComponentBoundEvent: component variable name"));
+	TargetProp->SetStringField(TEXT("description"), TEXT("Target class/type. For CallFunction: class name. For DynamicCast: class to cast to. For SwitchEnum: enum path. For ComponentBoundEvent: component variable name. For VariableGet: owner class for external member access (creates Target input pin)"));
 	Properties->SetObjectField(TEXT("target"), TargetProp);
 
 	TSharedPtr<FJsonObject> PositionProp = MakeShared<FJsonObject>();

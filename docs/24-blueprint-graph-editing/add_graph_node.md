@@ -10,7 +10,7 @@ Add a node to a Blueprint graph.
 | graph_name | string | Yes | Name of the graph (e.g. EventGraph) |
 | node_type | string | Yes | Type of node: CallFunction, Event, ComponentBoundEvent, VariableGet, VariableSet, DynamicCast, IfThenElse/Branch, MacroInstance, SwitchEnum, MapForEach, FormatText, EnumToString/GetEnumeratorNameAsString |
 | member_name | string | No | Function/variable/macro name. Required for: CallFunction, Event, VariableGet, VariableSet, MacroInstance. E.g. PrintString, ForEachLoop |
-| target | string | No | Target class/type. For CallFunction: class name. For DynamicCast: class to cast to. For SwitchEnum: enum path. For ComponentBoundEvent: component variable name |
+| target | string | No | Target class/type. For CallFunction: class name. For DynamicCast: class to cast to. For SwitchEnum: enum path. For ComponentBoundEvent: component variable name. For VariableGet: owner class for external member access (creates Target input pin) |
 | position | object | No | Optional position of the node `{x, y}` |
 
 The `position` object:
@@ -47,6 +47,21 @@ On error, returns a message describing the failure.
 }
 ```
 
+### External VariableGet (accessing a member of another class)
+
+```json
+{
+  "blueprint_path": "/Game/Blueprints/BP_MyCharacter",
+  "graph_name": "EventGraph",
+  "node_type": "VariableGet",
+  "member_name": "CapsuleComponent",
+  "target": "Character",
+  "position": { "x": 400, "y": 200 }
+}
+```
+
+This creates a VariableGet node for `ACharacter::CapsuleComponent` with a Target input pin. Connect a Cast To Character output to this Target pin.
+
 ## Response
 
 ### Success
@@ -72,6 +87,7 @@ Failed to add graph node: Blueprint not found: /Game/Blueprints/BP_Missing
   - **DynamicCast**: the class to cast to
   - **SwitchEnum**: the enum asset path
   - **ComponentBoundEvent**: the component variable name
+  - **VariableGet**: the owner class for external member access (e.g. `Character`, `Pawn`). When `target` is provided, the node accesses a member of the specified class instead of the current Blueprint, creating a Target input pin for connecting an external object reference (e.g., Cast result). Class resolution tries: exact name, U-prefix, A-prefix, full path.
 - **MapForEach** iterates a `TMap`, providing Key, Value, loop body, and Completed exec pins.
 - **FormatText** creates a Format Text node for `FText::Format`-style string building.
 - **EnumToString** (alias **GetEnumeratorNameAsString**) converts an enum value to its display string.
