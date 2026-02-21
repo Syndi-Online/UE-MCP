@@ -16,7 +16,7 @@ FString FAddGraphNodesBatchImplTool::GetName() const
 
 FString FAddGraphNodesBatchImplTool::GetDescription() const
 {
-	return TEXT("Create multiple graph nodes and connections in a single call");
+	return TEXT("Atomically create multiple graph nodes with pin defaults and connections in a single call. On failure, all created nodes are rolled back.");
 }
 
 TSharedPtr<FJsonObject> FAddGraphNodesBatchImplTool::GetInputSchema() const
@@ -39,13 +39,13 @@ TSharedPtr<FJsonObject> FAddGraphNodesBatchImplTool::GetInputSchema() const
 	// Nodes array
 	TSharedPtr<FJsonObject> NodesProp = MakeShared<FJsonObject>();
 	NodesProp->SetStringField(TEXT("type"), TEXT("array"));
-	NodesProp->SetStringField(TEXT("description"), TEXT("Array of nodes to create (each with local_id, node_type, member_name, target, pos_x, pos_y)"));
+	NodesProp->SetStringField(TEXT("description"), TEXT("Array of nodes to create. Each: {local_id, node_type, member_name, target, pos_x, pos_y, pin_defaults: {pin_name: value}}"));
 	Properties->SetObjectField(TEXT("nodes"), NodesProp);
 
 	// Connections array
 	TSharedPtr<FJsonObject> ConnsProp = MakeShared<FJsonObject>();
 	ConnsProp->SetStringField(TEXT("type"), TEXT("array"));
-	ConnsProp->SetStringField(TEXT("description"), TEXT("Array of connections: {source, source_pin, target, target_pin} using local_ids"));
+	ConnsProp->SetStringField(TEXT("description"), TEXT("Array of connections: {source, source_pin, target, target_pin}. Source/target can be local_ids or existing node GUIDs."));
 	Properties->SetObjectField(TEXT("connections"), ConnsProp);
 
 	Schema->SetObjectField(TEXT("properties"), Properties);

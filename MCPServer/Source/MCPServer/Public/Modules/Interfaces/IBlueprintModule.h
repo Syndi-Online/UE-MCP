@@ -219,6 +219,7 @@ struct FAddGraphNodesBatchNodeInfo
 	FString Target;
 	int32 PosX = 0;
 	int32 PosY = 0;
+	TMap<FString, FString> PinDefaults;
 };
 
 struct FAddGraphNodesBatchConnection
