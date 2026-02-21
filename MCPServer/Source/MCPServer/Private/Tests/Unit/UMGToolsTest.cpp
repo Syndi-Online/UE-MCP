@@ -122,12 +122,8 @@ bool FGetWidgetTreeSuccessTest::RunTest(const FString& Parameters)
 {
 	FMockUMGModule Mock;
 	Mock.GetWidgetTreeResult.bSuccess = true;
-	Mock.GetWidgetTreeResult.BlueprintName = TEXT("WBP_Test");
-	FWidgetInfo Root;
-	Root.WidgetName = TEXT("RootCanvas");
-	Root.WidgetClass = TEXT("CanvasPanel");
-	Mock.GetWidgetTreeResult.RootWidget = Root;
-	Mock.GetWidgetTreeResult.TotalWidgets = 1;
+	Mock.GetWidgetTreeResult.RootWidgetName = TEXT("RootCanvas");
+	Mock.GetWidgetTreeResult.RootWidgetClass = TEXT("CanvasPanel");
 
 	FGetWidgetTreeImplTool Tool(Mock);
 	auto Args = MakeShared<FJsonObject>();

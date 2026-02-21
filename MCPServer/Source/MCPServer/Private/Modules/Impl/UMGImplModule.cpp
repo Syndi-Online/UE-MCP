@@ -380,7 +380,7 @@ FRemoveWidgetResult FUMGImplModule::RemoveWidget(const FString& BlueprintPath, c
 
 	TSet<UWidget*> WidgetsToDelete;
 	WidgetsToDelete.Add(Widget);
-	FWidgetBlueprintEditorUtils::DeleteWidgets(WBP, WidgetsToDelete, EDeleteWidgetWarningType::Allowed);
+	FWidgetBlueprintEditorUtils::DeleteWidgets(WBP, WidgetsToDelete, FWidgetBlueprintEditorUtils::EDeleteWidgetWarningType::DeleteSilently);
 
 	FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(WBP);
 
@@ -514,7 +514,7 @@ FReplaceWidgetResult FUMGImplModule::ReplaceWidget(const FString& BlueprintPath,
 
 	TSet<UWidget*> WidgetsToReplace;
 	WidgetsToReplace.Add(Widget);
-	FWidgetBlueprintEditorUtils::ReplaceWidgets(WBP, WidgetsToReplace, NewClass, EReplaceWidgetNamingMethod::KeepOldName);
+	FWidgetBlueprintEditorUtils::ReplaceWidgets(WBP, WidgetsToReplace, NewClass, FWidgetBlueprintEditorUtils::EReplaceWidgetNamingMethod::MaintainNameAndReferences);
 
 	FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(WBP);
 

@@ -42,12 +42,8 @@ bool FUMGIntegrationWidgetLifecycleTest::RunTest(const FString& Parameters)
 
 	// Step 2: Get widget tree
 	Mock.GetWidgetTreeResult.bSuccess = true;
-	Mock.GetWidgetTreeResult.BlueprintName = TEXT("WBP_HUD");
-	FWidgetInfo Root;
-	Root.WidgetName = TEXT("RootCanvas");
-	Root.WidgetClass = TEXT("CanvasPanel");
-	Mock.GetWidgetTreeResult.RootWidget = Root;
-	Mock.GetWidgetTreeResult.TotalWidgets = 1;
+	Mock.GetWidgetTreeResult.RootWidgetName = TEXT("RootCanvas");
+	Mock.GetWidgetTreeResult.RootWidgetClass = TEXT("CanvasPanel");
 
 	FGetWidgetTreeImplTool TreeTool(Mock);
 	auto TreeArgs = MakeShared<FJsonObject>();
@@ -236,8 +232,8 @@ bool FUMGIntegrationMoveWidgetTest::RunTest(const FString& Parameters)
 
 	// Step 3: Verify tree after move
 	Mock.GetWidgetTreeResult.bSuccess = true;
-	Mock.GetWidgetTreeResult.BlueprintName = TEXT("WBP_Test");
-	Mock.GetWidgetTreeResult.TotalWidgets = 5;
+	Mock.GetWidgetTreeResult.RootWidgetName = TEXT("RootCanvas");
+	Mock.GetWidgetTreeResult.RootWidgetClass = TEXT("CanvasPanel");
 
 	FGetWidgetTreeImplTool TreeTool(Mock);
 	auto TreeArgs = MakeShared<FJsonObject>();
